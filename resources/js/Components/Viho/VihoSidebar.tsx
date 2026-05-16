@@ -1,16 +1,87 @@
-import { vihoMenu } from '@/Data/vihoMenu';
 import { Link, usePage } from '@inertiajs/react';
-import { Settings } from 'lucide-react';
+import {
+    ArrowRightLeft,
+    Award,
+    Bell,
+    Calendar,
+    CalendarDays,
+    CheckSquare,
+    ClipboardCheck,
+    FileText,
+    Folder,
+    FolderKanban,
+    GitBranch,
+    Handshake,
+    Home,
+    LayoutDashboard,
+    LayoutTemplate,
+    ScanLine,
+    Settings,
+    Users,
+    Wallet,
+} from 'lucide-react';
 
+import { vihoMenu } from '@/Data/vihoMenu';
 import { cn } from '@/lib/utils';
+import type { PageProps } from '@/types';
+
+interface SidebarMenuItem {
+    label: string;
+    href: string;
+    icon: keyof typeof iconMap;
+    badgeCount: number | null;
+}
+
+interface SidebarMenuGroup {
+    groupLabel: string;
+    items: SidebarMenuItem[];
+}
+
+interface SidebarPageProps extends PageProps {
+    sidebarMenu?: SidebarMenuGroup[];
+}
+
+const iconMap = {
+    ArrowRightLeft,
+    Award,
+    Bell,
+    Calendar,
+    CalendarDays,
+    CheckSquare,
+    ClipboardCheck,
+    FileText,
+    Folder,
+    FolderKanban,
+    GitBranch,
+    Handshake,
+    Home,
+    LayoutDashboard,
+    LayoutTemplate,
+    ScanLine,
+    Settings,
+    Users,
+    Wallet,
+};
 
 export default function VihoSidebar() {
-    const { app, auth } = usePage().props;
+    const { app, auth, sidebarMenu = [] } = usePage<SidebarPageProps>().props;
     const user = auth.user ?? {
         email: '',
         id: 0,
         name: 'Guest',
     };
+    const menu =
+        sidebarMenu.length > 0
+            ? sidebarMenu
+            : vihoMenu.map((section) => ({
+                  groupLabel: section.title,
+                  items: section.items.map((item) => ({
+                      label: item.title,
+                      href: item.href,
+                      icon: 'Home' as keyof typeof iconMap,
+                      badgeCount: item.badge === undefined ? null : 0,
+                  })),
+              }));
 
     return (
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-[255px] overflow-y-auto bg-white shadow-[0_0_11px_rgba(69,110,243,0.13)] lg:block">
@@ -76,60 +147,38 @@ export default function VihoSidebar() {
                         Periode {app.activeOrganization.period}
                     </p>
                 </div>
-                {vihoMenu.map((section) => (
-                    <div key={section.title} className="mb-5">
+                {menu.map((section) => (
+                    <div key={section.groupLabel} className="mb-5">
                         <p className="mb-3 px-3 text-[12px] font-semibold text-[#24695c]">
-                            {section.title}
+                            {section.groupLabel}
                         </p>
                         <div className="space-y-1">
                             {section.items.map((item) => {
-                                const Icon = item.icon;
+                                const Icon = iconMap[item.icon] ?? Home;
                                 const active = isActiveMenu(item.href);
-                                const childActive = item.children?.some(
-                                    (child) => isActiveMenu(child.href),
-                                );
 
                                 return (
-                                    <div key={item.title}>
+                                    <div key={item.label}>
                                         <Link
                                             href={item.href}
                                             className={cn(
                                                 'group flex min-h-11 items-center gap-[14px] rounded-[4px] px-3 py-2 text-sm font-medium tracking-[0.04em] transition',
-                                                active || childActive
+                                                active
                                                     ? 'bg-[rgba(36,105,92,0.08)] text-[#24695c]'
                                                     : 'text-[#242934] hover:bg-[rgba(36,105,92,0.06)] hover:text-[#24695c]',
                                             )}
                                         >
                                             <Icon className="h-[16px] w-[16px]" />
                                             <span className="flex-1">
-                                                {item.title}
+                                                {item.label}
                                             </span>
-                                            {item.badge && (
+                                            {item.badgeCount !== null &&
+                                                item.badgeCount > 0 && (
                                                 <span className="rounded-[3px] bg-[#ba895d] px-2 py-0.5 text-[10px] font-bold text-white">
-                                                    {item.badge}
+                                                    {item.badgeCount}
                                                 </span>
                                             )}
                                         </Link>
-                                        {item.children && (
-                                            <div className="ml-[42px] mt-1 space-y-1 border-l border-[#e6edef] pl-4">
-                                                {item.children.map((child) => (
-                                                    <Link
-                                                        key={child.title}
-                                                        href={child.href}
-                                                        className={cn(
-                                                            'block py-1.5 text-[13px] tracking-[0.04em] transition hover:text-[#24695c]',
-                                                            isActiveMenu(
-                                                                child.href,
-                                                            )
-                                                                ? 'font-semibold text-[#24695c]'
-                                                                : 'text-[#717171]',
-                                                        )}
-                                                    >
-                                                        {child.title}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
                                 );
                             })}
@@ -142,5 +191,15 @@ export default function VihoSidebar() {
 }
 
 function isActiveMenu(href: string): boolean {
-    return href !== '#' && window.location.href === href;
+    if (href === '#') {
+        return false;
+    }
+
+    const target = new URL(href, window.location.origin);
+    const pathname = window.location.pathname;
+
+    return (
+        pathname === target.pathname ||
+        (target.pathname !== '/' && pathname.startsWith(`${target.pathname}/`))
+    );
 }

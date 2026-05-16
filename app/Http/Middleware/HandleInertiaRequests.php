@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Actions\Dashboard\SidebarMenuAction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -31,19 +33,29 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $organization = $user === null ? null : $this->activeOrganization((int) $user->id);
+
         return [
             ...parent::share($request),
             'app' => [
                 'name' => config('app.name'),
-                'activeOrganization' => [
-                    'name' => 'BEM Fakultas Teknologi',
-                    'period' => '2026',
-                    'role' => 'organization_owner',
+                'activeOrganization' => $organization === null ? [
+                    'name' => 'Belum ada organisasi',
+                    'period' => '-',
+                    'role' => 'viewer',
+                ] : [
+                    'name' => $organization['name'],
+                    'period' => $organization['period'],
+                    'role' => $organization['role'],
                 ],
             ],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
+            'sidebarMenu' => $user !== null && $organization !== null
+                ? app(SidebarMenuAction::class)->execute($user, (int) $organization['id'])
+                : [],
             'flash' => [
                 'success' => fn (): ?string => $this->sessionString($request, 'success'),
                 'error' => fn (): ?string => $this->sessionString($request, 'error'),
@@ -57,5 +69,55 @@ class HandleInertiaRequests extends Middleware
         $value = $request->session()->get($key);
 
         return is_string($value) ? $value : null;
+    }
+
+    /**
+     * @return array{id: int, name: string, period: string, role: string}|null
+     */
+    private function activeOrganization(int $userId): ?array
+    {
+        $organization = DB::table('organization_members')
+            ->join('organizations', 'organizations.id', '=', 'organization_members.organization_id')
+            ->leftJoin('organization_periods', function ($join): void {
+                $join->on('organization_periods.organization_id', '=', 'organizations.id')
+                    ->where('organization_periods.is_active', true);
+            })
+            ->where('organization_members.user_id', $userId)
+            ->orderBy('organization_members.id')
+            ->first([
+                'organizations.id',
+                'organizations.name',
+                'organization_members.role',
+                'organization_periods.name as period_name',
+            ]);
+
+        if ($organization === null) {
+            $organization = DB::table('project_members')
+                ->join('projects', 'projects.id', '=', 'project_members.project_id')
+                ->join('organizations', 'organizations.id', '=', 'projects.organization_id')
+                ->leftJoin('organization_periods', function ($join): void {
+                    $join->on('organization_periods.organization_id', '=', 'organizations.id')
+                        ->where('organization_periods.is_active', true);
+                })
+                ->where('project_members.user_id', $userId)
+                ->orderBy('project_members.id')
+                ->first([
+                    'organizations.id',
+                    'organizations.name',
+                    'project_members.role',
+                    'organization_periods.name as period_name',
+                ]);
+        }
+
+        if ($organization === null) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $organization->id,
+            'name' => (string) $organization->name,
+            'period' => (string) ($organization->period_name ?? '-'),
+            'role' => (string) $organization->role,
+        ];
     }
 }
