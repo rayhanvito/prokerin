@@ -30,6 +30,12 @@ export type PageProps<
         error?: string;
         status?: string;
         aiSuggestion?: Record<string, unknown>;
+        attendanceQrToken?: {
+            sessionId: number;
+            tokenId: number;
+            plainToken: string;
+            expiresAt: string;
+        };
     };
     impersonating: ImpersonationContext | null;
 };

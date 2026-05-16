@@ -64,6 +64,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn (): ?string => $this->sessionString($request, 'error'),
                 'status' => fn (): ?string => $this->sessionString($request, 'status'),
                 'aiSuggestion' => fn (): ?array => $this->sessionArray($request, 'aiSuggestion'),
+                'attendanceQrToken' => fn (): ?array => $this->sessionArray($request, 'attendanceQrToken'),
             ],
             'impersonating' => $this->impersonationContext(),
         ];

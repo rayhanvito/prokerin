@@ -12,7 +12,7 @@ final class GetQrAttendancePayloadAction
     /**
      * @return array{
      *     metrics: array<int, array{label: string, value: string, note: string}>,
-     *     sessions: array<int, array{id: int, title: string, project: string, meeting: string, startsAt: string, status: string, expiresAt: string|null, attendeeCount: int, presentCount: int, qrCount: int, manualCount: int}>,
+     *     sessions: array<int, array{id: int, title: string, project: string, meeting: string, startsAt: string, status: string, expiresAt: string|null, attendeeCount: int, presentCount: int, qrCount: int, manualCount: int, activeTokenId: int|null, canManageQr: bool}>,
      *     recentRecords: array<int, array{id: int, attendeeName: string, sessionTitle: string, method: string, checkedInAt: string, status: string}>
      * }
      */
@@ -22,20 +22,32 @@ final class GetQrAttendancePayloadAction
             ->where('user_id', $userId)
             ->pluck('organization_id');
 
+        $manageRoles = ['organization_owner', 'organization_admin', 'secretary', 'project_lead'];
+        $manageOrgIds = DB::table('organization_members')
+            ->where('user_id', $userId)
+            ->whereIn('role', $manageRoles)
+            ->pluck('organization_id')
+            ->all();
+
         $sessionRows = DB::table('attendance_sessions')
             ->leftJoin('projects', 'projects.id', '=', 'attendance_sessions.project_id')
             ->leftJoin('meetings', 'meetings.id', '=', 'attendance_sessions.meeting_id')
-            ->leftJoin('attendance_qr_tokens', 'attendance_qr_tokens.attendance_session_id', '=', 'attendance_sessions.id')
+            ->leftJoin('attendance_qr_tokens', function ($join): void {
+                $join->on('attendance_qr_tokens.attendance_session_id', '=', 'attendance_sessions.id')
+                    ->whereNull('attendance_qr_tokens.revoked_at');
+            })
             ->whereIn('attendance_sessions.organization_id', $organizationIds)
             ->orderByDesc('attendance_sessions.starts_at')
             ->limit(10)
             ->get([
                 'attendance_sessions.id',
+                'attendance_sessions.organization_id',
                 'attendance_sessions.title',
                 'attendance_sessions.starts_at',
                 'attendance_sessions.status',
                 'projects.name as project_name',
                 'meetings.title as meeting_title',
+                'attendance_qr_tokens.id as token_id',
                 'attendance_qr_tokens.expires_at',
             ]);
 
@@ -93,7 +105,7 @@ final class GetQrAttendancePayloadAction
                 ],
             ],
             'sessions' => $sessionRows
-                ->map(function (object $session) use ($recordCounts, $attendeeCounts): array {
+                ->map(function (object $session) use ($recordCounts, $attendeeCounts, $manageOrgIds): array {
                     $records = $recordCounts->get($session->id);
                     $attendees = $attendeeCounts->get($session->id);
 
@@ -109,6 +121,8 @@ final class GetQrAttendancePayloadAction
                         'presentCount' => (int) ($records->present_count ?? 0),
                         'qrCount' => (int) ($records->qr_count ?? 0),
                         'manualCount' => (int) ($records->manual_count ?? 0),
+                        'activeTokenId' => $session->token_id === null ? null : (int) $session->token_id,
+                        'canManageQr' => in_array((int) $session->organization_id, $manageOrgIds, true),
                     ];
                 })
                 ->all(),
