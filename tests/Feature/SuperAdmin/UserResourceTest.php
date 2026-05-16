@@ -66,7 +66,9 @@ final class UserResourceTest extends TestCase
 
         try {
             Livewire::test(ListUsers::class)
-                ->callTableAction(DeleteAction::class, $superAdmin);
+                ->callTableAction(DeleteAction::class, $superAdmin, data: [
+                    'confirmation' => $superAdmin->email,
+                ]);
         } catch (\Throwable) {
             // Expected — guard throws to abort the action
         }
@@ -83,12 +85,41 @@ final class UserResourceTest extends TestCase
 
         try {
             Livewire::test(ListUsers::class)
-                ->callTableAction(DeleteAction::class, $owner);
+                ->callTableAction(DeleteAction::class, $owner, data: [
+                    'confirmation' => $owner->email,
+                ]);
         } catch (\Throwable) {
             // Expected — guard throws to abort the action
         }
 
         $this->assertNotNull(User::query()->find($owner->id));
+    }
+
+    public function test_user_delete_requires_typed_email_confirmation(): void
+    {
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
+        $target = User::factory()->create([
+            'email' => 'confirm-delete@prokerin.test',
+            'name' => 'Confirm Delete',
+        ]);
+
+        $this->actingAs($superAdmin);
+
+        try {
+            Livewire::test(ListUsers::class)
+                ->callTableAction(DeleteAction::class, $target, data: [
+                    'confirmation' => 'wrong-email@prokerin.test',
+                ]);
+        } catch (\Throwable) {
+            // Expected — confirmation guard throws to abort the action
+        }
+
+        $this->assertNotNull(User::query()->find($target->id));
+        $this->assertDatabaseMissing('activity_logs', [
+            'action' => 'user.delete',
+            'target_type' => User::class,
+            'target_id' => $target->id,
+        ]);
     }
 
     public function test_user_delete_is_logged_when_safe(): void
@@ -102,7 +133,9 @@ final class UserResourceTest extends TestCase
         $this->actingAs($superAdmin);
 
         Livewire::test(ListUsers::class)
-            ->callTableAction(DeleteAction::class, $target);
+            ->callTableAction(DeleteAction::class, $target, data: [
+                'confirmation' => $target->email,
+            ]);
 
         $this->assertNull(User::query()->find($target->id));
 

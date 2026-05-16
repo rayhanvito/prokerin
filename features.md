@@ -47,6 +47,11 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · SA01 user delete hardening: Super Admin delete-user action now requires typing the target email before deletion; mismatch aborts without audit log, and BUG-007 is recorded in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · After SA01 user delete hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/UserResourceTest.php --stop-on-failure` → **7 passed, 42 assertions**.
+- `[x]` 2026-05-17 · After SA01 user delete hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **32 passed, 110 assertions**.
+- `[x]` 2026-05-17 · After SA01 user delete hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **342 passed, 1711 assertions**.
+- `[x]` 2026-05-17 · After SA01 user delete hardening: `npm run build` passed.
 - `[x]` 2026-05-17 · SA01 document export hardening: `DocumentExportResource` is now read-only, create/edit/delete are blocked, raw `output_path` is replaced by an Artifact status badge in table and detail views, and BUG-006 is recorded in `QA-MASTER-PROKERIN.md`.
 - `[x]` 2026-05-17 · After SA01 document export hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **41 passed, 117 assertions**.
 - `[x]` 2026-05-17 · After SA01 document export hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **341 passed, 1703 assertions**.
@@ -1061,7 +1066,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - `PlanTier` enum (`free`/`starter`/`pro`/`campus`) cast on `Organization` model, plus `internal_notes` text column for super-admin-only notes.
 - `activity_logs` table + `ActivityLog` model + `LogActivityAction` for append-only audit trail. Logged actions include `impersonate.start`, `impersonate.stop`, `user.role.change`, `user.delete`, `org.plan_tier.change`, `org.force_delete`.
 - Dashboard widgets: `PlatformStatsOverview` (totals + weekly deltas + plan breakdown), `RecentOrganizationsTable` (10 most recent orgs), `RecentUsersTable` (10 most recent users with role badges).
-- `UserResource`: list with role/verified filters and search; edit form supports name, email, password, force-verify toggle, and role assignment (excluding `super_admin` self-assignment via UI); impersonate row action; delete guard (cannot delete self, cannot delete `super_admin` via UI, cannot delete sole organization owner).
+- `UserResource`: list with role/verified filters and search; edit form supports name, email, password, force-verify toggle, and role assignment (excluding `super_admin` self-assignment via UI); impersonate row action; delete guard (cannot delete self, cannot delete `super_admin` via UI, cannot delete sole organization owner) plus typed email confirmation before deletion.
 - `OrganizationResource`: list with plan-tier filter and owner/member/active-project columns; edit form for name, slug, plan tier, status, and internal notes; force-delete row action with typed confirmation; plan-tier changes logged to `activity_logs` with `before`/`after` payload.
 - `ProjectResource`: read-only cross-org visibility (no create/edit/delete). Filterable by status and organization. View page surfaces task summary, planned budget, proposal status, and LPJ progress.
 - `NotificationRuleResource`: read/edit only. Edits global default notification rules (event type, label, audience, channels, status). No create or delete to preserve system-defined rules.
@@ -1084,7 +1089,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - Feature:
   - `FilamentAccessTest`: guest redirected, organization_owner blocked, member blocked, super_admin sees dashboard, super_admin lists users/organizations/projects/notification-rules/document-exports, document exports are read-only, organization_owner cannot open users resource.
   - `OrganizationResourceTest`: plan-tier change updates org and logs `org.plan_tier.change` with before/after.
-  - `UserResourceTest`: edit name/email, super_admin role excluded from assignable options, sole-organization-owner delete guard, self-delete guard, audit log on safe delete, list table renders.
+  - `UserResourceTest`: edit name/email, super_admin role excluded from assignable options, sole-organization-owner delete guard, self-delete guard, typed email confirmation for delete, audit log on safe delete, list table renders.
   - `ImpersonationTest`: super_admin can impersonate regular user (and audit log written), super_admin cannot impersonate another super_admin, organization_owner cannot trigger impersonate, stop redirects to `/internal-admin/users` and writes `impersonate.stop` log.
 
 #### Verification
@@ -1094,6 +1099,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **311 passed, 1528 assertions**.
 - `[x]` 2026-05-17 · `npm run build` passed (production frontend bundle).
 - `[x]` 2026-05-17 · SA01 QA hardening follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **41 passed, 117 assertions**; full `php artisan test` → **341 passed, 1703 assertions**; `npm run build` passed.
+- `[x]` 2026-05-17 · SA01 user delete hardening follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **32 passed, 110 assertions**; full `php artisan test` → **342 passed, 1711 assertions**; `npm run build` passed.
 
 ---
 

@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -121,8 +122,14 @@ class UsersTable
                     ->requiresConfirmation()
                     ->modalHeading('Delete user')
                     ->modalDescription('This action cannot be undone. The user will be permanently removed.')
-                    ->before(static function (User $record): void {
+                    ->schema([
+                        TextInput::make('confirmation')
+                            ->label('Type the user email to confirm')
+                            ->required(),
+                    ])
+                    ->before(static function (User $record, array $data): void {
                         self::guardDelete($record);
+                        self::guardDeleteConfirmation($record, $data);
                     })
                     ->after(static function (User $record): void {
                         app(LogActivityAction::class)->execute('user.delete', $record, [
@@ -152,6 +159,24 @@ class UsersTable
         }
 
         return $record->canBeImpersonated();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function guardDeleteConfirmation(User $record, array $data): void
+    {
+        if (($data['confirmation'] ?? null) === $record->email) {
+            return;
+        }
+
+        Notification::make()
+            ->danger()
+            ->title('Confirmation mismatch')
+            ->body('Type the user email exactly to confirm deletion.')
+            ->send();
+
+        throw new Exception('Confirmation mismatch.');
     }
 
     private static function guardDelete(User $record): void
