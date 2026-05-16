@@ -76,6 +76,9 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 | QA-OPEN-010 | High | Document Upload | Upload Center hanya dropzone visual dan validation sample; belum ada file input/form submit upload dokumen. | `resources/js/Pages/Documents/UploadCenter.tsx:59`, `resources/js/Pages/Documents/UploadCenter.tsx:64`, `app/Http/Controllers/WorkspacePageController.php` upload center hanya menjalankan sample validation. | User belum bisa upload dokumen umum dari UI; QA upload oversized/visibility belum bisa end-to-end. |
 | QA-OPEN-011 | Medium | Document Folders | Folder page masih static array, belum data-backed folder tree. | `resources/js/Pages/Documents/Folders.tsx:7`. | Folder hierarchy dan recent documents belum bisa divalidasi dari database. |
 | QA-OPEN-012 | Low | Certificate Template UX | Template editor sudah punya preview, tetapi preview hanya text-stripped, bukan render visual certificate. | `resources/js/Pages/Certificates/Templates.tsx:348`, `resources/js/Pages/Certificates/Templates.tsx:358`, `resources/js/Pages/Certificates/Templates.tsx:363`. | Non-teknis masih sulit menilai layout akhir sertifikat sebelum issue/export. |
+| QA-OPEN-013 | Medium | Proker Overview | `/proker` masih memakai `workspaceMock`; item link juga masih ke sample route, bukan slug project masing-masing. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Pages/Proker/Index.tsx:16`, `resources/js/Pages/Proker/Index.tsx:45`. | Dashboard list proker bisa beda dari database walaupun create/detail proker sudah punya backend. |
+| QA-OPEN-014 | Medium | Members Overview | `/members` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Members/Index.tsx:7`, `resources/js/Pages/Members/Index.tsx:14`, `resources/js/Pages/Members/Index.tsx:19`. | Jumlah member/invite dan daftar orang bisa menyesatkan user. |
+| QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
 
 Catatan verifikasi tambahan:
 
@@ -115,6 +118,7 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 | 6.5 | Role promotion | Promote member ke treasurer lalu akses finance muncul. |
 | 6.6 | Role demotion | Demote admin ke member lalu approval access hilang. |
 | 6.8 | Remove member | Member dihapus dan kehilangan akses org. |
+| M03 overview | Members index data-backed | `/members` masih hardcoded. Lihat QA-OPEN-014. |
 
 ### Proker & Template
 
@@ -125,6 +129,7 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 | 8.1 | Template library | Halaman `/templates` menampilkan template seeded. |
 | 8.4 | Customize generated project | Generated project bisa diedit setelah dibuat dari template. |
 | 8.5 | Generate same template twice | Generate template yang sama dua kali tanpa konflik. |
+| M04 overview | Proker index data-backed | `/proker` masih memakai `workspaceMock`. Lihat QA-OPEN-013. |
 
 ### Task, Finance, Proposal, Document, LPJ
 
@@ -133,6 +138,7 @@ Area ini masih butuh QA lanjutan paling banyak:
 - Task board: Kanban load, status advance, member status guard, dan calendar data sudah automated pass. Assign PIC, quick-add, overdue state, dan progress 100% masih belum lengkap.
 - Finance: Receipt upload, receipt MIME rejection, approval approve/reject, dan member guard sudah automated pass. Create/edit/delete budget line, RAB overview data-backed, dan remaining budget UI masih belum lengkap.
 - Proposal: Edit section, submit, approve, request revision, lock submitted proposal, export PDF/DOCX job coverage, dan member guard sudah automated pass. Browser/manual state loading tetap perlu dicek.
+- Reports overview masih hardcoded walaupun proposal/LPJ detail action sudah punya coverage. Lihat QA-OPEN-015.
 - Document: Signed private download, restricted finance receipt guard, committee URL, export download guard sudah automated pass. Upload dokumen umum, oversized rejection dari UI, folder tree, recent documents, dan cross-tenant document download masih perlu lanjut.
 - LPJ: Submit review, approve/request changes, readiness guard, AI summary, dan export path punya coverage. Toggle checklist item dari UI masih belum ada/ belum terverifikasi.
 
@@ -167,6 +173,8 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | `/members/invites` | Invite | Saat ini tombol dummy; perlu modal/form, validation, duplicate invite, toast. |
 | `/members` | Promote/demote role | Perlu cek control role tidak muncul untuk role yang tidak berhak. |
 | `/members` | Remove member | Perlu typed/confirm flow dan akses member setelah dihapus. |
+| `/members` | Overview metrics/list | Saat ini hardcoded; perlu payload real member/invite counts. |
+| `/proker` | Overview list | Saat ini memakai `workspaceMock`; perlu payload project real dan link detail per slug. |
 | `/proker` | Status transition | Tombol ubah status harus konsisten dengan policy dan progress. |
 | `/templates` | Generate template | Perlu cek list template, empty/loading state, redirect detail. |
 | `/tasks` atau detail proker | Quick-add task | Perlu cek task masuk kolom benar tanpa layout shift. |
@@ -176,6 +184,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | `/finance` | Upload receipt | Perlu cek file picker, size/type error, preview/download link. |
 | `/finance/approval` | Approve/Reject | Perlu cek status update, flash, audit/notification. |
 | `/reports/proposal-editor` | Save section | Perlu cek autosave/manual save dan lock saat submitted. |
+| `/reports` | Overview metrics/list | Saat ini hardcoded; perlu payload proposal/LPJ/export queue real. |
 | `/reports/proposal-editor` | Export PDF/DOCX | Perlu cek job queued, queue worker, file muncul. |
 | `/reports/lpj-checklist` | Checklist item toggle | Perlu cek progress bar dan readiness guard. |
 | `/documents/upload-center` | Upload document | Saat ini dropzone visual; perlu file input/form submit dokumen. |
