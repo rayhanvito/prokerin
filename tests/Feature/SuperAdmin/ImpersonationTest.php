@@ -97,6 +97,7 @@ final class ImpersonationTest extends TestCase
 
         $manager = app(ImpersonateManager::class);
         $superAdmin->impersonate($target);
+        session()->put('impersonate_started_at', now()->toIso8601String());
 
         $this->assertTrue($manager->isImpersonating());
         $this->assertSame($target->id, auth()->id());
@@ -123,6 +124,7 @@ final class ImpersonationTest extends TestCase
 
         $this->actingAs($superAdmin);
         $superAdmin->impersonate($target);
+        session()->put('impersonate_started_at', now()->toIso8601String());
 
         $response = $this->get(route('impersonate.leave'));
 

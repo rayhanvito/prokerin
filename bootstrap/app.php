@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureFinanceAccess;
+use App\Http\Middleware\EnsureImpersonationFresh;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,10 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            EnsureImpersonationFresh::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
             'payments/midtrans/webhook',
+        ]);
+
+        $middleware->alias([
+            'finance' => EnsureFinanceAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -44,6 +44,8 @@ final class StopImpersonationController extends Controller
             abort(403);
         }
 
+        session()->put('impersonate_started_at', now()->toIso8601String());
+
         return redirect()->route('dashboard');
     }
 
@@ -63,6 +65,7 @@ final class StopImpersonationController extends Controller
         }
 
         $manager->leave();
+        session()->forget('impersonate_started_at');
 
         return redirect()->to('/internal-admin/users');
     }

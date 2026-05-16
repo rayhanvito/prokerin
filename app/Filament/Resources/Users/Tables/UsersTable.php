@@ -116,6 +116,8 @@ class UsersTable
 
                         $current->impersonate($record);
 
+                        session()->put('impersonate_started_at', now()->toIso8601String());
+
                         redirect()->to(route('dashboard'));
                     }),
                 DeleteAction::make()
