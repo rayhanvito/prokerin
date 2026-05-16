@@ -469,24 +469,12 @@ Feature completion tracker is maintained in `features.md` so this operating guid
 ### Current Handoff Notes — 2026-05-16
 
 - `features.md` is the source of truth for detailed feature status; keep AGENTS.md limited to rules, constraints, and short handoff notes.
-- MVP M01-M13 are implemented in code and listed in `features.md`.
+- MVP M01-M13 are implemented, listed in `features.md`, and validated by automated tests.
 - Frontend build verification passed on 2026-05-16 with `npm run build`.
-- PHP test verification is currently blocked until the local CLI/runtime is upgraded to PHP 8.4+. `composer check-platform-reqs` reports `symfony/clock` requires PHP `>=8.4`, while this machine is running PHP `8.3.23`; `php artisan test` reaches 181 tests with 180 passing and 1 runtime error from missing `ReflectionProperty::isVirtual()`.
-- After upgrading PHP, run `composer install`, `php artisan optimize:clear`, `php artisan test`, and then update `features.md` with the result.
-- Do not start Post-MVP modules M14-M24 until PHP tests pass again under PHP 8.4+ and the MVP validation result is recorded.
-
-# Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
-- [ ] M14 · Rapat & Notulen
-- [ ] M15 · Absensi QR
-- [ ] M16 · Sertifikat Digital
-- [ ] M17 · WhatsApp Reminder
-- [ ] M18 · Approval Workflow Advanced
-- [~] M19 · Handover Kepengurusan (post-MVP planning/readiness UI scaffold only; full feature deferred)
-- [ ] M20 · Sponsor & Vendor Database
-- [ ] M21 · Event Registration
-- [ ] M22 · Payment / Ticketing
-- [ ] M23 · AI Assistant
-- [ ] M24 · Campus Dashboard B2B
+- PHP platform verification passed on 2026-05-16 with PHP 8.4.10 via `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.
+- PHP test verification passed on 2026-05-16 with PHP 8.4.10 via `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`181 passed`, `712 assertions`).
+- Default shell PHP may still resolve to `/opt/homebrew/opt/php@8.3/bin/php`; use the PHP 8.4 PATH prefix above or relink Homebrew PHP before running Composer/Artisan.
+- Post-MVP module status is tracked in `features.md`; do not duplicate the feature checklist here.
 
 ---
 

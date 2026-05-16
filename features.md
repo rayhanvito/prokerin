@@ -102,10 +102,21 @@
 
 # Verifikasi terakhir
 - [x] 2026-05-16 · Frontend production build passed with `npm run build` (`tsc && vite build`).
-- [x] 2026-05-16 · Platform check confirmed required PHP runtime is PHP 8.4+ because installed Composer dependencies include `symfony/clock` requiring `>=8.4`.
-- [ ] 2026-05-16 · Full PHP test suite pending: `php artisan test` reached 181 tests with 180 passing and 1 runtime error because current PHP CLI is `8.3.23` and lacks `ReflectionProperty::isVirtual()`.
+- [x] 2026-05-16 · Platform check passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.
+- [x] 2026-05-16 · Full PHP test suite passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`181 passed`, `712 assertions`).
 
 # Belum dilanjutkan
-- [ ] Upgrade local PHP CLI/runtime to PHP 8.4+ and rerun `composer install`, `php artisan optimize:clear`, and `php artisan test`.
-- [ ] Record the passing PHP test result here after the runtime is fixed.
-- [ ] Start Post-MVP modules M14-M24 only after MVP tests pass again under PHP 8.4+.
+- [ ] Default shell PHP still points to `/opt/homebrew/opt/php@8.3/bin/php`; use the PHP 8.4 PATH prefix for Composer/Artisan or relink Homebrew PHP before future validation.
+
+# Post-MVP
+- [ ] M14 · Rapat & Notulen
+- [ ] M15 · Absensi QR
+- [ ] M16 · Sertifikat Digital
+- [ ] M17 · WhatsApp Reminder
+- [ ] M18 · Approval Workflow Advanced
+- [~] M19 · Handover Kepengurusan (post-MVP planning/readiness UI scaffold only; full feature deferred)
+- [ ] M20 · Sponsor & Vendor Database
+- [ ] M21 · Event Registration
+- [ ] M22 · Payment / Ticketing
+- [ ] M23 · AI Assistant
+- [ ] M24 · Campus Dashboard B2B
