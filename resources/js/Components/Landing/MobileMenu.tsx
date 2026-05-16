@@ -11,7 +11,7 @@ interface MobileMenuProps {
 const navItems = [
     { label: 'Fitur', href: route('landing.features') },
     { label: 'Harga', href: route('landing.pricing') },
-    { label: 'Blog', href: '/blog' },
+    { label: 'Blog', href: null },
 ];
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
@@ -28,6 +28,31 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             if (event.key === 'Escape') {
                 onClose();
             }
+
+            if (event.key === 'Tab') {
+                const focusableElements = Array.from(
+                    document.querySelectorAll<HTMLElement>(
+                        '[data-mobile-menu] a[href], [data-mobile-menu] button:not([disabled])',
+                    ),
+                );
+                const firstElement = focusableElements[0];
+                const lastElement =
+                    focusableElements[focusableElements.length - 1];
+
+                if (!firstElement || !lastElement) {
+                    return;
+                }
+
+                if (event.shiftKey && document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                }
+
+                if (!event.shiftKey && document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement.focus();
+                }
+            }
         };
 
         document.addEventListener('keydown', handleKeyDown);
@@ -39,6 +64,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         <AnimatePresence>
             {isOpen && (
                 <motion.div
+                    data-mobile-menu
                     className="fixed inset-0 z-[80] bg-white p-6"
                     initial={{ opacity: 0, x: 32 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -67,14 +93,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     </div>
                     <nav className="mt-10 space-y-3">
                         {navItems.map((item) => (
-                            <Link
-                                key={item.label}
-                                href={item.href}
-                                onClick={onClose}
-                                className="block rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#242934]"
-                            >
-                                {item.label}
-                            </Link>
+                            item.href === null ? (
+                                <span
+                                    key={item.label}
+                                    aria-disabled="true"
+                                    className="block cursor-not-allowed rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#59667a]/50"
+                                >
+                                    {item.label}
+                                </span>
+                            ) : (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    onClick={onClose}
+                                    className="block rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#242934]"
+                                >
+                                    {item.label}
+                                </Link>
+                            )
                         ))}
                     </nav>
                     <div className="mt-8 grid gap-3">

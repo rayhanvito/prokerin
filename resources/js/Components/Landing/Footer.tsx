@@ -6,26 +6,26 @@ const footerColumns = [
         links: [
             { label: 'Fitur', href: route('landing.features') },
             { label: 'Harga', href: route('landing.pricing') },
-            { label: 'Marketplace (coming soon)', href: '#' },
-            { label: 'Changelog', href: '#' },
+            { label: 'Marketplace (coming soon)', href: null },
+            { label: 'Changelog', href: null },
         ],
     },
     {
         title: 'Resources',
         links: [
-            { label: 'Blog', href: '/blog' },
-            { label: 'Prokerin Academy (coming soon)', href: '#' },
-            { label: 'Dokumentasi API', href: '#' },
-            { label: 'Status Layanan', href: '#' },
+            { label: 'Blog', href: null },
+            { label: 'Prokerin Academy (coming soon)', href: null },
+            { label: 'Dokumentasi API', href: null },
+            { label: 'Status Layanan', href: null },
         ],
     },
     {
         title: 'Perusahaan',
         links: [
-            { label: 'Tentang Kami', href: '#' },
+            { label: 'Tentang Kami', href: null },
             { label: 'Kontak', href: 'mailto:halo@prokerin.id' },
-            { label: 'Kebijakan Privasi', href: '#' },
-            { label: 'Syarat & Ketentuan', href: '#' },
+            { label: 'Kebijakan Privasi', href: null },
+            { label: 'Syarat & Ketentuan', href: null },
         ],
     },
 ];
@@ -75,12 +75,21 @@ export default function Footer() {
                                 <ul className="mt-4 space-y-3">
                                     {column.links.map((link) => (
                                         <li key={link.label}>
-                                            <a
-                                                href={link.href}
-                                                className="text-sm transition hover:text-white"
-                                            >
-                                                {link.label}
-                                            </a>
+                                            {link.href === null ? (
+                                                <span
+                                                    aria-disabled="true"
+                                                    className="cursor-not-allowed text-sm text-gray-500"
+                                                >
+                                                    {link.label}
+                                                </span>
+                                            ) : (
+                                                <a
+                                                    href={link.href}
+                                                    className="text-sm transition hover:text-white"
+                                                >
+                                                    {link.label}
+                                                </a>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

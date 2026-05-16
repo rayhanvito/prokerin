@@ -24,6 +24,31 @@ export default function DemoVideoModal({
             if (event.key === 'Escape') {
                 onClose();
             }
+
+            if (event.key === 'Tab') {
+                const focusableElements = Array.from(
+                    document.querySelectorAll<HTMLElement>(
+                        '[data-demo-modal] a[href], [data-demo-modal] button:not([disabled])',
+                    ),
+                );
+                const firstElement = focusableElements[0];
+                const lastElement =
+                    focusableElements[focusableElements.length - 1];
+
+                if (!firstElement || !lastElement) {
+                    return;
+                }
+
+                if (event.shiftKey && document.activeElement === firstElement) {
+                    event.preventDefault();
+                    lastElement.focus();
+                }
+
+                if (!event.shiftKey && document.activeElement === lastElement) {
+                    event.preventDefault();
+                    firstElement.focus();
+                }
+            }
         };
 
         document.addEventListener('keydown', handleKeyDown);
@@ -45,6 +70,7 @@ export default function DemoVideoModal({
                     onMouseDown={onClose}
                 >
                     <motion.div
+                        data-demo-modal
                         className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl"
                         initial={{ opacity: 0, scale: 0.92 }}
                         animate={{ opacity: 1, scale: 1 }}
