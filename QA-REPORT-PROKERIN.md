@@ -18,9 +18,11 @@ Status automated regression terakhir:
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
 | Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
+| Targeted task/finance/proposal/lpj/document | Pass | `49 passed, 322 assertions` |
+| Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |
 | Pint targeted | Pass | Tidak ada formatting violation |
-| npm lint | Pass | `tsc --noEmit` baseline |
-| npm build | Pass | Production build sukses |
+| npm lint | Pass | `tsc --noEmit` pass |
+| npm build | Pass | `tsc && vite build` pass |
 
 Area yang sudah cukup aman dari automated QA:
 
@@ -32,6 +34,10 @@ Area yang sudah cukup aman dari automated QA:
 - Role matrix, role update guard, dan last-owner protection.
 - Proker create, detail, edit, archive, duplicate slug, member create denial.
 - Template generation: proker + tasks + RAB + proposal + LPJ checklist dibuat atomik.
+- Task Kanban data, task status update guard, task calendar data.
+- Finance receipt realization, MIME rejection, budget approval/rejection, workflow approval.
+- Proposal edit/submit/approve/revision, LPJ review/decision, signed document/export download.
+- Meeting create/attendance/minutes/export, QR attendance issue/revoke/check-in/export, event registration/ticketing/payment webhook, certificate template/issue/verify/download, and notification reminder jobs.
 
 ---
 
@@ -63,10 +69,22 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 | QA-OPEN-003 | High | Organization Periods | Tombol `Tambah Periode` belum membuka form atau submit backend; data periode masih static rows. | `resources/js/Pages/Organization/Periods.tsx:8`, `resources/js/Pages/Organization/Periods.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:125`. | User belum bisa membuat periode kepengurusan dari halaman ini. |
 | QA-OPEN-004 | High | Member Invites | Tombol `Invite` belum punya form/submit route; invitation queue masih static sample. | `resources/js/Pages/Members/Invites.tsx:8`, `resources/js/Pages/Members/Invites.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:263`. | Invite member, duplicate invite, accept/decline belum dapat diuji end-to-end. |
 | QA-OPEN-005 | Medium | Organization Calendar | Calendar masih overview/static navigation, belum calendar data-backed. | `resources/js/Pages/Organization/Calendar.tsx`, `app/Http/Controllers/WorkspacePageController.php:130`. | QA belum bisa validasi event/proker muncul di kalender organisasi. |
+| QA-OPEN-006 | Medium | Task Overview | `/tasks` masih `ModuleOverview` dengan metric/item static dan tombol `Tambah Task` hanya menuju assignment page. | `resources/js/Pages/Task/Index.tsx:7`, `resources/js/Pages/Task/Index.tsx:11`, `resources/js/Pages/Task/Index.tsx:14`. | User melihat angka task yang tidak berasal dari database; create task belum tersedia dari overview. |
+| QA-OPEN-007 | High | Task Assignment | `/tasks/assignments` masih static rows; tombol `Assign PIC` hanya button tanpa form/submit route. | `resources/js/Pages/Task/Assignments.tsx:8`, `resources/js/Pages/Task/Assignments.tsx:52`. | Assign PIC dan guard non-member belum bisa diuji end-to-end lewat UI ini. |
+| QA-OPEN-008 | Medium | Finance Overview | `/finance` masih `ModuleOverview` dengan metric/item static. | `resources/js/Pages/Finance/Index.tsx:7`, `resources/js/Pages/Finance/Index.tsx:14`. | Ringkasan finance bisa menyesatkan karena bukan payload database. |
+| QA-OPEN-009 | High | Budget Draft | `/finance/budget-draft` masih memakai `workspaceMock`; tombol `Tambah Item` belum membuka form atau route create budget line. | `resources/js/Pages/Finance/BudgetDraft.tsx:5`, `resources/js/Pages/Finance/BudgetDraft.tsx:38`. | Create/edit/delete RAB line belum bisa diuji dari UI. |
+| QA-OPEN-010 | High | Document Upload | Upload Center hanya dropzone visual dan validation sample; belum ada file input/form submit upload dokumen. | `resources/js/Pages/Documents/UploadCenter.tsx:59`, `resources/js/Pages/Documents/UploadCenter.tsx:64`, `app/Http/Controllers/WorkspacePageController.php` upload center hanya menjalankan sample validation. | User belum bisa upload dokumen umum dari UI; QA upload oversized/visibility belum bisa end-to-end. |
+| QA-OPEN-011 | Medium | Document Folders | Folder page masih static array, belum data-backed folder tree. | `resources/js/Pages/Documents/Folders.tsx:7`. | Folder hierarchy dan recent documents belum bisa divalidasi dari database. |
+| QA-OPEN-012 | Low | Certificate Template UX | Template editor sudah punya preview, tetapi preview hanya text-stripped, bukan render visual certificate. | `resources/js/Pages/Certificates/Templates.tsx:348`, `resources/js/Pages/Certificates/Templates.tsx:358`, `resources/js/Pages/Certificates/Templates.tsx:363`. | Non-teknis masih sulit menilai layout akhir sertifikat sebelum issue/export. |
 
 Catatan verifikasi tambahan:
 
 - `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/OrganizationLogoUploadTest.php tests/Feature/OrganizationMemberRoleUpdateTest.php tests/Feature/ProjectTemplateGenerationTest.php` -> `20 passed, 226 assertions`.
+- `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskInteractionTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php tests/Feature/DocumentDownloadTest.php tests/Feature/WorkspacePayloadTest.php` -> `49 passed, 322 assertions`.
+- `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MeetingManagementTest.php tests/Feature/MeetingMinutesPayloadTest.php tests/Feature/AttendanceQrManagementTest.php tests/Feature/QrAttendanceTest.php tests/Feature/DigitalCertificateTest.php tests/Feature/EventRegistrationTest.php tests/Feature/PaymentTicketingTest.php tests/Feature/TaskDeadlineReminderNotificationTest.php` -> `59 passed, 355 assertions`.
+- Full regression `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1740 assertions`.
+- Frontend gate `npm run lint` -> pass.
+- Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
 
 ---
@@ -112,11 +130,28 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 
 Area ini masih butuh QA lanjutan paling banyak:
 
-- Task board: kanban load, status advance, assign PIC, non-member guard, calendar, overdue state, quick-add.
-- Finance: create/edit/delete budget line, receipt upload/download, MIME rejection, submit approval, approve/reject, RAB vs realization, remaining budget.
-- Proposal: auto-fill, edit section, submit, approve, request revision, export PDF/DOCX, lock submitted proposal, member cannot approve.
-- Document: upload, oversized rejection, signed private download, restricted download, visibility rules, folder tree, recent documents, cross-tenant document guard.
-- LPJ: checklist load, mark done, readiness guard, submit complete LPJ, approve, request revision, export PDF, task data referenced.
+- Task board: Kanban load, status advance, member status guard, dan calendar data sudah automated pass. Assign PIC, quick-add, overdue state, dan progress 100% masih belum lengkap.
+- Finance: Receipt upload, receipt MIME rejection, approval approve/reject, dan member guard sudah automated pass. Create/edit/delete budget line, RAB overview data-backed, dan remaining budget UI masih belum lengkap.
+- Proposal: Edit section, submit, approve, request revision, lock submitted proposal, export PDF/DOCX job coverage, dan member guard sudah automated pass. Browser/manual state loading tetap perlu dicek.
+- Document: Signed private download, restricted finance receipt guard, committee URL, export download guard sudah automated pass. Upload dokumen umum, oversized rejection dari UI, folder tree, recent documents, dan cross-tenant document download masih perlu lanjut.
+- LPJ: Submit review, approve/request changes, readiness guard, AI summary, dan export path punya coverage. Toggle checklist item dari UI masih belum ada/ belum terverifikasi.
+
+### Event, Meeting, Attendance, Certificate, Notification
+
+Automated coverage untuk area ini relatif paling matang:
+
+- Meeting: create meeting, member guard, record attendance, publish minutes, export guard, export content, tenant payload isolation.
+- Attendance: QR token issue/revoke, SVG image, CSV export, QR check-in, duplicate scan idempotent, expired token rejection, cross-tenant rejection, manual fallback guard.
+- Event registration: public form, duplicate email, capacity, registration window, internal tenant list, settings update, CSV export, PDF export job.
+- Payment ticketing: free tier, paid order, tier capacity, Midtrans paid/expire webhook, invalid signature rejection.
+- Certificate: tenant-scoped list, template create/edit/deactivate, issue batch, PDF generation, public verify, cross-tenant download guard.
+- Notifications: task deadline reminders, meeting WhatsApp alerts, delivery success/fail logs.
+
+Remaining UX/manual checks:
+
+- Certificate template preview is text-only, not visual certificate render. Lihat QA-OPEN-012.
+- Attendance camera scan needs real-browser/device verification, not only backend QR token tests.
+- Event PDF export and certificate PDF output should still be visually inspected after queue job runs.
 
 ---
 
@@ -136,13 +171,15 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | `/templates` | Generate template | Perlu cek list template, empty/loading state, redirect detail. |
 | `/tasks` atau detail proker | Quick-add task | Perlu cek task masuk kolom benar tanpa layout shift. |
 | `/tasks` | Advance status | Perlu cek progress update di UI setelah klik. |
-| `/finance` | Add/Edit/Delete budget line | Perlu cek total recalculation dan validation message. |
+| `/tasks/assignments` | Assign PIC | Saat ini tombol dummy; perlu form + route assign PIC. |
+| `/finance/budget-draft` | Add/Edit/Delete budget line | Saat ini tombol `Tambah Item` dummy dan data mock; perlu CRUD budget line. |
 | `/finance` | Upload receipt | Perlu cek file picker, size/type error, preview/download link. |
 | `/finance/approval` | Approve/Reject | Perlu cek status update, flash, audit/notification. |
 | `/reports/proposal-editor` | Save section | Perlu cek autosave/manual save dan lock saat submitted. |
 | `/reports/proposal-editor` | Export PDF/DOCX | Perlu cek job queued, queue worker, file muncul. |
 | `/reports/lpj-checklist` | Checklist item toggle | Perlu cek progress bar dan readiness guard. |
-| `/documents` | Upload/download document | Perlu cek S3 signed URL dan visibility rule. |
+| `/documents/upload-center` | Upload document | Saat ini dropzone visual; perlu file input/form submit dokumen. |
+| `/documents/folders` | Folder tree | Saat ini static array; perlu data-backed hierarchy. |
 | `/certificates/templates/*/edit` | Preview template | Saat ini rekomendasi QA: butuh visual preview agar user non-teknis tidak menulis HTML buta. |
 | Header notification bell | Open notification preview | Saat ini bell menuju page penuh, belum ada dropdown preview. |
 
