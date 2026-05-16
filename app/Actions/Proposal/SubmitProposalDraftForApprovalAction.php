@@ -11,6 +11,7 @@ use App\Domain\DocumentExport\ExportFormat;
 use App\Domain\Project\ProjectRole;
 use App\Domain\Project\ProjectStatus;
 use App\DTOs\DocumentExport\ExportRequestData;
+use App\Jobs\GenerateDocumentExportJob;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -120,6 +121,14 @@ final readonly class SubmitProposalDraftForApprovalAction
                     'created_at' => $now,
                 ],
             );
+
+            $documentExportId = (int) DB::table('document_exports')
+                ->where('output_path', $plan->outputPath)
+                ->value('id');
+
+            GenerateDocumentExportJob::dispatch($documentExportId)
+                ->onQueue($plan->queueName)
+                ->afterCommit();
 
             return [
                 'id' => $proposalDraftId,

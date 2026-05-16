@@ -45,7 +45,7 @@ export default function ExportQueue({ exportQueue }: ExportQueueProps) {
 
             <VihoCard
                 title="PDF / DOCX Queue"
-                subtitle="Export nantinya wajib berjalan via queue worker, bukan request synchronous."
+                subtitle="Export berjalan via queue worker. Status akan bergerak dari queued, processing, completed, atau failed."
                 action={
                     <button
                         type="button"
