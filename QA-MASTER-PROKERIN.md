@@ -164,7 +164,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 4.2.1 | Login with valid credentials | Email + password | Redirect to /dashboard | `[P]` |
 | 4.2.2 | Login with wrong password | Wrong password | Error, NOT revealing if email exists | `[P]` |
 | 4.2.3 | Login with unregistered email | Random email | Error shown | `[P]` |
-| 4.2.4 | "Remember me" functionality | Check remember me, close browser, reopen | Still logged in | `[ ]` |
+| 4.2.4 | "Remember me" functionality | Check remember me, close browser, reopen | Still logged in | `[P]` |
 | 4.2.5 | Logout | Click logout | Session cleared, redirect to login | `[P]` |
 | 4.2.6 | Access protected route as guest | Visit /dashboard directly | Redirect to /login | `[P]` |
 
@@ -185,8 +185,8 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 |---|-----------|-------|----------|--------|
 | 5.1 | Create organization | Fill name, slug, type → Submit | Org created, redirect to setup | `[ ]` |
 | 5.2 | Duplicate slug | Use same slug as existing org | Validation error | `[ ]` |
-| 5.3 | Upload org logo | Upload PNG/JPG ≤ 2MB | Logo saved, displayed in sidebar header | `[ ]` |
-| 5.4 | Upload invalid logo | Upload .exe or >2MB file | MIME/size validation error | `[ ]` |
+| 5.3 | Upload org logo | Upload PNG/JPG ≤ 2MB | Logo saved, displayed in sidebar header | `[P]` |
+| 5.4 | Upload invalid logo | Upload .exe or >2MB file | MIME/size validation error | `[P]` |
 | 5.5 | Create active period | Name + start date + end date | Period created, becomes active | `[ ]` |
 | 5.6 | Switch organization | User in multiple orgs → switch via switcher | Dashboard data changes to switched org | `[ ]` |
 | 5.7 | Organization calendar | Navigate to calendar view | Events/proker displayed on calendar | `[ ]` |
@@ -204,10 +204,10 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 6.4 | Decline invitation | Invited user declines | Removed from invite queue | `[ ]` |
 | 6.5 | Role promotion | Owner promotes member to treasurer | Role updated, treasurer sees finance in sidebar | `[ ]` |
 | 6.6 | Role demotion | Owner demotes admin to member | Admin loses approval access | `[ ]` |
-| 6.7 | Last owner protection | Owner tries to remove themselves as last owner | Blocked with clear error | `[ ]` |
+| 6.7 | Last owner protection | Owner tries to remove themselves as last owner | Blocked with clear error | `[P]` |
 | 6.8 | Remove member | Owner removes a member | User loses access to org | `[ ]` |
-| 6.9 | Member cannot change roles | Member visits /members | No role-edit controls visible | `[ ]` |
-| 6.10 | Role matrix display | Owner visits /members/roles | Permission matrix renders correctly per role | `[ ]` |
+| 6.9 | Member cannot change roles | Member visits /members | No role-edit controls visible | `[P]` |
+| 6.10 | Role matrix display | Owner visits /members/roles | Permission matrix renders correctly per role | `[P]` |
 
 ---
 
@@ -215,15 +215,15 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 7.1 | Create proker manually | Fill all fields, no template | Proker created, appears in index | `[ ]` |
-| 7.2 | Create with template | Choose template → one-click generate | Proker + tasks + RAB + proposal scaffold created atomically | `[ ]` |
-| 7.3 | Proker detail page | Click on any proker | Detail loads with progress, tasks, members, finance | `[ ]` |
-| 7.4 | Edit proker | Change name, dates → Save | Updated, slug regenerated if name changed | `[ ]` |
+| 7.1 | Create proker manually | Fill all fields, no template | Proker created, appears in index | `[P]` |
+| 7.2 | Create with template | Choose template → one-click generate | Proker + tasks + RAB + proposal scaffold created atomically | `[P]` |
+| 7.3 | Proker detail page | Click on any proker | Detail loads with progress, tasks, members, finance | `[P]` |
+| 7.4 | Edit proker | Change name, dates → Save | Updated, slug regenerated if name changed | `[P]` |
 | 7.5 | Status transition | Planning → Active → Completed | Status changes, progress reflected | `[ ]` |
-| 7.6 | Archive proker | Change status to Archived | Proker hidden from active list, accessible in archive | `[ ]` |
-| 7.7 | Member cannot create proker | Log in as member → try /proker/create | 403 or redirect | `[ ]` |
+| 7.6 | Archive proker | Change status to Archived | Proker hidden from active list, accessible in archive | `[P]` |
+| 7.7 | Member cannot create proker | Log in as member → try /proker/create | 403 or redirect | `[P]` |
 | 7.8 | Proker progress calculation | Complete all tasks | Progress shows 100% | `[ ]` |
-| 7.9 | Duplicate slug protection | Create two prokers with same name in same org | Second gets unique slug | `[ ]` |
+| 7.9 | Duplicate slug protection | Create two prokers with same name in same org | Second gets unique slug | `[P]` |
 
 ---
 
@@ -232,8 +232,8 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
 | 8.1 | View template library | Navigate to /templates | All seeded templates visible | `[ ]` |
-| 8.2 | One-click template generate | Select template → Generate | Creates proker + tasks + RAB lines + proposal outline + LPJ checklist atomically | `[ ]` |
-| 8.3 | Template fields prefill | After generate, check proker | Name, description, timeline prefilled from template | `[ ]` |
+| 8.2 | One-click template generate | Select template → Generate | Creates proker + tasks + RAB lines + proposal outline + LPJ checklist atomically | `[P]` |
+| 8.3 | Template fields prefill | After generate, check proker | Name, description, timeline prefilled from template | `[P]` |
 | 8.4 | Customize after generate | Edit generated proker | All fields editable | `[ ]` |
 | 8.5 | Generate twice from same template | Use same template again | Two separate prokers created, no conflict | `[ ]` |
 
@@ -1185,6 +1185,12 @@ Notes: [Any additional context]
 
 ### QA Execution Notes
 
+- 2026-05-17 · Organization/member/proker checklist follow-up:
+  - Added automated remember-me cookie coverage for login.
+  - Existing automated coverage verified organization logo upload/MIME rejection, member role guards, last-owner protection, role matrix payload, project create/detail/update/archive, duplicate slug handling, member create denial, and atomic template generation.
+  - Targeted suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Auth/AuthenticationTest.php tests/Feature/OrganizationLogoUploadTest.php tests/Feature/OrganizationMemberRoleUpdateTest.php tests/Unit/GetRolePermissionMatrixActionTest.php tests/Feature/ProjectCreateTest.php tests/Feature/ProjectDetailTest.php tests/Feature/ProjectUpdateTest.php tests/Feature/ProjectArchiveTest.php tests/Feature/ProjectTemplateGenerationTest.php` → **36 passed, 139 assertions**.
+  - Targeted Pint check for changed auth test → passed.
+  - Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **352 passed, 1740 assertions**.
 - 2026-05-17 · Auth, dashboard, and security checklist follow-up:
   - Added automated coverage for duplicate/weak/mismatched registration, unregistered login, expired password reset token, and unauthenticated access to `/dashboard`, `/proker/create`, `/finance`, and `/internal-admin`.
   - OAuth item 4.1.5 is marked `[P]` from mocked Socialite redirect/callback tests, not a live Google browser flow.
