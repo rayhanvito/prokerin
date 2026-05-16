@@ -10,7 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 final class ProcessApprovalStepAction
 {
-    public function __construct(private readonly SyncApprovalWorkflowSubjectAction $syncSubject) {}
+    public function __construct(
+        private readonly SyncApprovalWorkflowSubjectAction $syncSubject,
+        private readonly NotifyApprovalWorkflowStepAction $notifyStep,
+    ) {}
 
     /**
      * @throws AuthorizationException
@@ -87,7 +90,11 @@ final class ProcessApprovalStepAction
 
             if (! $nextStepExists) {
                 $this->syncSubject->execute($instanceId);
+
+                return;
             }
+
+            $this->notifyStep->execute($instanceId);
         });
     }
 }

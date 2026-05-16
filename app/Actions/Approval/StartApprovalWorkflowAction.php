@@ -9,6 +9,8 @@ use Illuminate\Validation\ValidationException;
 
 final class StartApprovalWorkflowAction
 {
+    public function __construct(private readonly NotifyApprovalWorkflowStepAction $notifyStep) {}
+
     /**
      * @return array{id: int, current_step: int}
      *
@@ -80,6 +82,8 @@ final class StartApprovalWorkflowAction
                 ],
                 $steps,
             ));
+
+            $this->notifyStep->execute($instanceId);
 
             return [
                 'id' => $instanceId,

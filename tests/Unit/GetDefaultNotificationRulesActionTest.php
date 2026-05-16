@@ -15,7 +15,7 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
     {
         $rules = (new GetDefaultNotificationRulesAction)->execute();
 
-        $this->assertCount(6, $rules);
+        $this->assertCount(7, $rules);
         $this->assertSame(NotificationEvent::TaskDeadlineReminder, $rules[0]->event);
         $this->assertContains(NotificationChannel::Email, $rules[0]->channels);
         $this->assertContains(NotificationChannel::WhatsApp, $rules[0]->channels);
@@ -28,6 +28,16 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
 
         $this->assertNotNull($rule);
         $this->assertSame('Treasurer', $rule->audience);
+        $this->assertSame([NotificationChannel::InApp, NotificationChannel::WhatsApp], $rule->channels);
+    }
+
+    public function test_approval_workflow_step_rule_targets_active_approver(): void
+    {
+        $rule = collect((new GetDefaultNotificationRulesAction)->execute())
+            ->firstWhere('event', NotificationEvent::ApprovalWorkflowStepAssigned);
+
+        $this->assertNotNull($rule);
+        $this->assertSame('Active workflow approver', $rule->audience);
         $this->assertSame([NotificationChannel::InApp, NotificationChannel::WhatsApp], $rule->channels);
     }
 

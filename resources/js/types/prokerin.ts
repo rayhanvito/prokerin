@@ -70,7 +70,8 @@ export type NotificationEvent =
     | 'member_invite_sent'
     | 'proposal_review_requested'
     | 'lpj_review_requested'
-    | 'meeting_alert';
+    | 'meeting_alert'
+    | 'approval_workflow_step_assigned';
 
 export type DashboardMetricTone =
     | 'primary'

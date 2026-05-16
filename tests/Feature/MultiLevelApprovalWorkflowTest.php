@@ -8,10 +8,12 @@ use App\Actions\Approval\DelegateApprovalStepAction;
 use App\Actions\Approval\GetApprovalWorkflowTimelineAction;
 use App\Actions\Approval\ProcessApprovalStepAction;
 use App\Actions\Approval\StartApprovalWorkflowAction;
+use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 final class MultiLevelApprovalWorkflowTest extends TestCase
@@ -23,6 +25,7 @@ final class MultiLevelApprovalWorkflowTest extends TestCase
         parent::setUp();
 
         $this->seed();
+        Queue::fake();
     }
 
     public function test_full_workflow_executes_steps_in_order_until_approved(): void
@@ -176,6 +179,36 @@ final class MultiLevelApprovalWorkflowTest extends TestCase
         $this->assertNotNull($timeline['steps'][0]['decidedAt']);
         $this->assertNull($hiddenTimeline['id']);
         $this->assertSame([], $hiddenTimeline['steps']);
+    }
+
+    public function test_workflow_start_and_advance_notify_active_approver(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $instanceId = $this->startWorkflow([$treasurer->id, $owner->id], $secretary->id);
+
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->userId === $treasurer->id
+                && $job->messageType === 'approval_workflow_step_assigned',
+        );
+        $this->assertDatabaseHas('notifications', [
+            'type' => 'approval_workflow_step_assigned',
+            'notifiable_id' => $treasurer->id,
+        ]);
+
+        app(ProcessApprovalStepAction::class)->execute($treasurer->id, $instanceId, 'approved', 'Step pertama ok.');
+
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->userId === $owner->id
+                && $job->messageType === 'approval_workflow_step_assigned',
+        );
+        $this->assertDatabaseHas('notifications', [
+            'type' => 'approval_workflow_step_assigned',
+            'notifiable_id' => $owner->id,
+        ]);
     }
 
     /**

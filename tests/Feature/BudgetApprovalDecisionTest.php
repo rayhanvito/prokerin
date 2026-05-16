@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -56,6 +57,8 @@ final class BudgetApprovalDecisionTest extends TestCase
 
     public function test_budget_decision_route_processes_active_multi_level_workflow(): void
     {
+        Queue::fake();
+
         $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
         $budgetLineId = $this->budgetLineId('Sewa aula dan sound system');
         $organizationId = (int) DB::table('budget_lines')

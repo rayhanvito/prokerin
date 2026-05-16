@@ -52,6 +52,12 @@ final class GetDefaultNotificationRulesAction
                 channels: [NotificationChannel::WhatsApp],
                 trigger: 'H-7 meeting',
             ),
+            new NotificationRuleData(
+                event: NotificationEvent::ApprovalWorkflowStepAssigned,
+                audience: 'Active workflow approver',
+                channels: [NotificationChannel::InApp, NotificationChannel::WhatsApp],
+                trigger: 'Workflow starts or advances',
+            ),
         ];
     }
 }

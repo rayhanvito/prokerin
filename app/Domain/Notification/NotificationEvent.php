@@ -12,6 +12,7 @@ enum NotificationEvent: string
     case ProposalReviewRequested = 'proposal_review_requested';
     case LpjReviewRequested = 'lpj_review_requested';
     case MeetingAlert = 'meeting_alert';
+    case ApprovalWorkflowStepAssigned = 'approval_workflow_step_assigned';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum NotificationEvent: string
             self::ProposalReviewRequested => 'Proposal review requested',
             self::LpjReviewRequested => 'LPJ review requested',
             self::MeetingAlert => 'Meeting alert',
+            self::ApprovalWorkflowStepAssigned => 'Approval workflow step assigned',
         };
     }
 }

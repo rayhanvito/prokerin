@@ -42,7 +42,7 @@ final class WorkspacePayloadTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Notifications/Index')
-            ->has('notificationRules', 6)
+            ->has('notificationRules', 7)
             ->where('notificationRules.0.event', 'task_deadline_reminder')
             ->where('notificationRules.0.channels.1', 'email'));
     }
