@@ -32,6 +32,7 @@
 | Post-MVP Wave 2 | M17, M19 | ✅ Complete |
 | Post-MVP Wave 2 | M18 | ✅ Complete |
 | Post-MVP Wave 2 | M20 | ✅ Complete |
+| Cross-module UX | M28.5 | ✅ Complete |
 | Post-MVP Planned | M21–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -42,6 +43,14 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M28.5 role-aware sidebar menu wired through Inertia shared props, using server-resolved active organization and role-specific menu badges.
+- `[x]` 2026-05-16 · M28.5 browser smoke passed on `/dashboard` as `owner@prokerin.test`; `Dashboard Pimpinan`, leadership sidebar groups, finance/handover links render with no console errors.
+- `[x]` 2026-05-16 · After M28.5 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **256 passed, 1287 assertions**.
+- `[x]` 2026-05-16 · After M28.5 role-aware sidebar: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/Dashboard/DashboardRoleResolverActionTest.php tests/Feature/Dashboard/DashboardVariantRoutingTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **15 passed, 186 assertions**.
+- `[x]` 2026-05-16 · After M28.5 role-aware sidebar: `npm run build` passed.
+- `[x]` 2026-05-16 · M28.5 role-aware dashboard variants wired: `DashboardVariant` enum, server-side resolver, dispatcher action, variant payload actions, and `Dashboard/Index` variant router.
+- `[x]` 2026-05-16 · After M28.5 dashboard variants: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Dashboard/DashboardVariantRoutingTest.php` → **2 passed, 119 assertions**.
+- `[x]` 2026-05-16 · M28.5 resolver foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/Dashboard/DashboardRoleResolverActionTest.php` → **6 passed, 10 assertions**.
 - `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
 - `[x]` 2026-05-16 · M20 local migration `2026_05_16_000013_create_sponsor_vendor_tables.php` applied and `php artisan db:seed` added demo sponsor/vendor contacts.
 - `[x]` 2026-05-16 · M20 detail browser smoke passed on `/organization/sponsors-vendors/1`; profile, project history, linked document, and back link render with no console errors.
@@ -766,6 +775,43 @@ Maintain a reusable contact book of sponsors and vendors per organization — se
 
 ---
 
+### M28.5 · Role-Aware Dashboard
+
+**Status:** `[x]` Complete.
+
+#### Product Goal
+Make the first workspace screen and navigation adapt to the user's resolved organization/project role, so each board member sees the most relevant KPIs, work queues, and shortcuts without relying on client-submitted role data.
+
+#### What Is Built
+- `[x]` `DashboardVariant` enum for `pimpinan`, `sekretaris`, `bendahara`, `operasional`, `member`, and `viewer`.
+- `[x]` Server-side `DashboardRoleResolverAction` with hierarchy: owner/admin → secretary → treasurer → project lead/division coordinator → member → viewer.
+- `[x]` `DashboardPayloadAction` dispatcher and per-variant payload actions for leadership, secretary, treasurer, operational, and member dashboards.
+- `[x]` `Dashboard/Index` Inertia router page with variant-specific React dashboard components and Indonesian labels.
+- `[x]` Role-aware `SidebarMenuAction` shared through Inertia props, including cached badge counts for approval work, pending tasks, and unread notifications.
+- `[x]` `VihoSidebar` consumes server-side `sidebarMenu`, maps icons locally, keeps a static fallback, and highlights active relative routes.
+- `[x]` `resources/js/Data/roleMenus.ts` documents the frontend role menu contract for future UI work.
+
+#### Test Coverage
+- `[x]` Unit test for role resolver priority and fallback.
+- `[x]` Feature test for dashboard variant routing across seeded roles.
+- `[x]` Feature test for tenant-scoped dashboard payload isolation.
+- `[x]` Feature test for sidebar role visibility and badge scoping.
+- `[x]` Workspace route smoke test passes with role-aware shared props.
+
+#### Verification
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/Dashboard/DashboardRoleResolverActionTest.php` → **6 passed, 10 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Dashboard/DashboardVariantRoutingTest.php` → **2 passed, 119 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/Dashboard/DashboardRoleResolverActionTest.php tests/Feature/Dashboard/DashboardVariantRoutingTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **15 passed, 186 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
+- `[x]` 2026-05-16 · Browser smoke passed on `/dashboard` as `owner@prokerin.test`; `Dashboard Pimpinan`, role-aware leadership sidebar, finance links, and handover link render with no console errors.
+- `[x]` 2026-05-16 · Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **256 passed, 1287 assertions**.
+
+#### Gaps / Notes
+- Browser smoke covered the owner/pimpinan session; automated route tests cover all seeded variants (`owner`, `admin`, `sekretaris`, `bendahara`, `lead`, `koordinator`, `member`, `viewer`).
+- Current implementation uses local `organization_members.role` and `project_members.role` columns because that is the active project data model; Spatie can be layered later when formal permission guards are expanded.
+
+---
+
 ### M21 · Event Registration (Public)
 
 **Status:** `[ ]` Not started.
@@ -849,7 +895,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ## Next Action (Ordered Priority)
 
-### After M16
+### After M28.5
 1. **Start M21 (Event Registration)** as the next product module.
 2. **M22 (Payment)** only after M21 is stable.
 3. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
@@ -897,6 +943,9 @@ The following context is provided to help AI agents and contributors understand 
 
 | Hash | Message |
 |------|---------|
+| `2246a35` | `feat: add role-aware sidebar menu (M28.5)` |
+| `f712cce` | `feat: add role-aware dashboard variants (M28.5)` |
+| `7815d21` | `feat: add dashboard role resolver (M28.5)` |
 | `f2c148a` | `docs: record MVP verification handoff` |
 | `4f37fb5` | `docs: mark MVP validation complete` |
 | `af3de2a` | `feat: add meeting minutes module` |
