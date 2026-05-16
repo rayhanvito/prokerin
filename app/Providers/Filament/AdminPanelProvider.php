@@ -30,10 +30,17 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path((string) config('prokerin.filament.admin_path', 'internal-admin'))
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->brandName((string) config('prokerin.filament.brand_name', 'Prokerin Admin'))
+            ->font('Figtree')
+            ->sidebarWidth('255px')
+            ->sidebarCollapsibleOnDesktop()
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::hex('#24695c'),
+                'success' => Color::hex('#1b4c43'),
+                'danger' => Color::hex('#d22d3d'),
+                'warning' => Color::hex('#ba895d'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

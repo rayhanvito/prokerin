@@ -48,6 +48,9 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-17 · SA01 Filament asset fix: published Filament CSS/JS/font assets to `public/css`, `public/js`, and `public/fonts`; `/internal-admin/login` now loads `css/filament/filament/app.css` successfully and the broken oversized-icon layout is resolved. Added `FilamentAssetTest`; BUG-008 recorded in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · SA01 Super Admin visual alignment: registered a custom Filament theme through Vite and matched `/internal-admin` to the Viho admin baseline (Figtree, 255px sidebar, green/brown palette, soft page background, flat 4px cards/buttons, subtle borders/shadows). Browser smoke confirmed login/dashboard shell styling on `http://127.0.0.1:8003/internal-admin`.
+- `[x]` 2026-05-17 · After SA01 Super Admin visual alignment: `npm run build` passed.
+- `[x]` 2026-05-17 · After SA01 Super Admin visual alignment: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php` → **11 passed, 18 assertions**.
 - `[x]` 2026-05-17 · After SA01 Filament asset fix: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php` → **11 passed, 18 assertions**.
 - `[x]` 2026-05-17 · After SA01 Filament asset fix: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **343 passed, 1714 assertions**.
 - `[x]` 2026-05-17 · After SA01 Filament asset fix: `npm run build` passed.
