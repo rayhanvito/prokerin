@@ -235,7 +235,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 8.2 | One-click template generate | Select template → Generate | Creates proker + tasks + RAB lines + proposal outline + LPJ checklist atomically | `[P]` |
 | 8.3 | Template fields prefill | After generate, check proker | Name, description, timeline prefilled from template | `[P]` |
 | 8.4 | Customize after generate | Edit generated proker | All fields editable | `[P]` |
-| 8.5 | Generate twice from same template | Use same template again | Two separate prokers created, no conflict | `[ ]` |
+| 8.5 | Generate twice from same template | Use same template again | Two separate prokers created, no conflict | `[P]` |
 
 ---
 
@@ -558,7 +558,7 @@ Owner approves → Proposal status → Approved
 |------|------|--------|
 | F2.1 | Each step notifications fire correctly | `[P]` |
 | F2.2 | WhatsApp notification queued at each step (if enabled) | `[P]` |
-| F2.3 | Final approval syncs proposal status to Approved | `[ ]` |
+| F2.3 | Final approval syncs proposal status to Approved | `[P]` |
 | F2.4 | Rejection at any step terminates workflow | `[P]` |
 
 ### Flow 3 — Board Transition (Handover)
@@ -610,8 +610,8 @@ At T=2: Owner dashboard shows 0 pending approvals
 
 | Step | Test | Status |
 |------|------|--------|
-| F5.1 | Approval queue count accurate | `[ ]` |
-| F5.2 | Sidebar badge count accurate | `[ ]` |
+| F5.1 | Approval queue count accurate | `[P]` |
+| F5.2 | Sidebar badge count accurate | `[P]` |
 | F5.3 | Finance remaining budget updates after approval | `[P]` |
 
 ### Flow 6 — Cross-Org Data Isolation (Most Critical)
@@ -626,11 +626,11 @@ All data checks below must pass simultaneously
 | F6.1 | org2_owner visits /dashboard — sees ZERO org1 data | `[P]` |
 | F6.2 | org2_owner visits /proker — sees ZERO org1 projects | `[ ]` |
 | F6.3 | org2_owner visits /finance — sees ZERO org1 budget lines | `[ ]` |
-| F6.4 | org2_owner tries GET /proker/{org1_proker_slug} — 404 or 403 | `[ ]` |
-| F6.5 | org2_owner sidebar badges show ONLY org2 data | `[ ]` |
-| F6.6 | org2_owner's approval queue contains ONLY org2 items | `[ ]` |
-| F6.7 | org2_owner cannot download org1 document | `[ ]` |
-| F6.8 | org2_owner cannot verify org1 certificate (auth download route) | `[ ]` |
+| F6.4 | org2_owner tries GET /proker/{org1_proker_slug} — 404 or 403 | `[P]` |
+| F6.5 | org2_owner sidebar badges show ONLY org2 data | `[P]` |
+| F6.6 | org2_owner's approval queue contains ONLY org2 items | `[P]` |
+| F6.7 | org2_owner cannot download org1 document | `[P]` |
+| F6.8 | org2_owner cannot verify org1 certificate (auth download route) | `[P]` |
 
 ---
 
@@ -664,7 +664,7 @@ All data checks below must pass simultaneously
 | S3.2 | org2_member accesses /documents/{org1_doc_id}/download | 403 | `[P]` |
 | S3.3 | org2_member submits POST with org1's organization_id in body | Ignored — server derives org from session | `[ ]` |
 | S3.4 | org2_member accesses /certificates/{org1_cert_id}/download | 403 | `[P]` |
-| S3.5 | org2_member accesses /organization/handover (org1 route) | Scoped to own org, org1 data not visible | `[ ]` |
+| S3.5 | org2_member accesses /organization/handover (org1 route) | Scoped to own org, org1 data not visible | `[P]` |
 
 ### 25.4 File Upload Security
 

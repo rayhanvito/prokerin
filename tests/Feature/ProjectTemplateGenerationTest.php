@@ -86,6 +86,33 @@ final class ProjectTemplateGenerationTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_generate_same_template_twice_without_conflict(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        foreach (['2026-11-10', '2026-11-12'] as $startsAt) {
+            $this->actingAs($owner)
+                ->post(route('proker.templates.generate', ['template' => ProjectTemplateType::Workshop->value]), [
+                    'name' => 'Workshop Product Design',
+                    'description' => 'Workshop praktik product design untuk anggota baru.',
+                    'starts_at' => $startsAt,
+                    'ends_at' => $startsAt,
+                ])
+                ->assertRedirect();
+        }
+
+        $projectIds = DB::table('projects')
+            ->where('name', 'Workshop Product Design')
+            ->pluck('id');
+
+        $this->assertCount(2, $projectIds);
+        $this->assertDatabaseHas('projects', ['slug' => 'workshop-product-design']);
+        $this->assertDatabaseHas('projects', ['slug' => 'workshop-product-design-2']);
+        $this->assertSame(8, DB::table('project_tasks')->whereIn('project_id', $projectIds)->count());
+        $this->assertSame(6, DB::table('budget_lines')->whereIn('project_id', $projectIds)->count());
+        $this->assertSame(2, DB::table('proposal_drafts')->whereIn('project_id', $projectIds)->count());
+    }
+
     public function test_member_cannot_generate_project_from_template(): void
     {
         $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
