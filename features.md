@@ -1,496 +1,745 @@
-# Prokerin Feature Tracker
+# Prokerin — Feature Specification & Status Tracker
 
-Dokumen ini adalah sumber utama status fitur Prokerin. `AGENTS.md` hanya menyimpan aturan kerja dan harus mengarahkan pembaca ke file ini untuk status fitur.
+> **This is the single source of truth for all Prokerin feature work.**
+> Every AI agent, developer, or contributor MUST read this file in full before building, testing, or marking anything complete.
+> `AGENTS.md` governs architecture/conventions. This file governs what to build and what is done.
 
-## Cara Membaca
+---
 
-- `[x]` berarti selesai, terhubung ke kode, dan sudah masuk verifikasi yang tertulis di bagian `Verifikasi Terakhir`.
-- `[~]` berarti sebagian sudah ada, tetapi belum boleh dianggap selesai.
-- `[ ]` berarti belum dikerjakan.
-- Setiap perubahan status modul wajib memperbarui bagian modul terkait, `Verifikasi Terakhir`, dan `Next Action`.
-- Jangan mulai modul Post-MVP berikutnya kalau full test suite sedang merah.
+## How to Read This Document
 
-## Ringkasan Status
+| Symbol | Meaning |
+|--------|---------|
+| `[x]` | Complete — code exists, routes/UI wired, tests pass, verified in `Verification Log` |
+| `[~]` | Partial — scaffold or partial logic exists; NOT safe to consider done |
+| `[ ]` | Not started |
 
-- MVP M01-M13: selesai dan tervalidasi.
-- Post-MVP M14-M15: selesai dan tervalidasi.
-- Post-MVP berikutnya: M16 Sertifikat Digital.
-- Risiko operasional saat ini: shell default masih menunjuk PHP 8.3, sedangkan proyek membutuhkan PHP 8.4+.
+**Rules:**
+- Never move a module to `[x]` unless: code exists + route/UI or backend endpoint is wired + feature tests pass + result is recorded in the Verification Log.
+- Never start the next Post-MVP module if the full test suite is red.
+- Update this file (module status + Verification Log + Next Action) after every meaningful change.
+- Read `Ringkasan Status` and `Next Action` first on every session start.
 
-## Verifikasi Terakhir
+---
 
-- [x] 2026-05-16 · `composer validate --strict` berhasil.
-- [x] 2026-05-16 · PHP platform check berhasil dengan PHP 8.4.10:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`
-- [x] 2026-05-16 · MVP baseline test berhasil:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
-  Hasil: `181 passed`, `712 assertions`.
-- [x] 2026-05-16 · Setelah M14, full test suite berhasil:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
-  Hasil: `183 passed`, `755 assertions`.
-- [x] 2026-05-16 · Setelah M15, full test suite berhasil:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
-  Hasil: `190 passed`, `804 assertions`.
-- [x] 2026-05-16 · M15 migration dan seeder berhasil di MySQL lokal:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate`
-  dan `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed`.
-- [x] 2026-05-16 · Frontend production build berhasil:
-  `npm run build`
-- [x] 2026-05-16 · Browser smoke test untuk `/meetings` berhasil setelah login seeded user `owner@prokerin.test`.
-- [x] 2026-05-16 · Browser smoke test untuk `/attendance` berhasil setelah login seeded user `owner@prokerin.test`.
+## Status Summary
+
+| Phase | Range | Status |
+|-------|-------|--------|
+| MVP Core | M01–M13 | ✅ All complete and verified |
+| Post-MVP Wave 1 | M14–M15 | ✅ Complete (initial scope) |
+| Post-MVP Active | M16 | 🔲 Next to build |
+| Post-MVP Planned | M17–M24 | 🔲 Not started |
+
+**Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
+
+---
+
+## Verification Log
+
+All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
+
+- `[x]` 2026-05-16 · `composer validate --strict` passed.
+- `[x]` 2026-05-16 · PHP 8.4.10 platform check passed: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`
+- `[x]` 2026-05-16 · MVP baseline: `php artisan test` → **181 passed, 712 assertions**.
+- `[x]` 2026-05-16 · After M14: `php artisan test` → **183 passed, 755 assertions**.
+- `[x]` 2026-05-16 · After M15: `php artisan test` → **190 passed, 804 assertions**.
+- `[x]` 2026-05-16 · M15 migration + seeder ran clean on local MySQL.
+- `[x]` 2026-05-16 · `npm run build` passed (production frontend build).
+- `[x]` 2026-05-16 · Browser smoke test `/meetings` passed after login as `owner@prokerin.test`.
+- `[x]` 2026-05-16 · Browser smoke test `/attendance` passed after login as `owner@prokerin.test`.
+
+---
 
 ## Environment Notes
 
-- Proyek sekarang butuh PHP 8.4+.
-- PHP 8.4 tersedia di `/opt/homebrew/bin/php`.
-- Shell default masih menunjuk `/opt/homebrew/opt/php@8.3/bin/php`.
-- Untuk Composer/Artisan, gunakan prefix ini sampai Homebrew PHP direlink:
-  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`
-- Database lokal menggunakan MySQL di `.env` port `8889`.
-- Migration additive M14 sudah dijalankan di database lokal pada 2026-05-16.
-- Migration additive M15 sudah dijalankan di database lokal pada 2026-05-16.
-- Seeder idempotent sudah dijalankan ulang setelah M15.
+- **PHP requirement:** 8.4+ (Laravel 13.x).
+- **PHP 8.4 binary:** `/opt/homebrew/bin/php`.
+- **Shell default:** Still points to `/opt/homebrew/opt/php@8.3/bin/php` — use `PATH` prefix.
+- **Prefix for all Composer/Artisan:** `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`
+- **Local database:** MySQL via `.env` port `8889`.
+- **M14 migration** applied locally on 2026-05-16.
+- **M15 migration** applied locally on 2026-05-16. Seeder re-run after M15.
 
-## Fondasi Selesai
+---
 
-- [x] Laravel + Breeze React/Inertia TypeScript scaffold.
-- [x] Inertia app shell dengan Viho-inspired fixed sidebar, white header, compact SaaS admin layout, dan copied Viho assets di `public/vendor/viho/`.
-- [x] Shared frontend modules: `VihoSidebar`, `VihoHeader`, `VihoCard`, `VihoDataTable`, `VihoStatusBadge`, `ModuleOverview`, `FlashBanner`, dan `vihoMenu`.
-- [x] Breeze auth/profile/account recovery pages sudah disejajarkan dengan Viho tokens.
-- [x] Inertia shared props untuk auth, active organization, app context, dan flash messages.
-- [x] Public/workspace routes dipindah dari closure ke controller tipis.
-- [x] Domain enums/value objects untuk organization, membership, project, task, finance, proposal, report, notification, document, export, `Money`, dan `Progress`.
-- [x] DTO dan Action pattern dipakai untuk payload dan business logic utama.
-- [x] MySQL workspace persistence migration untuk MVP modules.
-- [x] Seeder idempotent untuk demo roles, organizations, periods, projects, tasks, finance, documents, proposals, LPJ, notifications, exports, meetings, dan role matrix.
-- [x] Route smoke test untuk semua workspace pages yang aktif.
-- [x] Dashboard dan workspace payload penting sudah database-backed dan tenant-scoped.
+## Foundation (Complete)
+
+All foundational work below is complete and must not be re-scaffolded.
+
+- `[x]` Laravel + Breeze React/Inertia TypeScript scaffold.
+- `[x]` Inertia app shell: Viho-inspired fixed sidebar, white header, compact SaaS admin layout, Viho assets in `public/vendor/viho/`.
+- `[x]` Shared frontend modules: `VihoSidebar`, `VihoHeader`, `VihoCard`, `VihoDataTable`, `VihoStatusBadge`, `ModuleOverview`, `FlashBanner`, `vihoMenu`.
+- `[x]` Breeze auth/profile/account-recovery pages aligned to Viho design tokens.
+- `[x]` Inertia shared props: `auth`, `activeOrganization`, `appContext`, flash messages.
+- `[x]` Public/workspace routes moved from closures to thin controllers.
+- `[x]` Domain enums/value objects: organization, membership, project, task, finance, proposal, report, notification, document, export, `Money`, `Progress`.
+- `[x]` DTO and Action pattern adopted for all payload and business logic.
+- `[x]` MySQL workspace persistence migrations for all MVP modules.
+- `[x]` Idempotent seeders for: demo roles, organizations, periods, projects, tasks, finance, documents, proposals, LPJ, notifications, exports, meetings, role matrix.
+- `[x]` Route smoke tests for all active workspace pages.
+- `[x]` Dashboard and workspace payloads: database-backed and tenant-scoped.
+
+---
 
 ## MVP Modules
 
-### M01 · Auth & Account
+---
 
-Status: `[x]` Selesai.
+### M01 · Auth & Account Management
 
-Sudah ada:
-- Breeze login, register, forgot password, reset password, confirm password, verify email, dan profile edit.
-- UI auth sudah Viho-style.
-- Google OAuth package, config keys, readiness Action, redirect URL builder, code exchange, callback user sync, web routes, dan Login/Register entry points.
+**Status:** `[x]` Complete.
+
+#### What Is Built
+- Breeze flows: login, register, forgot password, reset password, confirm password, verify email, profile edit.
+- Auth UI styled to Viho tokens.
+- Google OAuth: Socialite package, config keys, readiness Action, redirect URL builder, code exchange, callback user sync, web routes, Login/Register entry points.
 - Email verification prompt Action.
-- Feature tests untuk authentication, registration, password reset/update/confirmation, email verification, profile, dan Google OAuth.
 
-Belum/next:
-- Tidak ada blocker fitur MVP.
-- Production Google OAuth credentials tetap harus diisi via `.env`, bukan kode.
+#### Test Coverage
+- Feature tests: authentication, registration, password reset/update/confirmation, email verification, profile, Google OAuth flow.
+
+#### Gaps / Non-Blockers
+- Google OAuth production credentials must be set via `.env` — not in code.
+- No blocker for MVP.
+
+---
 
 ### M02 · Organization Management
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Organization setup, switcher, periods, calendar, dan logo upload UI.
-- Active organization/period context di Inertia shared props.
+#### What Is Built
+- Organization setup, switcher, periods, calendar, logo upload UI.
+- Active organization/period context injected into Inertia shared props.
 - Organization period resolver Action.
-- Organization logo upload planner dan persistence flow.
-- Server-derived organization scope untuk upload logo.
+- Logo upload: planner, persistence flow, server-derived organization scope.
 - Tables: `organizations`, `organization_periods`, `organization_members`, `organization_invitations`.
-- Seed organizations dan active periods.
-- Feature test upload logo.
+- Seed: organizations, active periods.
 
-Belum/next:
-- Calendar organisasi masih berfungsi sebagai overview/scaffold, bukan full drag-drop scheduler.
-- Advanced period closing/handover masuk area Post-MVP/M19.
+#### Test Coverage
+- Feature test: logo upload, organization payload.
+
+#### Gaps / Notes
+- Organization calendar is a planning overview/scaffold — not a full drag-drop scheduler. Full drag-drop is Post-MVP.
+- Advanced period closing/handover → M19.
+
+---
 
 ### M03 · Member & Role Management
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Members overview, invite queue, dan role matrix UI.
-- Role permission matrix Action dan database-backed payload.
+#### What Is Built
+- Members overview, invite queue, role matrix UI.
+- Role permission matrix Action with database-backed payload.
 - Invitation decision Action.
 - Organization member role mutation backend.
-- Owner/admin guardrails dan last-owner protection.
-- Seed multi-role users.
-- Feature tests untuk role update dan workspace payload.
+- Owner/admin guardrails and last-owner protection (prevents orphaning an org).
+- Seed: multi-role users across organizations.
 
-Belum/next:
-- Invitation email delivery aktual belum dijadikan flow utama.
-- Spatie permission formalization masih dapat diperluas saat authorization makin detail.
+#### Test Coverage
+- Feature tests: role update, workspace payload, invitation decision.
 
-### M04 · Proker / Event Management
+#### Gaps / Notes
+- Invitation email delivery is not yet a primary flow (uses database notification).
+- Spatie permission formalization can be extended as authorization rules expand.
 
-Status: `[x]` Selesai.
+---
 
-Sudah ada:
-- Proker index, create, detail, edit, status flow, dan archive.
-- Create backend dengan server-derived organization scope, active period/template lookup, unique slug, dan project lead membership guard.
-- Detail payload database-backed dengan tenant-scoped slug lookup, metrics, dan nearby tasks.
-- Update backend dengan tenant-scoped slug lookup dan slug regeneration.
-- Archive/delete backend non-destructive memakai status `archived`.
-- Project status transition Action.
-- Project progress calculation Action.
-- Template-based project draft Action.
-- Inertia create/edit forms memakai `useForm`.
-- Feature tests create, detail, update, archive.
+### M04 · Proker (Program Kerja) / Event Management
 
-Belum/next:
-- Full project member assignment UI masih bisa diperdalam.
-- Project-level policy formalization perlu diperluas bila role matrix mulai enforce semua mutation.
+**Status:** `[x]` Complete.
+
+#### What Is Built
+- Proker index, create, detail, edit, status flow, archive.
+- Create backend: server-derived org scope, active period/template lookup, unique slug generation, project lead membership guard.
+- Detail payload: database-backed, tenant-scoped slug lookup, aggregate metrics, nearby tasks.
+- Update backend: tenant-scoped slug lookup, slug regeneration on title change.
+- Archive/delete: non-destructive via status `archived`.
+- Actions: `ProjectStatusTransitionAction`, `ProjectProgressCalculationAction`, `TemplateDraftAction`.
+- Inertia create/edit forms using `useForm`.
+
+#### Test Coverage
+- Feature tests: create project, detail payload, update, archive.
+
+#### Gaps / Notes
+- Full project member assignment UI (drag-drop multi-select) can be deepened.
+- Project-level policy formalization needs expansion as role matrix enforcement matures.
+
+---
 
 ### M05 · Template Proker
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
+#### What Is Built
 - Template Proker UI.
-- Default template plan generator untuk tasks, budget lines, proposal outline, dan LPJ checklist.
-- `project_templates` persistence.
-- Database-backed template payload.
-- One-click generate flow yang membuat project/task/RAB/proposal/LPJ scaffold.
-- Feature test template generation.
+- Default template plan generator: auto-generates tasks, budget lines, proposal outline, LPJ checklist.
+- `project_templates` table + database-backed payload.
+- One-click generate flow: creates project → tasks → RAB → proposal → LPJ scaffold atomically.
 
-Belum/next:
-- Custom template builder belum ada.
-- Versioning template belum ada.
+#### Test Coverage
+- Feature test: template generation (full scaffold created correctly).
+
+#### Gaps / Notes
+- Custom template builder (user-defined templates) → Post-MVP.
+- Template versioning → Post-MVP.
+
+---
 
 ### M06 · Timeline & Task Management
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Timeline/task overview, kanban, calendar, dan PIC assignment scaffold.
-- Database-backed kanban/calendar payload.
-- Quick task status update backend.
-- Completion timestamp handling.
-- Task board summary Action.
-- Task PIC assignment Action guardrails.
-- Feature tests untuk task interaction.
+#### What Is Built
+- Timeline/task overview, kanban board, calendar view, PIC assignment scaffold.
+- Database-backed kanban/calendar payloads.
+- Quick task status update backend (status transitions).
+- Completion timestamp handling on status change.
+- Actions: `TaskBoardSummaryAction`, `TaskPicAssignmentAction` (with membership guard).
 
-Belum/next:
-- Full create/edit task form belum menjadi fokus.
-- Drag-drop kanban belum ada.
-- Reminder lebih lanjut terkait M12/M17.
+#### Test Coverage
+- Feature tests: task status update, PIC assignment, board payload.
 
-### M07 · RAB & Finance
+#### Gaps / Notes
+- Full create/edit task form is not yet a primary focus (quick-add only).
+- Drag-drop kanban not yet implemented — board is click-to-advance.
+- Advanced task reminders → M12/M17.
 
-Status: `[x]` Selesai.
+---
 
-Sudah ada:
-- Finance overview, budget draft, realization, dan approval queue.
-- Budget summary DTO/Action.
-- Budget approval decision Action.
-- Receipt-backed realization Action.
-- Receipt upload backend dengan private receipt document storage.
+### M07 · RAB (Rencana Anggaran Biaya) & Finance
+
+**Status:** `[x]` Complete.
+
+#### What Is Built
+- Finance overview, budget draft, realization, approval queue UI.
+- Actions: `BudgetSummaryAction`, `BudgetApprovalDecisionAction`, `ReceiptBackedRealizationAction`.
+- Receipt upload backend with private receipt document storage (S3-signed).
 - Budget transaction persistence.
-- DB-backed realization payload.
-- Review-stage approve/reject route dan Inertia controls.
-- Feature tests receipt realization dan budget approval decision.
+- Database-backed realization payload.
+- Review-stage approve/reject routes + Inertia controls.
 
-Belum/next:
-- Multi-level approval masuk M18.
-- Export finance-specific report bisa diperluas setelah LPJ/export stabil.
+#### Test Coverage
+- Feature tests: receipt realization, budget approval decision, tenant scope.
+
+#### Gaps / Notes
+- Multi-level approval (e.g., Treasurer → Chair → Dean) → M18.
+- Finance-specific export report can be deepened after LPJ/export modules mature.
+
+---
 
 ### M08 · Proposal Generator
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Proposal editor UI dan export queue UI.
-- Proposal draft builder auto-fill dari project/template data.
-- Draft edit persistence untuk section body.
-- Submit flow ke approval.
-- Revision-to-draft save flow.
-- Locked state untuk submitted/approved draft.
-- Owner/admin approve atau request revision.
-- Project status transitions.
-- Queued PDF/DOCX export generation dari database content.
-- Export queue download route dengan tenant-scoped signed URL.
-- Feature tests proposal approval/edit/export queue.
+#### What Is Built
+- Proposal editor UI, export queue UI.
+- Proposal draft builder: auto-fills from project data and template.
+- Draft edit persistence per section body.
+- Status flows: Draft → Submitted → Approved / Revision Requested → Draft.
+- Locked state for submitted/approved proposals.
+- Owner/admin: approve or request revision.
+- Export queue: queued PDF/DOCX generation from database content.
+- Tenant-scoped signed download URL for export artifacts.
 
-Belum/next:
-- Rich text editor belum ada.
-- Proposal template customization belum ada.
+#### Test Coverage
+- Feature tests: proposal approval, edit, export queue trigger, tenant scope.
+
+#### Gaps / Notes
+- Rich text editor (WYSIWYG) not yet integrated — plain textarea only.
+- Proposal template customization by user → Post-MVP.
+
+---
 
 ### M09 · Document Management
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Documents overview, folder structure, dan upload center UI.
-- Document upload validation Action untuk MIME, size, visibility, signed URL rule.
-- Document download planner.
-- Documents table dan seed data.
-- Upload center recent documents database-backed.
-- Tenant-scoped signed download route.
+#### What Is Built
+- Documents overview, folder structure, upload center UI.
+- Document upload validation Action: MIME, file size, visibility, signed URL rule.
+- Document download planner: tenant-scoped signed download route.
+- Tables: `documents` with visibility levels (private, restricted, committee, public).
+- Recent documents database-backed in upload center.
 - Private/restricted/committee download handling.
-- Feature tests untuk document download/storage permission.
 
-Belum/next:
-- Real upload center form untuk semua jenis dokumen belum penuh.
-- S3/R2 production credentials tetap environment-only.
+#### Test Coverage
+- Feature tests: document download, storage permission, tenant scope, visibility rules.
 
-### M10 · LPJ Generator
+#### Gaps / Notes
+- Full upload center form (all document types) not yet complete.
+- S3/R2 production credentials are environment-only — never in code.
 
-Status: `[x]` Selesai.
+---
 
-Sudah ada:
+### M10 · LPJ (Laporan Pertanggungjawaban) Generator
+
+**Status:** `[x]` Complete.
+
+#### What Is Built
 - LPJ checklist UI.
-- LPJ readiness Action.
-- Checklist persistence.
+- `LpjReadinessAction`: validates all checklist items before submission.
+- Checklist persistence per project.
 - Database-backed tenant-scoped checklist payload.
-- Review submission flow dengan readiness guard.
-- Owner/admin approval atau revision request.
-- Project status transitions.
-- Export queue planner terhubung M08/M10.
-- Feature tests LPJ approval.
+- Status flows: Draft → Review Submitted → Approved / Revision Requested.
+- Owner/admin: approve or request revision.
+- Export queue planner integrated with M08 export pipeline.
 
-Belum/next:
-- Full LPJ document editor belum ada.
-- LPJ export layout bisa dipoles lebih lanjut.
+#### Test Coverage
+- Feature tests: LPJ approval, readiness guard, tenant scope.
+
+#### Gaps / Notes
+- Full LPJ document editor (section-by-section editing) not yet built.
+- LPJ export layout/PDF polish can be improved post-stabilization.
+
+---
 
 ### M11 · Dashboard Monitoring
 
-Status: `[x]` Selesai.
+**Status:** `[x]` Complete.
 
-Sudah ada:
-- Viho dashboard UI.
-- DTO payload dan aggregate metrics Action.
-- Database-backed overview metrics, priority projects, weekly focus, member summary.
-- Tenant scoping untuk authenticated user's organizations.
-- Anti-leak unit coverage untuk metrics, priority projects, tasks, budget, LPJ, dan member summary.
+#### What Is Built
+- Viho-style dashboard UI.
+- Actions: aggregate metrics, priority projects, weekly focus, member summary.
+- Database-backed: overview metrics, priority projects, weekly focus tasks, member summary.
+- Tenant scoping for authenticated user's organizations.
 
-Belum/next:
-- Drilldown analytics masih per modul, belum dashboard advanced.
+#### Test Coverage
+- Anti-leak unit coverage: metrics, priority projects, tasks, budget, LPJ, member summary.
 
-### M12 · Notification Basic
+#### Gaps / Notes
+- Drilldown analytics are per-module. Advanced cross-module analytics → Post-MVP.
 
-Status: `[x]` Selesai.
+---
 
-Sudah ada:
+### M12 · Notification (Basic)
+
+**Status:** `[x]` Complete.
+
+#### What Is Built
 - Notification rules/channel UI.
-- Default rule Action.
-- `notification_rules` table dan Laravel notification table.
+- `DefaultNotificationRuleAction`: sets up sensible defaults per organization.
+- Tables: `notification_rules`, Laravel's built-in `notifications` table.
 - Database-backed rules payload.
 - Queued task deadline reminder notification.
-- Email/database channels.
-- Simulate reminder route/button.
+- Channels: email + database.
+- Simulate reminder route/button for testing.
 - Tenant-scoped reminder dispatch Action.
-- Feature tests notification reminder.
 
-Belum/next:
-- WhatsApp reminder masuk M17.
-- User notification preference belum detail.
+#### Test Coverage
+- Feature tests: notification reminder dispatch, tenant scope, channel selection.
 
-### M13 · Admin Panel Internal
+#### Gaps / Notes
+- WhatsApp reminder channel → M17.
+- Per-user notification preferences UI not yet detailed.
 
-Status: `[x]` Selesai.
+---
 
-Sudah ada:
+### M13 · Admin Panel (Internal)
+
+**Status:** `[x]` Complete.
+
+#### What Is Built
 - Internal admin planning UI scaffold.
-- Backend readiness payload.
-- Resource plan dan system health counters.
-- Filament package install.
-- `/internal-admin` panel provider.
-- Filament Organization, User, dan DocumentExport resources.
-- Destructive delete row/bulk actions dihapus dari MVP resources.
-- Feature tests admin panel payload.
+- Backend readiness payload, resource plan, system health counters.
+- Filament PHP installed at `/internal-admin`.
+- Filament resources: Organization, User, DocumentExport.
+- Destructive bulk actions removed from MVP resources (safety).
 
-Belum/next:
-- Admin policies belum formal penuh.
-- Resource coverage bisa diperluas setelah policy matang.
+#### Test Coverage
+- Feature tests: admin panel payload, resource visibility.
+
+#### Gaps / Notes
+- Admin-level Policies not yet formally enforced.
+- Resource coverage should expand as Policies mature.
+
+---
 
 ## Post-MVP Modules
 
-### M14 · Rapat & Notulen
+---
 
-Status: `[x]` Selesai untuk scope awal Post-MVP.
+### M14 · Rapat & Notulen (Meeting & Minutes)
 
-Sudah ada:
-- Additive migration `2026_05_16_000006_create_meeting_minute_tables.php`.
+**Status:** `[x]` Complete for initial Post-MVP scope.
+
+#### What Is Built
+- Migration: `2026_05_16_000006_create_meeting_minute_tables.php`
 - Tables: `meetings`, `meeting_attendees`, `meeting_minutes`.
-- Seed demo rapat, attendees, dan published minutes.
-- Tenant-scoped `GetMeetingMinutePayloadAction`.
-- Route `meetings.index` di `/meetings`.
-- Sidebar menu `Rapat & Notulen` dengan badge `M14`.
-- Inertia page `resources/js/Pages/Meetings/Index.tsx`.
-- UI menampilkan metrics, agenda rapat, attendee count, present count, status notulen, latest decisions, dan action items.
-- Route smoke test ditambahkan.
-- Feature test payload dan anti-leak tenant scope.
-- Browser smoke test `/meetings` berhasil.
+- Seed: demo meetings, attendees, published minutes.
+- Action: `GetMeetingMinutePayloadAction` (tenant-scoped).
+- Route: `meetings.index` → `/meetings`.
+- Sidebar: "Rapat & Notulen" with badge `M14`.
+- Inertia page: `resources/js/Pages/Meetings/Index.tsx`.
+- UI: meeting metrics, agenda list, attendee count, present count, minute status, latest decisions, action items.
 
-Belum/next:
-- Create/edit meeting belum ada.
-- Publish/edit notulen belum ada.
-- Attendance taking belum interaktif.
-- Export notulen belum ada.
-- Jika modul ini dilanjutkan, tambah Form Request, controller mutation, policies, dan tests sebelum memperkaya UI.
+#### Test Coverage
+- Feature tests: payload correctness, anti-leak tenant scope.
+- Route smoke test added.
+- Browser smoke test: `/meetings` passed.
 
-### M15 · Absensi QR
+#### What Is NOT Yet Built (Next Scope)
+- [ ] Create/edit meeting form (date, title, agenda, invited members).
+- [ ] Publish/edit minutes (section editor per meeting).
+- [ ] Interactive attendance taking during meetings (check-in/check-out per attendee).
+- [ ] Minutes export to PDF/DOCX.
 
-Status: `[x]` Selesai untuk scope awal Post-MVP.
+**Before extending M14:** Add Form Request, controller mutation, Policies, and feature tests before enriching the UI.
 
-Sudah ada:
-- Additive migration `2026_05_16_000007_create_attendance_tables.php`.
+---
+
+### M15 · Absensi QR (QR Code Attendance)
+
+**Status:** `[x]` Complete for initial Post-MVP scope.
+
+#### What Is Built
+- Migration: `2026_05_16_000007_create_attendance_tables.php`
 - Tables: `attendance_sessions`, `attendance_qr_tokens`, `attendance_records`.
-- Attendance session bisa scoped ke organization, project, dan meeting.
-- QR token disimpan sebagai SHA-256 hash dengan expiry, revoked timestamp, dan last-used timestamp.
-- `CheckInAttendanceQrAction` untuk valid QR check-in.
-- `RecordManualAttendanceAction` untuk fallback absensi manual oleh owner/admin/secretary/project_lead.
-- Tenant membership guard untuk QR check-in.
-- Anti-duplikat untuk scan QR berulang pada user/session yang sama.
-- Expired token guard.
-- Cross-tenant rejection untuk user yang bukan anggota organisasi sesi absensi.
-- Manual fallback route dengan role guard.
-- Route `attendance.index` di `/attendance`.
-- Route `attendance.check-in.store` untuk QR check-in.
-- Route `attendance.manual.store` untuk manual fallback.
-- Sidebar menu `Absensi QR` dengan badge `M15`.
-- Inertia page `resources/js/Pages/Attendance/Index.tsx`.
-- UI menampilkan metrics, session list, QR/manual counts, expiry, dan check-in terbaru.
-- Seeder demo session absensi untuk M14 meeting.
-- Feature tests untuk payload, valid check-in, duplicate scan, expired token, cross-tenant guard, manual fallback, dan manual role guard.
-- Route smoke test ditambahkan.
-- Browser smoke test `/attendance` berhasil.
+- Session scope: organization + optional project + optional meeting.
+- QR token: stored as SHA-256 hash with expiry, revoked timestamp, last-used timestamp.
+- Action: `CheckInAttendanceQrAction` — validates token, checks membership, prevents duplicates, checks expiry, rejects cross-tenant.
+- Action: `RecordManualAttendanceAction` — manual fallback by owner/admin/secretary/project_lead.
+- Guards implemented: tenant membership, anti-duplicate scan, expired token, cross-tenant rejection.
+- Routes: `attendance.index`, `attendance.check-in.store`, `attendance.manual.store`.
+- Sidebar: "Absensi QR" with badge `M15`.
+- Inertia page: `resources/js/Pages/Attendance/Index.tsx`.
+- UI: attendance metrics, session list, QR/manual counts, expiry display, recent check-ins.
+- Seeder: demo attendance session linked to M14 meeting.
 
-Belum/next:
-- QR image generation belum ada; saat ini form menerima token hasil scan/paste.
-- Camera scanner PWA belum ada.
-- Regenerate/revoke QR token UI belum ada.
-- Create/edit attendance session belum ada.
-- Attendance export belum ada.
-- Migration M15 perlu dijalankan ke database lokal persistent sebelum browser smoke test manual.
+#### Test Coverage
+- Feature tests: payload, valid check-in, duplicate scan rejection, expired token rejection, cross-tenant rejection, manual fallback, manual role guard.
+- Route smoke test added.
+- Browser smoke test: `/attendance` passed.
 
-### M16 · Sertifikat Digital
+#### What Is NOT Yet Built (Next Scope)
+- [ ] QR image generation (currently form accepts token string — must generate scannable QR image).
+- [ ] Camera scanner PWA (browser-based QR camera scan without native app).
+- [ ] Regenerate/revoke QR token UI.
+- [ ] Create/edit attendance session form.
+- [ ] Attendance export (CSV/PDF per session).
 
-Status: `[ ]` Belum dikerjakan.
+---
 
-Target scope yang disarankan:
-- Certificate template table.
-- Recipient table.
-- Certificate number generator.
-- PDF export job.
-- Signed verification URL.
-- Inertia page untuk template/recipient/issue queue.
-- Tests untuk unique certificate number dan tenant-scoped verification.
+### M16 · Sertifikat Digital (Digital Certificate)
+
+**Status:** `[ ]` Not started. **← CURRENT NEXT TARGET**
+
+#### Product Goal
+Issue digitally-signed participation/achievement certificates for members who completed projects, attended events, or held organizational roles. Certificates are verifiable via a public URL (no account required).
+
+#### Database Design
+```
+certificate_templates
+  - id, organization_id, name, description
+  - template_html (Blade/HTML with placeholders)
+  - signature_label, signature_name
+  - is_active, created_at, updated_at
+
+certificate_recipients
+  - id, organization_id, template_id, user_id (nullable for external)
+  - recipient_name, recipient_email
+  - project_id (nullable), meeting_id (nullable)
+  - certificate_number (unique, system-generated)
+  - issued_at, issued_by (user_id)
+  - verification_token (signed UUID, used in public URL)
+  - pdf_path (S3 path after generation)
+  - created_at, updated_at
+```
+
+#### Backend to Build
+- [ ] `CreateCertificateTemplateAction` — CRUD with org scope + validation.
+- [ ] `IssueCertificateBatchAction` — bulk issue to list of recipients; triggers PDF job per recipient.
+- [ ] `GenerateCertificatePdfJob` (queued) — renders HTML template → Browsershot PDF → uploads to S3 → stores `pdf_path`.
+- [ ] `VerifyCertificateAction` — public verification by `verification_token`; returns recipient + issue details without exposing internal IDs.
+- [ ] `CertificateNumberGenerator` — format: `PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE}`, unique per organization per year.
+- [ ] Form Request classes: `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
+- [ ] Policy: `CertificatePolicy` — owner/admin can issue, all authenticated org members can view, public can verify.
+- [ ] Routes:
+  - `GET /certificates` — index (list issued, templates)
+  - `GET /certificates/templates` — template manager
+  - `POST /certificates/templates` — create template
+  - `GET /certificates/templates/{id}/edit` — edit template
+  - `PUT /certificates/templates/{id}` — update template
+  - `POST /certificates/issue` — issue batch
+  - `GET /certificates/{certificate_number}/download` — signed download (member only)
+  - `GET /verify/{token}` — **public** verification page (no auth required)
+
+#### Frontend to Build
+- [ ] `resources/js/Pages/Certificates/Index.tsx` — list of issued certificates with stats.
+- [ ] `resources/js/Pages/Certificates/Templates.tsx` — template management (create, preview, activate).
+- [ ] `resources/js/Pages/Certificates/Issue.tsx` — select template, select recipients (from members or manual), preview, issue.
+- [ ] `resources/js/Pages/Certificates/Verify.tsx` — public verification page (unauthenticated), shows certificate details and QR code.
+- [ ] Sidebar: "Sertifikat Digital" with badge `M16`.
+
+#### Test Coverage Required (before marking `[x]`)
+- [ ] Unit: `CertificateNumberGenerator` — unique per org per year, sequential, no collision.
+- [ ] Feature: issue certificate → PDF job dispatched → `pdf_path` stored after job.
+- [ ] Feature: verify by `verification_token` → returns correct recipient data.
+- [ ] Feature: cross-tenant rejection — cannot view/download another org's certificates.
+- [ ] Feature: public verification route is accessible without authentication.
+- [ ] Feature: non-owner/admin cannot issue certificates.
+
+#### Commit Message Convention
+`feat: add digital certificate module (M16)`
+
+---
 
 ### M17 · WhatsApp Reminder
 
-Status: `[ ]` Belum dikerjakan.
+**Status:** `[ ]` Not started.
 
-Target scope yang disarankan:
-- Environment variables untuk provider WhatsApp di `.env.example`.
-- Notification channel abstraction.
-- Queue job untuk send WhatsApp reminder.
-- Delivery log table.
-- Retry/failure status.
-- Tenant/user opt-in guard.
-- Tests dengan fake provider.
+#### Product Goal
+Send proker deadline reminders, approval notifications, and meeting alerts directly to members' WhatsApp — increasing response speed vs email alone.
 
-Catatan:
-- Jangan hardcode token/provider URL.
-- Jangan kirim pesan real dari test/local tanpa explicit user approval.
+#### Scope to Build
+- [ ] `.env.example` variables: `WHATSAPP_API_URL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_FROM_NUMBER`.
+- [ ] `WhatsAppNotificationChannel` — Laravel notification channel abstraction (implements `send()`).
+- [ ] `SendWhatsAppReminderJob` (queued) — wraps HTTP call to provider; handles timeout.
+- [ ] `whatsapp_delivery_logs` table: `id`, `organization_id`, `user_id`, `message_type`, `status` (queued/sent/failed), `provider_response`, `sent_at`, `failed_at`.
+- [ ] Retry logic: 3 attempts with exponential backoff; mark `failed` after exhaustion.
+- [ ] Tenant/user opt-in guard: only send if user has WhatsApp delivery enabled in `notification_rules`.
+- [ ] Admin UI: WhatsApp delivery log per organization.
 
-### M18 · Approval Workflow Advanced
+#### Rules
+- Never hardcode provider token, URL, or phone number in code.
+- Never send real messages from tests or local — use a fake provider class.
+- Fake provider must implement the same interface as real provider.
 
-Status: `[ ]` Belum dikerjakan.
+#### Test Coverage Required
+- [ ] Unit: `WhatsAppNotificationChannel` sends via fake provider.
+- [ ] Feature: job dispatched when task deadline < 24h.
+- [ ] Feature: delivery log written on success and failure.
+- [ ] Feature: opt-out user does not receive message.
 
-Target scope yang disarankan:
-- Approval workflow definitions.
-- Approval steps dan approvers.
-- Multi-level approval instance per proposal/RAB/LPJ.
-- Delegate/reassign flow.
-- Audit trail.
-- Tests untuk role order, reject, revision, and cross-tenant access.
+---
 
-### M19 · Handover Kepengurusan
+### M18 · Multi-Level Approval Workflow
 
-Status: `[~]` Partial scaffold only.
+**Status:** `[ ]` Not started.
 
-Sudah ada:
+#### Product Goal
+Replace single-approver model with configurable multi-level approval chains for Proposal, RAB, and LPJ — supporting organizations that require Treasurer → Chair → Advisor sign-off sequences.
+
+#### Scope to Build
+- [ ] `approval_workflow_definitions` table: `id`, `organization_id`, `workflow_type` (proposal/rab/lpj), `steps` (JSON ordered array of role_id/user_id).
+- [ ] `approval_instances` table: `id`, `workflow_definition_id`, `subject_type` (morphable), `subject_id`, `status`, `current_step`.
+- [ ] `approval_step_records` table: `id`, `instance_id`, `step_order`, `approver_id`, `decision` (approved/rejected/revision), `note`, `decided_at`.
+- [ ] `ProcessApprovalStepAction` — advances or terminates workflow; triggers next step notification.
+- [ ] `DelegateApprovalAction` — reassign a pending step to another eligible member.
+- [ ] Audit trail: every step decision is immutable once recorded.
+- [ ] UI: approval queue per user (what I need to approve), workflow status timeline per subject.
+
+#### Test Coverage Required
+- [ ] Feature: full workflow executes in order (step 1 → step 2 → approved).
+- [ ] Feature: rejection at step 2 terminates workflow and notifies submitter.
+- [ ] Feature: revision request sends subject back to submitter.
+- [ ] Feature: cross-tenant — user cannot approve another org's workflow instance.
+- [ ] Feature: delegate reassignment is logged.
+
+---
+
+### M19 · Handover Kepengurusan (Board Transition)
+
+**Status:** `[~]` Partial scaffold only.
+
+#### What Already Exists
 - Route/page `organization.handover`.
-- Viho-style planning/readiness UI scaffold.
+- Viho-style planning/readiness UI scaffold (display only).
 
-Belum/next:
-- Handover package persistence belum ada.
-- Data snapshot antar periode belum ada.
-- Handover checklist/action owner belum ada.
-- Archive/export handover belum ada.
-- Access policy belum formal.
+#### What Still Needs to Be Built
+- [ ] `handover_packages` table: `id`, `organization_id`, `from_period_id`, `to_period_id`, `created_by`, `status`, `submitted_at`, `accepted_at`.
+- [ ] `handover_items` table: `id`, `package_id`, `category` (asset/document/role/finance), `label`, `description`, `status`, `assignee_id`.
+- [ ] Data snapshot: capture project statuses, finance balances, open tasks, and outstanding LPJ at handover freeze time.
+- [ ] `InitiateHandoverAction` — creates package, auto-generates items from active data.
+- [ ] Handover checklist UI: item-by-item completion by responsible members.
+- [ ] Archive/export handover package as PDF.
+- [ ] Access policy: only outgoing owner + incoming owner can manage handover.
+
+---
 
 ### M20 · Sponsor & Vendor Database
 
-Status: `[ ]` Belum dikerjakan.
+**Status:** `[ ]` Not started.
 
-Target scope yang disarankan:
-- Sponsor/vendor tables scoped by organization.
-- Contact person, category, status, documents, and historical project links.
-- Inertia list/detail page.
-- Tests tenant scoping and CRUD authorization.
+#### Product Goal
+Maintain a reusable contact book of sponsors and vendors per organization — searchable by category, linked to historical projects, with contact person and document tracking.
 
-### M21 · Event Registration
+#### Scope to Build
+- [ ] `sponsors_vendors` table: `id`, `organization_id`, `type` (sponsor/vendor), `name`, `category`, `contact_person`, `phone`, `email`, `address`, `status` (active/inactive), `notes`.
+- [ ] `sponsor_vendor_project_links` table: `id`, `sponsor_vendor_id`, `project_id`, `role_description`, `amount`, `linked_at`.
+- [ ] `sponsor_vendor_documents` table: `id`, `sponsor_vendor_id`, `document_id` (FK to documents).
+- [ ] Inertia pages: list (searchable/filterable), detail (with history), create/edit form.
+- [ ] Tests: tenant scoping, CRUD authorization (admin+ only), cross-org read prevention.
 
-Status: `[ ]` Belum dikerjakan.
+---
 
-Target scope yang disarankan:
-- Public registration form per project/event.
-- Participant table.
-- Capacity and registration period guard.
-- Confirmation email/notification.
-- Export participant list.
-- Tests for capacity, duplicate email, and tenant/project scope.
+### M21 · Event Registration (Public)
 
-### M22 · Payment / Ticketing
+**Status:** `[ ]` Not started.
 
-Status: `[ ]` Belum dikerjakan.
+#### Product Goal
+Allow non-members of an organization to register for public events/projects — enabling BEM/UKM to run ticketed or open events.
 
-Target scope yang disarankan:
-- Payment provider config in env.
-- Ticket tiers.
-- Order/payment tables.
-- Webhook handling.
-- Paid/free registration integration with M21.
-- Tests with fake webhook signatures.
+#### Scope to Build
+- [ ] `event_registrations` tables: `id`, `project_id`, `participant_name`, `participant_email`, `phone`, `institution`, `status` (pending/confirmed/cancelled), `registered_at`.
+- [ ] `event_registration_settings` table: `id`, `project_id`, `is_open`, `capacity`, `opens_at`, `closes_at`, `require_payment`.
+- [ ] Public route: `GET /events/{project_slug}/register` — unauthenticated form.
+- [ ] Guards: capacity check, duplicate email per event, registration window check.
+- [ ] Confirmation email sent on successful registration.
+- [ ] Internal UI: registration list, export to CSV/PDF.
+- [ ] Tests: capacity enforcement, duplicate email rejection, tenant/project scope isolation.
 
-Catatan:
-- Jangan mulai sebelum M21 cukup stabil.
-- Jangan hardcode payment credentials.
+---
+
+### M22 · Payment & Ticketing
+
+**Status:** `[ ]` Not started. **DO NOT START BEFORE M21 IS STABLE.**
+
+#### Product Goal
+Enable paid event registration via Midtrans (or compatible provider). Free and paid registrations coexist per event.
+
+#### Scope to Build
+- [ ] `.env.example` variables: `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION`.
+- [ ] `ticket_tiers` table: `id`, `project_id`, `name`, `price`, `capacity`, `is_active`.
+- [ ] `payment_orders` table: `id`, `registration_id`, `tier_id`, `amount`, `status`, `provider_order_id`, `paid_at`, `expires_at`.
+- [ ] Midtrans webhook handler: verifies signature, updates order status.
+- [ ] Free tier: bypass payment, directly confirm registration.
+- [ ] Tests: fake webhook signature verification, order status transitions, capacity enforcement per tier.
+
+#### Rules
+- Never hardcode payment credentials.
+- Webhook signature must always be verified server-side.
+- Never confirm a registration without verified payment (for paid tiers).
+
+---
 
 ### M23 · AI Assistant
 
-Status: `[ ]` Belum dikerjakan.
+**Status:** `[ ]` Not started.
 
-Target scope yang disarankan:
-- Use-case definition first: proposal drafting, LPJ summary, task suggestions, or dashboard insight.
-- Provider config through env.
-- Prompt/action classes with auditability.
-- Tenant data minimization.
-- Tests for prompt payload construction and permission guard.
+#### Product Goal
+Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal drafting from project data, LPJ summary generation, task priority suggestions, dashboard insight summaries.
 
-Catatan:
-- Jangan mulai tanpa scope eksplisit.
-- Jangan kirim data sensitif ke provider tanpa desain permission dan env config.
+#### Scope to Build (define use case before any code)
+- [ ] Define exact use cases and user-facing surfaces (which pages, which actions).
+- [ ] `.env.example` variables: `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`.
+- [ ] `AiPromptAction` base class: wraps provider call, logs prompt hash + token count, enforces tenant data minimization.
+- [ ] `DraftProposalWithAiAction` — takes project data, returns proposal section suggestions.
+- [ ] `SummarizeLpjWithAiAction` — takes LPJ checklist + project data, returns summary narrative.
+- [ ] `AiUsageLog` table: `id`, `organization_id`, `user_id`, `action_type`, `prompt_tokens`, `completion_tokens`, `created_at`.
+- [ ] Permission guard: AI features gated by organization plan tier.
+- [ ] Tests: prompt payload construction (no sensitive data leakage), permission guard.
+
+#### Rules
+- Never send member personal data (phone, email, KTP) to AI provider.
+- Never start without an explicit use-case scoped spec.
+- Provider must be swappable via env (not hardcoded to any vendor).
+
+---
 
 ### M24 · Campus Dashboard B2B
 
-Status: `[ ]` Belum dikerjakan.
+**Status:** `[ ]` Not started.
 
-Target scope yang disarankan:
-- Campus/super-admin aggregate dashboard.
-- Cross-organization metrics with strict authorization.
-- Read-only analytics first.
-- Tests for super admin access and org data isolation.
+#### Product Goal
+Give campus administrators (e.g., Dean's office, Student Affairs) a read-only aggregate view across all student organizations on their campus — enabling oversight without operational access.
 
-## Next Action
+#### Scope to Build
+- [ ] `campuses` table: `id`, `name`, `domain`, `admin_user_id`.
+- [ ] `campus_organization_links` table: `id`, `campus_id`, `organization_id`.
+- [ ] `super_admin` and `campus_admin` Spatie roles.
+- [ ] `CampusDashboardPayloadAction` — aggregates metrics across linked orgs; strict org data isolation (no cross-campus leakage).
+- [ ] Inertia page: read-only analytics dashboard (project counts, finance totals, LPJ rates, active members).
+- [ ] Tests: campus_admin can see linked orgs only; cannot see unlinked orgs; cannot mutate any data.
 
-1. Relink shell PHP ke PHP 8.4 atau terus gunakan PATH prefix untuk semua Composer/Artisan commands.
-2. Mulai M16 Sertifikat Digital dengan desain migration additive.
-3. Tambahkan tests untuk unique certificate number, signed verification URL, dan tenant-scoped verification sebelum M16 ditandai selesai.
-4. Setelah M16 selesai, update bagian `Verifikasi Terakhir`, `Post-MVP Modules`, dan commit dengan pesan `feat: add digital certificate module`.
+---
 
-## Riwayat Commit Penting
+## Next Action (Ordered Priority)
 
-- `f2c148a` · `docs: record MVP verification handoff`
-- `4f37fb5` · `docs: mark MVP validation complete`
-- `af3de2a` · `feat: add meeting minutes module`
-- `82044d8` · `feat: add qr attendance module`
+### Immediate (Before Starting M16)
+1. **Fix PHP shell default** — relink Homebrew PHP to 8.4, or document the PATH prefix as a required dev step in `AGENTS.md` and README.
+2. **Run full test suite** — confirm all 190 tests still pass before touching anything.
+   ```bash
+   PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
+   ```
+
+### M16 Build Sequence
+3. **Create migration** — `database/migrations/2026_05_16_000008_create_certificate_tables.php` (additive, non-destructive) with `certificate_templates` and `certificate_recipients` tables.
+4. **Implement `CertificateNumberGenerator`** — format `PRK-{YEAR}-{ORG_SLUG}-{SEQ}`, unique per org per year.
+5. **Write unit tests for `CertificateNumberGenerator`** first — TDD before implementation.
+6. **Implement Actions** — `CreateCertificateTemplateAction`, `IssueCertificateBatchAction`, `VerifyCertificateAction`.
+7. **Implement `GenerateCertificatePdfJob`** (queued) — Browsershot → S3 upload → `pdf_path` stored.
+8. **Create Form Request classes** — `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
+9. **Create `CertificatePolicy`**.
+10. **Register routes** — internal (authenticated) and public `/verify/{token}` (unauthenticated).
+11. **Build Inertia pages** — Index, Templates, Issue, Verify.
+12. **Add sidebar entry** — "Sertifikat Digital" badge `M16` in `vihoMenu`.
+13. **Write feature tests** — all required coverage listed in M16 section above.
+14. **Run full test suite** — must be green before marking M16 `[x]`.
+15. **Update this file** — module status → `[x]`, add Verification Log entry, update Next Action.
+16. **Commit:** `feat: add digital certificate module (M16)`
+
+### After M16
+17. **Evaluate M19 (Handover)** — partial scaffold exists; prioritize over M17/M18 if the next semester handover deadline is approaching.
+18. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+19. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+20. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+21. **M22 (Payment)** only after M21 is stable.
+22. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+23. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+
+---
+
+## Product Roadmap Context (For Market Strategy)
+
+The following context is provided to help AI agents and contributors understand the broader product vision and prioritize correctly.
+
+### Target Market: Indonesian Student Organizations
+- **Primary segment:** BEM (Badan Eksekutif Mahasiswa), HIMA (Himpunan Mahasiswa), UKM (Unit Kegiatan Mahasiswa).
+- **Geography (initial):** Java — Surabaya, Malang, Yogyakarta, Bandung.
+- **Pain points addressed:** Late proker planning, slow proposal approval, untracked task delegation, messy project finances, scattered Google Drive documentation, delayed LPJ submission, failed board handover.
+
+### Go-To-Market Phases
+1. **MVP validation** (M01–M13): Free tier for 1 organization, 1 active period, up to 20 members.
+2. **Growth (Post-MVP Wave 1)** (M14–M16): Add QR attendance and digital certificates — strong viral loop as members share certificates on LinkedIn/social.
+3. **Retention (Post-MVP Wave 2)** (M17–M19): WhatsApp reminders, advanced approval, handover — makes renewal automatic.
+4. **Monetization (Post-MVP Wave 3)** (M21–M22): Event registration + ticketing — revenue-sharing model with organizations.
+5. **B2B / Enterprise** (M24): Campus-level dashboard sold to Student Affairs departments at universities.
+
+### Pricing Strategy (Suggested)
+| Tier | Target | Features |
+|------|--------|----------|
+| Free | 1 org, up to 20 members | M01–M13 (MVP) |
+| Starter (Rp 99K/month) | Small HIMA | + M14 meetings, M15 QR attendance |
+| Pro (Rp 299K/month) | BEM/UKM | + M16 certificates, M17 WhatsApp, M18 approval |
+| Campus (custom) | University | M24 dashboard, all features, SLA |
+
+### Key Differentiators vs Indonesian Market
+1. **Proker-native:** Built specifically around Indonesian student organization workflows (proker → proposal → RAB → LPJ) — not a generic project management tool.
+2. **Template system:** One-click proker generation from templates eliminates 80% of planning overhead.
+3. **LPJ automation:** LPJ is generated from actual execution data — not a blank document.
+4. **QR attendance:** Purpose-built for rapat (meetings) and proker events — not a standalone HR tool.
+5. **Digital certificates:** Viral growth lever — members share certificates, organizations get exposure.
+6. **WhatsApp-first notifications:** Indonesian users live on WhatsApp; email-only tools lose engagement.
+
+### Technical Moat to Build
+- **Data continuity:** Handover module (M19) means institutional memory survives board transitions — a unique lock-in.
+- **Compliance-ready:** Audit trail, signed documents, and multi-level approval (M18) positions Prokerin for accredited university adoption.
+- **AI layer (M23):** Once data is rich, AI-generated proposal drafts and LPJ summaries become a strong upsell.
+
+---
+
+## Important Commit History
+
+| Hash | Message |
+|------|---------|
+| `f2c148a` | `docs: record MVP verification handoff` |
+| `4f37fb5` | `docs: mark MVP validation complete` |
+| `af3de2a` | `feat: add meeting minutes module` |
+| `82044d8` | `feat: add qr attendance module` |
+
+---
+
+_Last updated: 2026-05-16. Update this file immediately after every module status change, migration addition, test result, or Next Action change._

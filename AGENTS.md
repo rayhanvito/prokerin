@@ -468,17 +468,6 @@ Rules for feature tracking:
 - Before starting new feature work, check `features.md` sections `Ringkasan Status`, `Verifikasi Terakhir`, target module breakdown, and `Next Action`.
 - Before marking a feature `[x]`, make sure it has code, route/UI or backend integration as applicable, tests, and a recorded verification result in `features.md`.
 
-### Current Handoff Notes — 2026-05-16
-
-- MVP M01-M13 are implemented, listed in `features.md`, and validated by automated tests.
-- Frontend build verification passed on 2026-05-16 with `npm run build`.
-- PHP platform verification passed on 2026-05-16 with PHP 8.4.10 via `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.
-- PHP test verification passed on 2026-05-16 with PHP 8.4.10 via `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`181 passed`, `712 assertions`).
-- M14 Rapat & Notulen was added after MVP validation; full test verification passed on 2026-05-16 with `183 passed`, `755 assertions`.
-- Default shell PHP may still resolve to `/opt/homebrew/opt/php@8.3/bin/php`; use the PHP 8.4 PATH prefix above or relink Homebrew PHP before running Composer/Artisan.
-- Post-MVP module status is tracked in `features.md`; do not duplicate the feature checklist here.
-
----
 
 ## 14. Testing
 
