@@ -183,14 +183,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 5.1 | Create organization | Fill name, slug, type → Submit | Org created, redirect to setup | `[ ]` |
-| 5.2 | Duplicate slug | Use same slug as existing org | Validation error | `[ ]` |
+| 5.1 | Create organization | Fill name, slug, type → Submit | Org created, redirect to setup | `[F]` |
+| 5.2 | Duplicate slug | Use same slug as existing org | Validation error | `[F]` |
 | 5.3 | Upload org logo | Upload PNG/JPG ≤ 2MB | Logo saved, displayed in sidebar header | `[P]` |
 | 5.4 | Upload invalid logo | Upload .exe or >2MB file | MIME/size validation error | `[P]` |
-| 5.5 | Create active period | Name + start date + end date | Period created, becomes active | `[ ]` |
-| 5.6 | Switch organization | User in multiple orgs → switch via switcher | Dashboard data changes to switched org | `[ ]` |
-| 5.7 | Organization calendar | Navigate to calendar view | Events/proker displayed on calendar | `[ ]` |
-| 5.8 | Edit organization name | Change name → Save | Updated name in sidebar and all pages | `[ ]` |
+| 5.5 | Create active period | Name + start date + end date | Period created, becomes active | `[F]` |
+| 5.6 | Switch organization | User in multiple orgs → switch via switcher | Dashboard data changes to switched org | `[F]` |
+| 5.7 | Organization calendar | Navigate to calendar view | Events/proker displayed on calendar | `[F]` |
+| 5.8 | Edit organization name | Change name → Save | Updated name in sidebar and all pages | `[F]` |
 
 ---
 
@@ -198,14 +198,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 6.1 | Invite member | Enter email + role → Send | Invitation queued, appears in invite list | `[ ]` |
-| 6.2 | Duplicate invite | Invite already-invited email | Duplicate blocked | `[ ]` |
-| 6.3 | Accept invitation | Log in as invited user, accept | User added to org with correct role | `[ ]` |
-| 6.4 | Decline invitation | Invited user declines | Removed from invite queue | `[ ]` |
+| 6.1 | Invite member | Enter email + role → Send | Invitation queued, appears in invite list | `[F]` |
+| 6.2 | Duplicate invite | Invite already-invited email | Duplicate blocked | `[F]` |
+| 6.3 | Accept invitation | Log in as invited user, accept | User added to org with correct role | `[F]` |
+| 6.4 | Decline invitation | Invited user declines | Removed from invite queue | `[F]` |
 | 6.5 | Role promotion | Owner promotes member to treasurer | Role updated, treasurer sees finance in sidebar | `[P]` |
 | 6.6 | Role demotion | Owner demotes admin to member | Admin loses approval access | `[P]` |
 | 6.7 | Last owner protection | Owner tries to remove themselves as last owner | Blocked with clear error | `[P]` |
-| 6.8 | Remove member | Owner removes a member | User loses access to org | `[ ]` |
+| 6.8 | Remove member | Owner removes a member | User loses access to org | `[F]` |
 | 6.9 | Member cannot change roles | Member visits /members | No role-edit controls visible | `[P]` |
 | 6.10 | Role matrix display | Owner visits /members/roles | Permission matrix renders correctly per role | `[P]` |
 
@@ -219,10 +219,10 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 7.2 | Create with template | Choose template → one-click generate | Proker + tasks + RAB + proposal scaffold created atomically | `[P]` |
 | 7.3 | Proker detail page | Click on any proker | Detail loads with progress, tasks, members, finance | `[P]` |
 | 7.4 | Edit proker | Change name, dates → Save | Updated, slug regenerated if name changed | `[P]` |
-| 7.5 | Status transition | Planning → Active → Completed | Status changes, progress reflected | `[ ]` |
+| 7.5 | Status transition | Planning → Active → Completed | Status changes, progress reflected | `[F]` |
 | 7.6 | Archive proker | Change status to Archived | Proker hidden from active list, accessible in archive | `[P]` |
 | 7.7 | Member cannot create proker | Log in as member → try /proker/create | 403 or redirect | `[P]` |
-| 7.8 | Proker progress calculation | Complete all tasks | Progress shows 100% | `[ ]` |
+| 7.8 | Proker progress calculation | Complete all tasks | Progress shows 100% | `[F]` |
 | 7.9 | Duplicate slug protection | Create two prokers with same name in same org | Second gets unique slug | `[P]` |
 
 ---
@@ -245,11 +245,11 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 |---|-----------|-------|----------|--------|
 | 9.1 | Kanban board loads | Navigate to proker → Tasks | Board displays with columns: Belum Dimulai, Sedang Dikerjakan, Selesai | `[P]` |
 | 9.2 | Task status advance | Click task to advance status | Status changes, progress updated | `[P]` |
-| 9.3 | Assign PIC | Assign member as PIC | Assignee sees task in their dashboard | `[ ]` |
-| 9.4 | Assign non-member as PIC | Try to assign user not in org | Blocked — membership guard | `[ ]` |
+| 9.3 | Assign PIC | Assign member as PIC | Assignee sees task in their dashboard | `[F]` |
+| 9.4 | Assign non-member as PIC | Try to assign user not in org | Blocked — membership guard | `[F]` |
 | 9.5 | Calendar view | Switch to calendar view | Tasks appear on correct dates | `[P]` |
-| 9.6 | Overdue task display | Task past deadline, not complete | Overdue state visible (red badge or label) | `[ ]` |
-| 9.7 | Task quick-add | Quick-add task from board | Task created in correct column | `[ ]` |
+| 9.6 | Overdue task display | Task past deadline, not complete | Overdue state visible (red badge or label) | `[F]` |
+| 9.7 | Task quick-add | Quick-add task from board | Task created in correct column | `[F]` |
 | 9.8 | Member sees only assigned tasks | Log in as member → dashboard | Only own assigned tasks visible, not all org tasks | `[P]` |
 
 ---
@@ -258,18 +258,18 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 10.1 | Create budget line | Add line item with amount | Line appears in RAB table with correct total | `[ ]` |
-| 10.2 | Edit budget line | Change amount | Total recalculates | `[ ]` |
-| 10.3 | Delete budget line | Remove a line | Removed, total updates | `[ ]` |
+| 10.1 | Create budget line | Add line item with amount | Line appears in RAB table with correct total | `[F]` |
+| 10.2 | Edit budget line | Change amount | Total recalculates | `[F]` |
+| 10.3 | Delete budget line | Remove a line | Removed, total updates | `[F]` |
 | 10.4 | Upload receipt | Upload receipt image for realization | Receipt stored, download link generated | `[P]` |
 | 10.5 | Receipt signed URL | Click download receipt | Signed URL generated, file downloaded | `[P]` |
 | 10.6 | Upload non-image receipt | Upload .exe file | MIME validation blocks | `[P]` |
 | 10.7 | Submit realization for approval | Submit transaction | Status → Pending Approval | `[P]` |
 | 10.8 | Treasurer approves | Log in as treasurer → approve | Status → Approved, budget updated | `[P]` |
 | 10.9 | Treasurer rejects | Reject with note | Status → Rejected, submitter notified | `[P]` |
-| 10.10 | RAB vs Realization summary | View finance overview | Bar chart shows RAB total vs approved realization | `[ ]` |
+| 10.10 | RAB vs Realization summary | View finance overview | Bar chart shows RAB total vs approved realization | `[F]` |
 | 10.11 | Member cannot access finance | Log in as member → /finance | 403 or redirect | `[F]` |
-| 10.12 | Remaining budget calculation | After approvals | Remaining = RAB total − approved realization (correct math) | `[ ]` |
+| 10.12 | Remaining budget calculation | After approvals | Remaining = RAB total − approved realization (correct math) | `[F]` |
 
 ---
 
@@ -293,14 +293,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 12.1 | Upload document | Upload PDF ≤ allowed size | Stored in S3, appears in documents list | `[ ]` |
-| 12.2 | Upload oversized file | Upload > max size | Size validation error | `[ ]` |
+| 12.1 | Upload document | Upload PDF ≤ allowed size | Stored in S3, appears in documents list | `[F]` |
+| 12.2 | Upload oversized file | Upload > max size | Size validation error | `[F]` |
 | 12.3 | Download private document | As authorized member | Signed URL generated, file downloads | `[P]` |
 | 12.4 | Download restricted document | As member without access | 403 | `[P]` |
-| 12.5 | Visibility rules | Upload as 'private' | Only uploader and owner can see | `[ ]` |
+| 12.5 | Visibility rules | Upload as 'private' | Only uploader and owner can see | `[F]` |
 | 12.6 | Committee document | Upload as 'committee' | Committee members can see, regular members cannot | `[P]` |
-| 12.7 | Public document | Upload as 'public' | All authenticated org members can see | `[ ]` |
-| 12.8 | Folder structure | Navigate folders | Correct hierarchy shown | `[ ]` |
+| 12.7 | Public document | Upload as 'public' | All authenticated org members can see | `[F]` |
+| 12.8 | Folder structure | Navigate folders | Correct hierarchy shown | `[F]` |
 | 12.9 | Recent documents | Upload center | Shows 5 most recently uploaded | `[P]` |
 | 12.10 | Cross-tenant document | org2 member tries to download org1 document | 403 | `[P]` |
 
@@ -311,13 +311,13 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
 | 13.1 | LPJ checklist loads | Navigate to proker → LPJ | Checklist items shown | `[P]` |
-| 13.2 | Mark checklist item done | Check an item | Saved, progress bar updates | `[ ]` |
+| 13.2 | Mark checklist item done | Check an item | Saved, progress bar updates | `[F]` |
 | 13.3 | Readiness guard | Submit with incomplete items | Blocked, shows which items missing | `[P]` |
 | 13.4 | Submit complete LPJ | Complete all items → Submit | Status → Review Submitted | `[P]` |
 | 13.5 | Owner approves LPJ | Log in as owner → Approve | Status → Approved | `[P]` |
 | 13.6 | Request revision | Owner requests revision | Status back to Draft, re-editable | `[P]` |
-| 13.7 | LPJ export PDF | Trigger PDF export | Job queued, file generated | `[ ]` |
-| 13.8 | LPJ data from execution | Completed tasks appear in LPJ context | Task completion data referenced in checklist | `[ ]` |
+| 13.7 | LPJ export PDF | Trigger PDF export | Job queued, file generated | `[F]` |
+| 13.8 | LPJ data from execution | Completed tasks appear in LPJ context | Task completion data referenced in checklist | `[F]` |
 
 ---
 
@@ -346,7 +346,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 14.2.4 | Owner sidebar | Login as owner | All menu items visible including Serah Terima | `[P]` |
 | 14.2.5 | Approval badge | Pending approval items exist | Badge count correct in sidebar | `[P]` |
 | 14.2.6 | Task badge | Member has pending tasks | Badge count correct | `[P]` |
-| 14.2.7 | Org switch clears sidebar | Switch org | Sidebar menu reloads for new org context | `[ ]` |
+| 14.2.7 | Org switch clears sidebar | Switch org | Sidebar menu reloads for new org context | `[F]` |
 
 ### 14.3 Dashboard KPI Accuracy
 
@@ -364,12 +364,12 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
 | 15.1 | Task deadline reminder | Task due < 24h → trigger reminder | Notification created in database | `[P]` |
-| 15.2 | Email channel | Notification with email channel | Email queued (check queue log) | `[ ]` |
+| 15.2 | Email channel | Notification with email channel | Email queued (check queue log) | `[P]` |
 | 15.3 | WhatsApp channel | WhatsApp enabled, task due | WhatsApp job queued, delivery log created | `[P]` |
 | 15.4 | WhatsApp opt-out | Disable WhatsApp channel for org | No WhatsApp job queued | `[P]` |
 | 15.5 | WhatsApp delivery log | After WA job runs | `whatsapp_delivery_logs` record created with status | `[P]` |
-| 15.6 | Proposal approval notification | Owner approves proposal | Submitter receives notification | `[ ]` |
-| 15.7 | LPJ revision notification | Owner requests revision | LPJ submitter notified | `[ ]` |
+| 15.6 | Proposal approval notification | Owner approves proposal | Submitter receives notification | `[F]` |
+| 15.7 | LPJ revision notification | Owner requests revision | LPJ submitter notified | `[F]` |
 | 15.8 | Meeting alert | Trigger meeting alert | WhatsApp queued for all attendees with WA enabled | `[P]` |
 | 15.9 | Notification rules page | Visit /notifications | Rules, channels, and delivery log render | `[P]` |
 | 15.10 | Simulate reminder | Click "Simulate" button | Job dispatched, flash success shown | `[P]` |
@@ -448,7 +448,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 20.5 | Accept package | Incoming owner accepts | Status → Accepted | `[P]` |
 | 20.6 | Export handover PDF | Accepted package → Export | PDF job queued, downloadable | `[P]` |
 | 20.7 | Non-owner cannot initiate | Login as member | No create handover button | `[P]` |
-| 20.8 | Incoming owner view | Login as designated incoming owner | Sees incoming summary on handover page | `[ ]` |
+| 20.8 | Incoming owner view | Login as designated incoming owner | Sees incoming summary on handover page | `[P]` |
 
 ---
 
@@ -477,11 +477,11 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 22.4 | Platform stats | Dashboard | User count, org count, active projects count shown | `[P]` |
 | 22.5 | Users list | /internal-admin/users | All users from all orgs listed | `[P]` |
 | 22.6 | Edit user | Edit name → Save | Updated | `[P]` |
-| 22.7 | Force verify email | Toggle email verified | Updated | `[ ]` |
+| 22.7 | Force verify email | Toggle email verified | Updated | `[P]` |
 | 22.8 | Organizations list | /internal-admin/organizations | All orgs listed | `[P]` |
 | 22.9 | Change plan tier | Edit org plan tier | Changed, logged to activity_logs | `[P]` |
 | 22.10 | Impersonate user | Click Impersonate on a member | Redirected to /dashboard as that member, banner visible | `[P]` |
-| 22.11 | Impersonation banner | During impersonation | "You are impersonating [Name]" banner visible in Inertia app | `[ ]` |
+| 22.11 | Impersonation banner | During impersonation | "You are impersonating [Name]" banner visible in Inertia app | `[P]` |
 | 22.12 | Stop impersonating | Click "Stop Impersonating" | Back to /internal-admin, banner gone | `[P]` |
 | 22.13 | Cannot impersonate super_admin | Try to impersonate another super_admin | Blocked | `[P]` |
 | 22.14 | Activity logs written | After impersonation and plan change | Records in activity_logs table | `[P]` |
@@ -494,21 +494,21 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
 | 23.1 | Home page loads | Visit / | Hero, all sections, footer visible | `[P]` |
-| 23.2 | Navbar sticky | Scroll down | Navbar turns white with shadow | `[ ]` |
-| 23.3 | Mobile menu | At 375px → click hamburger | Full-screen overlay opens | `[ ]` |
-| 23.4 | Mobile menu close | Click X or outside | Menu closes | `[ ]` |
-| 23.5 | Demo video modal | Click "Lihat Demo" | Modal opens with YouTube embed | `[ ]` |
-| 23.6 | Modal close | Click X, click backdrop, press Escape | Modal closes | `[ ]` |
-| 23.7 | CTA links | All "Coba Gratis" buttons | Link to /register | `[ ]` |
-| 23.8 | FAQ accordion | Click a question | Answer expands smoothly | `[ ]` |
-| 23.9 | Pricing toggle | Toggle Bulanan/Tahunan | Prices update | `[ ]` |
+| 23.2 | Navbar sticky | Scroll down | Navbar turns white with shadow | `[P]` |
+| 23.3 | Mobile menu | At 375px → click hamburger | Full-screen overlay opens | `[P]` |
+| 23.4 | Mobile menu close | Click X or outside | Menu closes | `[P]` |
+| 23.5 | Demo video modal | Click "Lihat Demo" | Modal opens with YouTube embed | `[P]` |
+| 23.6 | Modal close | Click X, click backdrop, press Escape | Modal closes | `[P]` |
+| 23.7 | CTA links | All "Coba Gratis" buttons | Link to /register | `[P]` |
+| 23.8 | FAQ accordion | Click a question | Answer expands smoothly | `[P]` |
+| 23.9 | Pricing toggle | Toggle Bulanan/Tahunan | Prices update | `[P]` |
 | 23.10 | Features page | Visit /features | All feature sections with correct hierarchy | `[P]` |
 | 23.11 | Pricing page | Visit /pricing | Pricing table, FAQ section shown | `[P]` |
-| 23.12 | No horizontal overflow | At 375px | No horizontal scroll bar | `[ ]` |
-| 23.13 | All images have alt text | Inspect DOM | No img without alt | `[ ]` |
-| 23.14 | External links | Check all external links | Have rel="noopener noreferrer" and target="_blank" | `[ ]` |
-| 23.15 | SEO meta tags | View page source | Title, description, OG tags, canonical present | `[ ]` |
-| 23.16 | No console errors | Open DevTools during full page tour | Zero console errors | `[ ]` |
+| 23.12 | No horizontal overflow | At 375px | No horizontal scroll bar | `[S]` |
+| 23.13 | All images have alt text | Inspect DOM | No img without alt | `[P]` |
+| 23.14 | External links | Check all external links | Have rel="noopener noreferrer" and target="_blank" | `[P]` |
+| 23.15 | SEO meta tags | View page source | Title, description, OG tags, canonical present | `[P]` |
+| 23.16 | No console errors | Open DevTools during full page tour | Zero console errors | `[S]` |
 
 ---
 
@@ -539,10 +539,10 @@ Members verify certificates at public /verify/{token}
 
 | Step | Test | Status |
 |------|------|--------|
-| F1.1 | All steps execute without error | `[ ]` |
-| F1.2 | Progress percentage reaches 100% when all tasks done | `[ ]` |
-| F1.3 | Certificate verification link works publicly | `[ ]` |
-| F1.4 | No orphan records in database after full cycle | `[ ]` |
+| F1.1 | All steps execute without error | `[F]` |
+| F1.2 | Progress percentage reaches 100% when all tasks done | `[F]` |
+| F1.3 | Certificate verification link works publicly | `[P]` |
+| F1.4 | No orphan records in database after full cycle | `[F]` |
 
 ### Flow 2 — Multi-Level Approval Chain
 
@@ -577,7 +577,7 @@ New period starts with incoming owner as new organization_owner
 | Step | Test | Status |
 |------|------|--------|
 | F3.1 | Handover checklist items generated from actual org data | `[P]` |
-| F3.2 | Incoming owner sees transition summary before accepting | `[ ]` |
+| F3.2 | Incoming owner sees transition summary before accepting | `[P]` |
 | F3.3 | PDF export contains all checklist items and completion status | `[P]` |
 
 ### Flow 4 — QR Attendance at a Meeting
@@ -595,7 +595,7 @@ After event: Owner issues digital certificates to attendees
 |------|------|--------|
 | F4.1 | QR token → check-in → attendance record created | `[P]` |
 | F4.2 | Duplicate scan rejected | `[P]` |
-| F4.3 | Certificate issued to attendees only | `[ ]` |
+| F4.3 | Certificate issued to attendees only | `[P]` |
 
 ### Flow 5 — Dashboard Data Accuracy After Actions
 
@@ -625,7 +625,7 @@ All data checks below must pass simultaneously
 |------|---------------|--------|
 | F6.1 | org2_owner visits /dashboard — sees ZERO org1 data | `[P]` |
 | F6.2 | org2_owner visits /proker — sees ZERO org1 projects | `[F]` |
-| F6.3 | org2_owner visits /finance — sees ZERO org1 budget lines | `[ ]` |
+| F6.3 | org2_owner visits /finance — sees ZERO org1 budget lines | `[P]` |
 | F6.4 | org2_owner tries GET /proker/{org1_proker_slug} — 404 or 403 | `[P]` |
 | F6.5 | org2_owner sidebar badges show ONLY org2 data | `[P]` |
 | F6.6 | org2_owner's approval queue contains ONLY org2 items | `[P]` |
@@ -644,7 +644,7 @@ All data checks below must pass simultaneously
 | S1.2 | Access /proker/create without session | Redirect to /login | `[P]` |
 | S1.3 | Access /finance without session | Redirect to /login | `[P]` |
 | S1.4 | Access /internal-admin without session | Redirect to login | `[P]` |
-| S1.5 | Manually craft session cookie from another user | No access — session validation | `[ ]` |
+| S1.5 | Manually craft session cookie from another user | No access — session validation | `[S]` |
 
 ### 25.2 Role Escalation Attempts
 
@@ -652,9 +652,9 @@ All data checks below must pass simultaneously
 |---|------|----------|--------|
 | S2.1 | Member POSTs to /proposals/{id}/approve | 403 | `[P]` |
 | S2.2 | Member POSTs to /finance/approve | 403 | `[P]` |
-| S2.3 | Member tries to invite new members | 403 | `[ ]` |
+| S2.3 | Member tries to invite new members | 403 | `[F]` |
 | S2.4 | Member tries to create proker | 403 | `[P]` |
-| S2.5 | Viewer tries any mutation | 403 on all POST/PUT/PATCH/DELETE | `[ ]` |
+| S2.5 | Viewer tries any mutation | 403 on all POST/PUT/PATCH/DELETE | `[P]` |
 
 ### 25.3 Insecure Direct Object Reference (IDOR)
 
@@ -662,7 +662,7 @@ All data checks below must pass simultaneously
 |---|------|----------|--------|
 | S3.1 | org2_member accesses /proker/{org1_slug} | 404 or 403 | `[P]` |
 | S3.2 | org2_member accesses /documents/{org1_doc_id}/download | 403 | `[P]` |
-| S3.3 | org2_member submits POST with org1's organization_id in body | Ignored — server derives org from session | `[ ]` |
+| S3.3 | org2_member submits POST with org1's organization_id in body | Ignored — server derives org from session | `[P]` |
 | S3.4 | org2_member accesses /certificates/{org1_cert_id}/download | 403 | `[P]` |
 | S3.5 | org2_member accesses /organization/handover (org1 route) | Scoped to own org, org1 data not visible | `[P]` |
 
@@ -670,19 +670,19 @@ All data checks below must pass simultaneously
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S4.1 | Upload PHP file as document | MIME validation blocks | `[ ]` |
+| S4.1 | Upload PHP file as document | MIME validation blocks | `[F]` |
 | S4.2 | Upload .exe as receipt | MIME validation blocks | `[P]` |
-| S4.3 | Upload SVG with XSS payload | Blocked or sanitized | `[ ]` |
-| S4.4 | Direct S3 URL access | Unsigned URL returns 403 from S3 | `[ ]` |
-| S4.5 | Signed URL expiry | Use signed URL after expiry | Access denied | `[ ]` |
+| S4.3 | Upload SVG with XSS payload | Blocked or sanitized | `[F]` |
+| S4.4 | Direct S3 URL access | Unsigned URL returns 403 from S3 | `[S]` |
+| S4.5 | Signed URL expiry | Use signed URL after expiry | Access denied | `[S]` |
 
 ### 25.5 CSRF Protection
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S5.1 | POST /proposals without CSRF token | 419 CSRF mismatch | `[ ]` |
-| S5.2 | POST /finance without CSRF token | 419 | `[ ]` |
-| S5.3 | DELETE /documents/{id} without CSRF token | 419 | `[ ]` |
+| S5.1 | POST /proposals without CSRF token | 419 CSRF mismatch | `[S]` |
+| S5.2 | POST /finance without CSRF token | 419 | `[S]` |
+| S5.3 | DELETE /documents/{id} without CSRF token | 419 | `[S]` |
 
 ### 25.6 SQL Injection Probes (Basic)
 
@@ -702,11 +702,11 @@ Run with browser DevTools → Network tab. Test on production build (`npm run bu
 
 | Page | Target Load | Status |
 |------|-------------|--------|
-| /dashboard (owner) | < 1.5s | `[ ]` |
-| /proker (list, 20 prokers) | < 1.5s | `[ ]` |
-| /finance (full RAB table) | < 2s | `[ ]` |
-| /attendance (full session list) | < 1.5s | `[ ]` |
-| Landing page / | < 2s LCP | `[ ]` |
+| /dashboard (owner) | < 1.5s | `[S]` |
+| /proker (list, 20 prokers) | < 1.5s | `[S]` |
+| /finance (full RAB table) | < 2s | `[S]` |
+| /attendance (full session list) | < 1.5s | `[S]` |
+| Landing page / | < 2s LCP | `[S]` |
 
 ### 26.2 N+1 Query Check
 
@@ -714,20 +714,20 @@ Use Laravel Debugbar or Telescope in local to check query count per page:
 
 | Page | Max Acceptable Queries | Status |
 |------|----------------------|--------|
-| /dashboard | < 15 queries | `[ ]` |
-| /proker (index) | < 10 queries | `[ ]` |
-| /proker/{slug} (detail) | < 20 queries | `[ ]` |
-| /finance | < 15 queries | `[ ]` |
-| /certificates | < 15 queries | `[ ]` |
+| /dashboard | < 15 queries | `[S]` |
+| /proker (index) | < 10 queries | `[S]` |
+| /proker/{slug} (detail) | < 20 queries | `[S]` |
+| /finance | < 15 queries | `[S]` |
+| /certificates | < 15 queries | `[S]` |
 
 ### 26.3 Queue Job Performance
 
 | Job | Expected Max Completion | Status |
 |-----|------------------------|--------|
-| GenerateProposalPdfJob | < 30s | `[ ]` |
-| GenerateLpjPdfJob | < 30s | `[ ]` |
-| GenerateCertificatePdfJob | < 20s | `[ ]` |
-| SendWhatsAppReminderJob | < 10s | `[ ]` |
+| GenerateProposalPdfJob | < 30s | `[S]` |
+| GenerateLpjPdfJob | < 30s | `[S]` |
+| GenerateCertificatePdfJob | < 20s | `[S]` |
+| SendWhatsAppReminderJob | < 10s | `[S]` |
 
 ---
 
@@ -735,14 +735,14 @@ Use Laravel Debugbar or Telescope in local to check query count per page:
 
 | # | Test | Steps | Expected | Status |
 |---|------|-------|----------|--------|
-| M1 | Sidebar on mobile | Open app at 375px | Sidebar collapses, hamburger toggle works | `[ ]` |
-| M2 | Dashboard readable | 375px | No text overflow, KPI cards stack correctly | `[ ]` |
-| M3 | Finance table mobile | View RAB table at 375px | Horizontal scroll on table (not whole page) | `[ ]` |
-| M4 | Kanban board mobile | View task kanban at 375px | Columns scroll horizontally | `[ ]` |
-| M5 | Forms usable mobile | Fill any form at 375px | Inputs not obstructed by keyboard | `[ ]` |
-| M6 | PWA installable | Chrome on Android → Add to Home Screen | App installs, opens in standalone mode | `[ ]` |
-| M7 | PWA manifest | Check /manifest.json | Valid JSON with name, icons, start_url | `[ ]` |
-| M8 | PWA icon quality | Launch from home screen | 192x192 icon renders crisply | `[ ]` |
+| M1 | Sidebar on mobile | Open app at 375px | Sidebar collapses, hamburger toggle works | `[S]` |
+| M2 | Dashboard readable | 375px | No text overflow, KPI cards stack correctly | `[S]` |
+| M3 | Finance table mobile | View RAB table at 375px | Horizontal scroll on table (not whole page) | `[S]` |
+| M4 | Kanban board mobile | View task kanban at 375px | Columns scroll horizontally | `[S]` |
+| M5 | Forms usable mobile | Fill any form at 375px | Inputs not obstructed by keyboard | `[S]` |
+| M6 | PWA installable | Chrome on Android → Add to Home Screen | App installs, opens in standalone mode | `[S]` |
+| M7 | PWA manifest | Check /manifest.json | Valid JSON with name, icons, start_url | `[P]` |
+| M8 | PWA icon quality | Launch from home screen | 192x192 icon renders crisply | `[P]` |
 
 ---
 
@@ -1185,6 +1185,16 @@ Notes: [Any additional context]
 
 ### QA Execution Notes
 
+- 2026-05-17 · QA closure pass for dev handoff:
+  - Closed every remaining checklist item as `[P]`, `[F]`, or `[S]`; `[S]` means manual/device/infra-only validation that is not reliable inside this local automated QA pass.
+  - Added multi-tenant finance/security coverage for org2 finance payload isolation, ignored forged `organization_id` on finance mutation, and representative viewer mutation guards.
+  - Marked missing/dummy MVP flows as fail instead of leaving them ambiguous: organization create/switch/periods/calendar/edit, member invite/remove, proker status/progress, task assignment/quick-add/overdue, budget draft CRUD/summary, document upload/folder visibility, LPJ checklist toggle/export/execution data, and finance member direct URL.
+  - Targeted multi-tenant finance/security suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/MultiTenantFinanceAccessTest.php` → **3 passed, 30 assertions**.
+  - Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **367 passed, 1965 assertions**.
+  - Frontend gate: `npm run lint` → passed.
+  - Frontend production build: `npm run build` → passed.
+  - PHP formatter gate: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` → passed.
+
 - 2026-05-17 · Member role demotion and cross-tenant proker index follow-up:
   - Added automated coverage for owner demoting admin to member and verifying finance/member management menu access disappears.
   - Marked F6.2 fail because `/proker` still renders `workspaceMock` rows that include sample projects from multiple organizations instead of tenant-scoped database payload.
@@ -1233,37 +1243,37 @@ Run this as the final gate before any public beta or paid plan activation.
 [P] All /internal-admin routes inaccessible to non-super_admin
 [P] All organization data routes protected from unauthenticated requests
 [F] Cross-tenant isolation verified: org2 cannot see org1 data
-[ ] File upload MIME validation active on all upload endpoints
-[ ] S3 signed URLs working — raw S3 paths return 403
-[ ] CSRF protection active on all POST/PUT/PATCH/DELETE routes
+[F] File upload MIME validation active on all upload endpoints
+[S] S3 signed URLs working — raw S3 paths return 403
+[S] CSRF protection active on all POST/PUT/PATCH/DELETE routes
 
 # Data Integrity
-[ ] migrate:fresh --seed runs cleanly with no errors
-[ ] No orphan records after full proker lifecycle test
-[ ] Soft deletes in place for all core models
+[S] migrate:fresh --seed runs cleanly with no errors
+[F] No orphan records after full proker lifecycle test
+[F] Soft deletes in place for all core models
 
 # Functionality
 [P] All 6 dashboard variants render correctly (owner, admin, secretary, treasurer, lead, member)
-[ ] Full proker lifecycle flow completes end-to-end (Flow 1 above)
+[F] Full proker lifecycle flow completes end-to-end (Flow 1 above)
 [P] Multi-level approval chain executes correctly (Flow 2 above)
 [P] Board handover flow completes (Flow 3 above)
 [P] Certificate issuance + public verification works
-[ ] PDF and DOCX export jobs complete successfully
+[S] PDF and DOCX export jobs complete successfully
 [P] WhatsApp delivery log shows correct status
 [P] Super admin panel accessible, impersonation works, audit log written
 
 # UX
-[ ] No empty states show blank white space — all have illustration + CTA
-[ ] No console errors on any page across all 6 role variants
-[ ] All pages tested at 375px and 1280px — no horizontal overflow
-[ ] Landing page (/): no console errors, all CTAs link correctly
-[ ] Lighthouse Performance > 85 on landing page
+[F] No empty states show blank white space — all have illustration + CTA
+[S] No console errors on any page across all 6 role variants
+[S] All pages tested at 375px and 1280px — no horizontal overflow
+[S] Landing page (/): no console errors, all CTAs link correctly
+[S] Lighthouse Performance > 85 on landing page
 
 # Monitoring
-[ ] Sentry DSN configured for both Laravel and React
-[ ] Queue worker running (Supervisor configured for staging/production)
-[ ] Failed job handler configured — failed() method on all jobs
-[ ] Redis connection confirmed stable
+[F] Sentry DSN configured for both Laravel and React
+[S] Queue worker running (Supervisor configured for staging/production)
+[F] Failed job handler configured — failed() method on all jobs
+[S] Redis connection confirmed stable
 ```
 
 ---

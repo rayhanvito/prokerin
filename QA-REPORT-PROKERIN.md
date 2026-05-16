@@ -13,7 +13,7 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `364 passed, 1935 assertions` |
+| PHP feature/unit test | Pass | `367 passed, 1965 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
@@ -27,6 +27,7 @@ Status automated regression terakhir:
 | Targeted task/finance/proposal/lpj/document | Pass | `49 passed, 322 assertions` |
 | Targeted finance/proposal/lpj/document refresh | Pass | `45 passed, 279 assertions` |
 | Targeted proposal/document guard | Pass | `21 passed, 57 assertions` |
+| Targeted multi-tenant finance/security | Pass | `3 passed, 30 assertions` |
 | Targeted security input probes | Pass | `3 passed, 6 assertions` |
 | Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |
 | Targeted handover/sponsor/approval | Pass | `26 passed, 146 assertions` |
@@ -38,6 +39,13 @@ Status automated regression terakhir:
 | Pint targeted | Pass | Tidak ada formatting violation |
 | npm lint | Pass | `tsc --noEmit` pass |
 | npm build | Pass | `tsc && vite build` pass |
+
+Dev handoff status:
+
+- QA closure pass selesai: `QA-MASTER-PROKERIN.md` tidak lagi punya item checklist kosong selain legend.
+- Automated gates hijau: PHP test, lint, build, dan Pint pass.
+- Dev bisa mulai dari open findings `QA-OPEN-001` sampai `QA-OPEN-020`; prioritas tertinggi adalah route/form yang masih dummy/static dan guard finance/proker tenant scope.
+- Item `[S]` di master adalah validasi manual/device/infra seperti Lighthouse, real mobile, raw S3 behavior, CSRF browser-level, dan worker/Supervisor, bukan blocker untuk mulai fix backlog aplikasi.
 
 Area yang sudah cukup aman dari automated QA:
 
@@ -102,6 +110,9 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 | QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
 | QA-OPEN-016 | High | Finance Access Control | GET route finance belum role-gated; member biasa yang menyembunyikan menu finance di sidebar masih bisa membuka direct URL `/finance`, `/finance/realization`, dan `/finance/approval`. | `routes/web.php:108`, `routes/web.php:114`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:16`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:37`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:19`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:50`. | Data RAB, realisasi, receipt status, dan approval queue bisa terbaca oleh role yang seharusnya tidak punya akses finance. |
 | QA-OPEN-017 | High | Proker Cross-Tenant Index | `/proker` masih membaca `workspaceMock`, sehingga org2/user mana pun berpotensi melihat sample proyek org lain seperti `Seminar Karier Digital`, `Workshop UI/UX HMIF`, dan `Makrab Angkatan 2026`. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Data/workspaceMock.ts:29`, `resources/js/Data/workspaceMock.ts:38`, `resources/js/Data/workspaceMock.ts:47`. | Checklist F6.2 fail: list proker belum tenant-scoped dan bisa memberi kesan ada data organisasi lain. |
+| QA-OPEN-018 | High | Project Status & Progress | Proker belum punya route/action status transition lengkap, dan update task status belum menghitung ulang `projects.progress`. | `app/Http/Requests/UpdateProjectRequest.php:36`, `app/Actions/Task/UpdateTaskStatusAction.php:28`, `app/Actions/Task/UpdateTaskStatusAction.php:33`. | Flow proker end-to-end belum bisa mencapai progress 100% dari task completion. |
+| QA-OPEN-019 | High | Task Assignment UX | `/tasks/assignments` masih static rows dan tombol `Assign PIC` belum submit ke route backend; Kanban juga belum punya quick-add/overdue visual state. | `resources/js/Pages/Task/Assignments.tsx:8`, `resources/js/Pages/Task/Assignments.tsx:52`, `resources/js/Pages/Task/Kanban.tsx:25`, `resources/js/Pages/Task/Kanban.tsx:60`. | Assign PIC, non-member guard dari UI, quick-add, dan overdue badge belum dapat dipakai user. |
+| QA-OPEN-020 | High | LPJ Checklist & Export | LPJ checklist bisa submit/review/approve, tetapi belum ada toggle item persistence, trigger export PDF khusus LPJ dari UI, dan checklist belum jelas mengambil completed task execution data. | `resources/js/Pages/Reports/LpjChecklist.tsx:63`, `resources/js/Pages/Reports/LpjChecklist.tsx:73`, `resources/js/Pages/Reports/LpjChecklist.tsx:84`. | Full proker lifecycle berhenti sebelum LPJ operasional benar-benar selesai. |
 
 Catatan verifikasi tambahan:
 
@@ -112,9 +123,11 @@ Catatan verifikasi tambahan:
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
-- Latest full regression after role-demotion and proker-index QA refresh `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `364 passed, 1935 assertions`.
+- Targeted multi-tenant finance/security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/MultiTenantFinanceAccessTest.php` -> `3 passed, 30 assertions`.
+- Latest full regression after QA closure pass `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `367 passed, 1965 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
+- PHP formatter gate `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
 
 ---
