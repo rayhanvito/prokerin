@@ -29,7 +29,7 @@
 | MVP Core | M01–M13 | ✅ All complete and verified |
 | Post-MVP Wave 1 | M14–M16 | ✅ Complete |
 | Post-MVP Wave 2 | M19 | ✅ Complete |
-| Post-MVP Active | M17 | 🔲 Next target |
+| Post-MVP Active | M17 | 〜 WhatsApp reminder foundation started |
 | Post-MVP Planned | M18, M20–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -40,6 +40,11 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M17 notifications browser smoke passed on `/notifications`; WhatsApp card, WhatsApp rule channel, and delivery log table render.
+- `[x]` 2026-05-16 · M17 local migration `2026_05_16_000011_create_whatsapp_delivery_logs_table.php` applied cleanly; `php artisan db:seed` refreshed WhatsApp notification defaults.
+- `[x]` 2026-05-16 · After M17 WhatsApp foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **220 passed, 1018 assertions**.
+- `[x]` 2026-05-16 · After M17 WhatsApp foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskDeadlineReminderNotificationTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php` → **9 passed, 25 assertions**.
+- `[x]` 2026-05-16 · After M17 WhatsApp foundation: `npm run build` passed.
 - `[x]` 2026-05-16 · M19 transition browser smoke passed on `/organization/handover`; page renders incoming-owner and recipient-period summary after migration.
 - `[x]` 2026-05-16 · M19 local migration `2026_05_16_000010_add_transition_fields_to_handover_packages.php` applied cleanly.
 - `[x]` 2026-05-16 · After M19 incoming-owner policy: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **216 passed, 1009 assertions**.
@@ -542,19 +547,21 @@ certificate_recipients
 
 ### M17 · WhatsApp Reminder
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
 
 #### Product Goal
 Send proker deadline reminders, approval notifications, and meeting alerts directly to members' WhatsApp — increasing response speed vs email alone.
 
 #### Scope to Build
-- [ ] `.env.example` variables: `WHATSAPP_API_URL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_FROM_NUMBER`.
-- [ ] `WhatsAppNotificationChannel` — Laravel notification channel abstraction (implements `send()`).
-- [ ] `SendWhatsAppReminderJob` (queued) — wraps HTTP call to provider; handles timeout.
-- [ ] `whatsapp_delivery_logs` table: `id`, `organization_id`, `user_id`, `message_type`, `status` (queued/sent/failed), `provider_response`, `sent_at`, `failed_at`.
-- [ ] Retry logic: 3 attempts with exponential backoff; mark `failed` after exhaustion.
-- [ ] Tenant/user opt-in guard: only send if user has WhatsApp delivery enabled in `notification_rules`.
-- [ ] Admin UI: WhatsApp delivery log per organization.
+- [x] `.env.example` variables: `WHATSAPP_API_URL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_FROM_NUMBER`.
+- [x] `WhatsAppNotificationChannel` — Laravel notification channel abstraction (implements `send()`).
+- [x] `SendWhatsAppReminderJob` (queued) — wraps HTTP call to provider; handles timeout.
+- [x] `whatsapp_delivery_logs` table: `id`, `organization_id`, `user_id`, `message_type`, `status` (queued/sent/failed), `provider_response`, `sent_at`, `failed_at`.
+- [x] Retry logic: 3 attempts with exponential backoff; mark `failed` after exhaustion.
+- [x] Tenant/user opt-in guard: only send if user has WhatsApp delivery enabled in `notification_rules`.
+- [x] Admin UI: WhatsApp delivery log per organization.
+- [ ] Extend WhatsApp delivery beyond task deadline reminders to approval notifications and meeting alerts.
+- [ ] Replace direct HTTP facade use with a swappable fake/real provider class if provider-specific behavior grows.
 
 #### Rules
 - Never hardcode provider token, URL, or phone number in code.
@@ -562,10 +569,18 @@ Send proker deadline reminders, approval notifications, and meeting alerts direc
 - Fake provider must implement the same interface as real provider.
 
 #### Test Coverage Required
-- [ ] Unit: `WhatsAppNotificationChannel` sends via fake provider.
-- [ ] Feature: job dispatched when task deadline < 24h.
-- [ ] Feature: delivery log written on success and failure.
-- [ ] Feature: opt-out user does not receive message.
+- [x] Unit/feature: `WhatsAppNotificationChannel` queues provider job.
+- [x] Feature: job dispatched when task deadline < 24h.
+- [x] Feature: delivery log written on success and failure.
+- [x] Feature: opt-out rule does not queue WhatsApp message.
+
+#### Verification
+- `[x]` 2026-05-16 · Browser smoke passed for `/notifications`; WhatsApp card, WhatsApp channel rule, and delivery log table render.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000011_create_whatsapp_delivery_logs_table.php`.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` refreshed WhatsApp default channel and seeded dev WhatsApp numbers.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskDeadlineReminderNotificationTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php` → **9 passed, 25 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **220 passed, 1018 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 
 ---
 
@@ -750,7 +765,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+1. **Continue M17** — add WhatsApp delivery for approval notifications and meeting alerts, then decide whether a provider interface is needed before marking complete.
 2. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
 3. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
 4. **M22 (Payment)** only after M21 is stable.

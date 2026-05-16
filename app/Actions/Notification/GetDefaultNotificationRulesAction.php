@@ -19,7 +19,7 @@ final class GetDefaultNotificationRulesAction
             new NotificationRuleData(
                 event: NotificationEvent::TaskDeadlineReminder,
                 audience: 'Assigned PIC',
-                channels: [NotificationChannel::InApp, NotificationChannel::Email],
+                channels: [NotificationChannel::InApp, NotificationChannel::Email, NotificationChannel::WhatsApp],
                 trigger: 'H-1 deadline',
             ),
             new NotificationRuleData(

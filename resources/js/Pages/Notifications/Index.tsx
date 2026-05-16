@@ -22,10 +22,10 @@ const channels = [
         status: 'Queue later',
     },
     {
-        title: 'Push',
-        description: 'Cadangan untuk PWA notification post-MVP.',
+        title: 'WhatsApp',
+        description: 'Reminder deadline task langsung ke nomor pengurus yang opt-in.',
         icon: Smartphone,
-        status: 'Post-MVP',
+        status: 'M17 active',
     },
 ];
 
@@ -38,12 +38,23 @@ interface NotificationRulePayload {
     status: 'planned' | 'active';
 }
 
+interface WhatsAppDeliveryLogPayload {
+    id: number;
+    recipient: string;
+    messageType: string;
+    status: string;
+    sentAt: string | null;
+    failedAt: string | null;
+}
+
 interface NotificationsIndexProps {
     notificationRules: NotificationRulePayload[];
+    whatsappLogs: WhatsAppDeliveryLogPayload[];
 }
 
 export default function NotificationsIndex({
     notificationRules,
+    whatsappLogs,
 }: NotificationsIndexProps) {
     const { post, processing } = useForm();
     const rows = notificationRules.map((rule) => ({
@@ -52,6 +63,12 @@ export default function NotificationsIndex({
         event: rule.label,
         status: humanizeStatus(rule.status),
         trigger: rule.trigger,
+    }));
+    const whatsappRows = whatsappLogs.map((log) => ({
+        messageType: humanizeStatus(log.messageType),
+        recipient: log.recipient,
+        sentAt: log.sentAt ?? log.failedAt ?? '-',
+        status: humanizeStatus(log.status),
     }));
 
     const simulateDeadlineReminders = (): void => {
@@ -125,6 +142,22 @@ export default function NotificationsIndex({
                             { key: 'status', label: 'Status' },
                         ]}
                         rows={rows}
+                        statusKey="status"
+                    />
+                </VihoCard>
+
+                <VihoCard
+                    title="WhatsApp Delivery Log"
+                    subtitle="Riwayat 10 pengiriman terakhir untuk organisasi aktif."
+                >
+                    <VihoDataTable
+                        columns={[
+                            { key: 'messageType', label: 'Type' },
+                            { key: 'recipient', label: 'Recipient' },
+                            { key: 'status', label: 'Status' },
+                            { key: 'sentAt', label: 'Timestamp' },
+                        ]}
+                        rows={whatsappRows}
                         statusKey="status"
                     />
                 </VihoCard>

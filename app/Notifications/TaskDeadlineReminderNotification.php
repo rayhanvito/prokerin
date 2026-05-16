@@ -35,6 +35,11 @@ final class TaskDeadlineReminderNotification extends Notification implements Sho
             ->action('Buka Task Kanban', route('tasks.kanban'));
     }
 
+    public function toWhatsApp(object $notifiable): string
+    {
+        return "Reminder Prokerin: task {$this->taskTitle} untuk {$this->projectName} deadline {$this->dueAt}.";
+    }
+
     /**
      * @return array{taskTitle: string, projectName: string, dueAt: string}
      */

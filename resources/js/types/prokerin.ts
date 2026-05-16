@@ -62,7 +62,7 @@ export type ExportDocumentType = 'proposal' | 'lpj';
 
 export type ExportFormat = 'pdf' | 'docx';
 
-export type NotificationChannel = 'in_app' | 'email';
+export type NotificationChannel = 'in_app' | 'email' | 'whatsapp';
 
 export type NotificationEvent =
     | 'task_deadline_reminder'

@@ -239,11 +239,9 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Certificates/Issue', $certificates->execute((int) $request->user()->id));
     }
 
-    public function notificationsIndex(GetNotificationRulePayloadAction $notificationRules): Response
+    public function notificationsIndex(Request $request, GetNotificationRulePayloadAction $notificationRules): Response
     {
-        return Inertia::render('Notifications/Index', [
-            'notificationRules' => $notificationRules->execute(),
-        ]);
+        return Inertia::render('Notifications/Index', $notificationRules->execute((int) $request->user()->id));
     }
 
     public function adminIndex(GetAdminPanelPayloadAction $adminPanel): Response

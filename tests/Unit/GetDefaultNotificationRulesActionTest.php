@@ -18,6 +18,7 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
         $this->assertCount(5, $rules);
         $this->assertSame(NotificationEvent::TaskDeadlineReminder, $rules[0]->event);
         $this->assertContains(NotificationChannel::Email, $rules[0]->channels);
+        $this->assertContains(NotificationChannel::WhatsApp, $rules[0]->channels);
     }
 
     public function test_finance_approval_rule_targets_treasurer_in_app(): void
@@ -36,7 +37,7 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
 
         $this->assertSame('task_deadline_reminder', $payload['event']);
         $this->assertSame('Task deadline reminder', $payload['label']);
-        $this->assertSame(['in_app', 'email'], $payload['channels']);
+        $this->assertSame(['in_app', 'email', 'whatsapp'], $payload['channels']);
         $this->assertSame('planned', $payload['status']);
     }
 }

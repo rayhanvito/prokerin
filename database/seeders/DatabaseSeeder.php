@@ -56,20 +56,21 @@ final class DatabaseSeeder extends Seeder
     private function seedUsers($now): void
     {
         foreach ([
-            ['name' => 'Dimas Aji', 'email' => 'owner@prokerin.test'],
-            ['name' => 'Nadia Putri', 'email' => 'admin@prokerin.test'],
-            ['name' => 'Salsa Kirana', 'email' => 'sekretaris@prokerin.test'],
-            ['name' => 'Raka Pratama', 'email' => 'bendahara@prokerin.test'],
-            ['name' => 'Fajar Nugroho', 'email' => 'lead@prokerin.test'],
-            ['name' => 'Mira Anggraini', 'email' => 'koordinator@prokerin.test'],
-            ['name' => 'Ardi Saputra', 'email' => 'member@prokerin.test'],
-            ['name' => 'Tari Lestari', 'email' => 'viewer@prokerin.test'],
-            ['name' => 'Test User', 'email' => 'test@example.com'],
+            ['name' => 'Dimas Aji', 'email' => 'owner@prokerin.test', 'whatsapp_number' => '+628111111111'],
+            ['name' => 'Nadia Putri', 'email' => 'admin@prokerin.test', 'whatsapp_number' => '+628122222222'],
+            ['name' => 'Salsa Kirana', 'email' => 'sekretaris@prokerin.test', 'whatsapp_number' => '+628133333333'],
+            ['name' => 'Raka Pratama', 'email' => 'bendahara@prokerin.test', 'whatsapp_number' => '+628144444444'],
+            ['name' => 'Fajar Nugroho', 'email' => 'lead@prokerin.test', 'whatsapp_number' => '+628155555555'],
+            ['name' => 'Mira Anggraini', 'email' => 'koordinator@prokerin.test', 'whatsapp_number' => '+628166666666'],
+            ['name' => 'Ardi Saputra', 'email' => 'member@prokerin.test', 'whatsapp_number' => '+628177777777'],
+            ['name' => 'Tari Lestari', 'email' => 'viewer@prokerin.test', 'whatsapp_number' => '+628188888888'],
+            ['name' => 'Test User', 'email' => 'test@example.com', 'whatsapp_number' => null],
         ] as $user) {
             DB::table('users')->updateOrInsert(
                 ['email' => $user['email']],
                 [
                     'name' => $user['name'],
+                    'whatsapp_number' => $user['whatsapp_number'],
                     'email_verified_at' => $now,
                     'password' => Hash::make('password'),
                     'remember_token' => Str::random(10),
