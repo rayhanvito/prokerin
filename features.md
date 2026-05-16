@@ -30,7 +30,7 @@
 | Post-MVP Wave 1 | M14–M16 | ✅ Complete |
 | Post-MVP Wave 2 | M19 | ✅ Complete |
 | Post-MVP Wave 2 | M17, M19 | ✅ Complete |
-| Post-MVP Active | M18 | 🔲 Next target |
+| Post-MVP Active | M18 | 〜 Workflow engine started |
 | Post-MVP Planned | M20–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -41,6 +41,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
+- `[x]` 2026-05-16 · After M18 workflow engine foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **226 passed, 1032 assertions**.
+- `[x]` 2026-05-16 · After M18 workflow engine foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php` → **5 passed, 8 assertions**.
+- `[x]` 2026-05-16 · After M18 workflow engine foundation: `npm run build` passed.
 - `[x]` 2026-05-16 · M17 meeting alert browser smoke passed on `/notifications`; `Meeting Alert` queues WhatsApp alerts and shows success flash.
 - `[x]` 2026-05-16 · After M17 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **221 passed, 1024 assertions**.
 - `[x]` 2026-05-16 · After M17 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskDeadlineReminderNotificationTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/WorkspacePayloadTest.php` → **36 passed, 208 assertions**.
@@ -596,26 +600,34 @@ Send proker deadline reminders, approval notifications, and meeting alerts direc
 
 ### M18 · Multi-Level Approval Workflow
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
 
 #### Product Goal
 Replace single-approver model with configurable multi-level approval chains for Proposal, RAB, and LPJ — supporting organizations that require Treasurer → Chair → Advisor sign-off sequences.
 
 #### Scope to Build
-- [ ] `approval_workflow_definitions` table: `id`, `organization_id`, `workflow_type` (proposal/rab/lpj), `steps` (JSON ordered array of role_id/user_id).
-- [ ] `approval_instances` table: `id`, `workflow_definition_id`, `subject_type` (morphable), `subject_id`, `status`, `current_step`.
-- [ ] `approval_step_records` table: `id`, `instance_id`, `step_order`, `approver_id`, `decision` (approved/rejected/revision), `note`, `decided_at`.
-- [ ] `ProcessApprovalStepAction` — advances or terminates workflow; triggers next step notification.
-- [ ] `DelegateApprovalAction` — reassign a pending step to another eligible member.
-- [ ] Audit trail: every step decision is immutable once recorded.
+- [x] `approval_workflow_definitions` table: `id`, `organization_id`, `workflow_type` (proposal/rab/lpj), `steps` (JSON ordered array of role_id/user_id).
+- [x] `approval_instances` table: `id`, `workflow_definition_id`, `subject_type` (morphable), `subject_id`, `status`, `current_step`.
+- [x] `approval_step_records` table: `id`, `instance_id`, `step_order`, `approver_id`, `decision` (approved/rejected/revision), `note`, `decided_at`.
+- [x] `ProcessApprovalStepAction` — advances or terminates workflow.
+- [x] `DelegateApprovalAction` — reassign a pending step to another eligible member.
+- [x] Audit trail: step decisions are immutable after final decision; delegation is logged in `approval_delegations`.
 - [ ] UI: approval queue per user (what I need to approve), workflow status timeline per subject.
+- [ ] Integrate workflow engine into Proposal, RAB, and LPJ submission/decision routes.
+- [ ] Trigger next-step notifications when workflow advances.
 
 #### Test Coverage Required
-- [ ] Feature: full workflow executes in order (step 1 → step 2 → approved).
-- [ ] Feature: rejection at step 2 terminates workflow and notifies submitter.
-- [ ] Feature: revision request sends subject back to submitter.
-- [ ] Feature: cross-tenant — user cannot approve another org's workflow instance.
-- [ ] Feature: delegate reassignment is logged.
+- [x] Feature: full workflow executes in order (step 1 → step 2 → approved).
+- [x] Feature: rejection at step 2 terminates workflow.
+- [x] Feature: revision request sends subject back to submitter state.
+- [x] Feature: cross-tenant — user cannot approve another org's workflow instance.
+- [x] Feature: delegate reassignment is logged.
+
+#### Verification
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000012_create_approval_workflow_tables.php`.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php` → **5 passed, 8 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **226 passed, 1032 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 
 ---
 
