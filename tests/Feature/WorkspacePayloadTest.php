@@ -59,6 +59,7 @@ final class WorkspacePayloadTest extends TestCase
             ->component('Organization/SponsorsVendors')
             ->where('filters.type', 'vendor')
             ->where('filters.search', 'Audio')
+            ->where('canManage', true)
             ->where('metrics.total', 3)
             ->has('contacts', 1)
             ->where('contacts.0.name', 'CV Audio Visual Nusantara')

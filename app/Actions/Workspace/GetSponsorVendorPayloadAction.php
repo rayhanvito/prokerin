@@ -9,13 +9,17 @@ use Illuminate\Support\Facades\DB;
 final class GetSponsorVendorPayloadAction
 {
     /**
-     * @return array{filters: array{search: string, type: string}, metrics: array{total: int, active: int, sponsors: int, vendors: int}, contacts: array<int, array{id: int, type: string, name: string, category: string, contactPerson: string, phone: string, email: string, status: string, notes: string, linkedProjects: int, totalAmount: int, documents: int}>}
+     * @return array{filters: array{search: string, type: string}, canManage: bool, metrics: array{total: int, active: int, sponsors: int, vendors: int}, contacts: array<int, array{id: int, type: string, name: string, category: string, contactPerson: string, phone: string, email: string, address: string, status: string, notes: string, linkedProjects: int, totalAmount: int, documents: int}>}
      */
     public function execute(int $actorUserId, ?string $search = null, ?string $type = null): array
     {
         $organizationIds = DB::table('organization_members')
             ->where('user_id', $actorUserId)
             ->pluck('organization_id');
+        $canManage = DB::table('organization_members')
+            ->where('user_id', $actorUserId)
+            ->whereIn('role', ['organization_owner', 'organization_admin'])
+            ->exists();
 
         $normalizedSearch = trim((string) $search);
         $normalizedType = in_array($type, ['sponsor', 'vendor'], true) ? (string) $type : 'all';
@@ -44,6 +48,7 @@ final class GetSponsorVendorPayloadAction
                 'sponsors_vendors.contact_person',
                 'sponsors_vendors.phone',
                 'sponsors_vendors.email',
+                'sponsors_vendors.address',
                 'sponsors_vendors.status',
                 'sponsors_vendors.notes',
                 DB::raw('count(distinct sponsor_vendor_project_links.project_id) as linked_projects'),
@@ -58,6 +63,7 @@ final class GetSponsorVendorPayloadAction
                 'sponsors_vendors.contact_person',
                 'sponsors_vendors.phone',
                 'sponsors_vendors.email',
+                'sponsors_vendors.address',
                 'sponsors_vendors.status',
                 'sponsors_vendors.notes',
             ])
@@ -73,6 +79,7 @@ final class GetSponsorVendorPayloadAction
                 'contactPerson' => (string) ($contact->contact_person ?? '-'),
                 'phone' => (string) ($contact->phone ?? '-'),
                 'email' => (string) ($contact->email ?? '-'),
+                'address' => (string) ($contact->address ?? ''),
                 'status' => (string) $contact->status,
                 'notes' => (string) ($contact->notes ?? ''),
                 'linkedProjects' => (int) $contact->linked_projects,
@@ -86,6 +93,7 @@ final class GetSponsorVendorPayloadAction
                 'search' => $normalizedSearch,
                 'type' => $normalizedType,
             ],
+            'canManage' => $canManage,
             'metrics' => [
                 'total' => (clone $baseQuery)->count(),
                 'active' => (clone $baseQuery)->where('status', 'active')->count(),

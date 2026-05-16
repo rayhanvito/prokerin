@@ -44,6 +44,10 @@ All entries are recorded in reverse-chronological order. Always add a new entry 
 
 - `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
 - `[x]` 2026-05-16 · M20 local migration `2026_05_16_000013_create_sponsor_vendor_tables.php` applied and `php artisan db:seed` added demo sponsor/vendor contacts.
+- `[x]` 2026-05-16 · M20 form browser smoke passed on `/organization/sponsors-vendors`; create form, edit controls, and seed contacts render with no console errors.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor CRUD forms: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **240 passed, 1117 assertions**.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor CRUD forms: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SponsorVendorTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **13 passed, 203 assertions**.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor CRUD forms: `npm run build` passed.
 - `[x]` 2026-05-16 · M20 browser smoke passed on `/organization/sponsors-vendors?type=vendor&search=Audio`; filtered vendor contact renders with no console errors.
 - `[x]` 2026-05-16 · After M20 sponsor/vendor foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **237 passed, 1107 assertions**.
 - `[x]` 2026-05-16 · After M20 sponsor/vendor foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **10 passed, 193 assertions**.
@@ -735,11 +739,16 @@ Maintain a reusable contact book of sponsors and vendors per organization — se
 - [x] `sponsors_vendors` table: `id`, `organization_id`, `type` (sponsor/vendor), `name`, `category`, `contact_person`, `phone`, `email`, `address`, `status` (active/inactive), `notes`.
 - [x] `sponsor_vendor_project_links` table: `id`, `sponsor_vendor_id`, `project_id`, `role_description`, `amount`, `linked_at`.
 - [x] `sponsor_vendor_documents` table: `id`, `sponsor_vendor_id`, `document_id` (FK to documents).
-- [~] Inertia pages: list is searchable/filterable; detail with history and create/edit form are still pending.
-- [~] Tests: tenant scoping and cross-org read prevention covered; CRUD authorization (admin+ only) still pending.
+- [~] Inertia pages: list is searchable/filterable and create/edit forms are wired; detail page with history is still pending.
+- [x] Tests: tenant scoping, cross-org read prevention, and CRUD authorization (admin+ only) covered.
 
 #### Verification
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000013_create_sponsor_vendor_tables.php`.
+- `[x]` 2026-05-16 · Sponsor/vendor create and edit forms wired on list page with owner/admin authorization.
+- `[x]` 2026-05-16 · Browser smoke passed for `/organization/sponsors-vendors`; create form, edit controls, `Bank Jatim Youth Program`, and `CV Audio Visual Nusantara` render with no console errors.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SponsorVendorTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **13 passed, 203 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **240 passed, 1117 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` added demo sponsor/vendor contacts, project links, and document links.
 - `[x]` 2026-05-16 · Browser smoke passed for `/organization/sponsors-vendors?type=vendor&search=Audio`; page renders filtered `CV Audio Visual Nusantara` with no console errors.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **10 passed, 193 assertions**.
@@ -832,7 +841,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Continue M20** with sponsor/vendor detail history and create/edit forms with admin-only authorization.
+1. **Continue M20** with sponsor/vendor detail history page showing linked projects and documents.
 2. **Start M21 (Event Registration)** only after M20 is complete or explicitly deprioritized.
 3. **M22 (Payment)** only after M21 is stable.
 4. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.

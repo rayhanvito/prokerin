@@ -29,6 +29,7 @@ use App\Http\Controllers\ProjectTemplateGenerationController;
 use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\ProposalApprovalDecisionController;
 use App\Http\Controllers\ProposalDraftController;
+use App\Http\Controllers\SponsorVendorController;
 use App\Http\Controllers\TaskDeadlineReminderController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
@@ -66,6 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
         Route::get('/sponsors-vendors', [WorkspacePageController::class, 'organizationSponsorsVendors'])->name('sponsors-vendors');
+        Route::post('/sponsors-vendors', [SponsorVendorController::class, 'store'])->name('sponsors-vendors.store');
+        Route::patch('/sponsors-vendors/{sponsorVendor}', [SponsorVendorController::class, 'update'])->name('sponsors-vendors.update');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
         Route::post('/handover/packages/{package}/export', [HandoverPackageExportController::class, 'store'])->name('handover.packages.export');
         Route::patch('/handover/packages/{package}/status', [HandoverPackageStatusController::class, 'update'])->name('handover.packages.status');
