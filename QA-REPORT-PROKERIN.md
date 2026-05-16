@@ -13,7 +13,7 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `353 passed, 1866 assertions` |
+| PHP feature/unit test | Pass | `354 passed, 1880 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
@@ -24,6 +24,7 @@ Status automated regression terakhir:
 | Targeted handover/sponsor/approval | Pass | `26 passed, 146 assertions` |
 | Targeted landing/campus/admin payload | Pass | `7 passed, 88 assertions` |
 | Targeted attendance/certificate/notification | Pass | `31 passed, 171 assertions` |
+| Targeted certificate verification | Pass | `10 passed, 88 assertions` |
 | Targeted meeting/event/payment | Pass | `28 passed, 184 assertions` |
 | Pint targeted | Pass | Tidak ada formatting violation |
 | npm lint | Pass | `tsc --noEmit` pass |
@@ -100,7 +101,7 @@ Catatan verifikasi tambahan:
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
-- Latest full regression after mutation security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `353 passed, 1866 assertions`.
+- Latest full regression after certificate invalid-token coverage `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `354 passed, 1880 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.

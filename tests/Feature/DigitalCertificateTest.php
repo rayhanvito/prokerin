@@ -168,6 +168,16 @@ final class DigitalCertificateTest extends TestCase
                 ->where('certificate.verificationUrl', route('certificates.verify', ['token' => '11111111-1111-4111-8111-111111111111'])));
     }
 
+    public function test_public_verification_route_handles_invalid_token(): void
+    {
+        $this->get(route('certificates.verify', ['token' => 'fake-token']))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Certificates/Verify')
+                ->where('isValid', false)
+                ->where('certificate', null));
+    }
+
     public function test_cross_tenant_user_cannot_download_other_organization_certificate(): void
     {
         Storage::fake('s3');

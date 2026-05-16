@@ -415,7 +415,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 18.6 | Certificate number format | Check issued certificate number | Format: PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE} | `[P]` |
 | 18.7 | Download certificate | Authenticated member downloads | Signed URL → PDF downloaded | `[P]` |
 | 18.8 | Public verification | Visit /verify/{token} without login | Verification page loads, shows recipient details + QR | `[P]` |
-| 18.9 | Invalid verification token | Visit /verify/fake-token | 404 or "Certificate not found" | `[ ]` |
+| 18.9 | Invalid verification token | Visit /verify/fake-token | 404 or "Certificate not found" | `[P]` |
 | 18.10 | Cross-tenant | org2 tries to download org1 certificate | 403 | `[P]` |
 | 18.11 | Non-owner cannot issue | Login as member → try to issue | No issue button visible / 403 | `[P]` |
 
