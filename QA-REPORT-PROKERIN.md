@@ -13,9 +13,9 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `352 passed, 1800 assertions` |
+| PHP feature/unit test | Pass | `353 passed, 1866 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
-| Targeted expanded guest-route security | Pass | `2 passed, 67 assertions` |
+| Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
 | Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
@@ -30,6 +30,7 @@ Area yang sudah cukup aman dari automated QA:
 - Auth dasar: register, login, logout, remember me, password reset, email verification prompt.
 - Security guest redirect: `/dashboard`, `/proker/create`, `/finance`, `/internal-admin`.
 - Expanded guest redirect sweep: main workspace GET pages across Proker, Organization, Task, Finance, Reports, Documents, Members, Meetings, Events, Attendance, Certificates, Notifications, and Admin.
+- Expanded guest mutation sweep: main workspace POST/PATCH/PUT/DELETE action routes redirect guests to `/login`.
 - Dashboard role variant dan sidebar filtering.
 - Super Admin access, asset loading, icon sizing, impersonation audit, destructive action hardening.
 - Organization logo upload dan MIME rejection.
@@ -90,6 +91,8 @@ Catatan verifikasi tambahan:
 - Full regression `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1740 assertions`.
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
+- Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
+- Latest full regression after mutation security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `353 passed, 1866 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
@@ -203,7 +206,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | Area | Status QA | Catatan |
 |---|---|---|
 | Main workspace GET routes unauthenticated | Pass | Expanded automated sweep redirects guest access to `/login` across main workspace pages. |
-| Organization mutation routes unauthenticated | Belum audited penuh | POST/PATCH/DELETE CSRF/auth coverage masih perlu explicit sweep. |
+| Main workspace mutation routes unauthenticated | Pass | Expanded automated sweep redirects guest POST/PATCH/PUT/DELETE action routes to `/login`. |
 | Cross-tenant dashboard isolation | Pass | Dashboard org lain tidak bocor dari automated tests. |
 | Cross-tenant proker/finance/document | Belum lengkap | Perlu test semua route detail/download/action. |
 | File upload MIME validation | Partial | Logo upload sudah, document/receipt/certificate asset belum semua. |
