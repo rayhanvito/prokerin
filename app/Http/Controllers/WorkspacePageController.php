@@ -29,6 +29,7 @@ use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
 use App\Domain\Document\DocumentVisibility;
 use App\DTOs\Document\DocumentUploadCandidateData;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -40,8 +41,20 @@ final class WorkspacePageController extends Controller
         Request $request,
         DashboardRoleResolverAction $roleResolver,
         DashboardPayloadAction $dashboardPayload,
-    ): Response {
+    ): Response|RedirectResponse {
         $user = $request->user();
+
+        // Route platform-level admins to their dedicated panels rather than the org dashboard.
+        if ($user !== null) {
+            if (method_exists($user, 'hasRole') && $user->hasRole('super_admin')) {
+                return redirect()->to('/internal-admin');
+            }
+
+            if (DB::table('campuses')->where('admin_user_id', $user->id)->exists()) {
+                return redirect()->route('campus.dashboard');
+            }
+        }
+
         $organizationId = (int) DB::table('organization_members')
             ->where('user_id', $user?->id)
             ->orderBy('id')
