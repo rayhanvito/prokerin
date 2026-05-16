@@ -26,9 +26,9 @@ use Inertia\Response;
 
 final class WorkspacePageController extends Controller
 {
-    public function dashboard(GetDashboardOverviewAction $overview): Response
+    public function dashboard(Request $request, GetDashboardOverviewAction $overview): Response
     {
-        return Inertia::render('Dashboard', $overview->execute());
+        return Inertia::render('Dashboard', $overview->execute((int) $request->user()->id));
     }
 
     public function prokerIndex(): Response

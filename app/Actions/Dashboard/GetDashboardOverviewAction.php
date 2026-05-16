@@ -36,35 +36,53 @@ final readonly class GetDashboardOverviewAction
      *     memberSummary: array{value: string, note: string}
      * }
      */
-    public function execute(): array
+    public function execute(int $actorUserId): array
     {
-        $budgetSummary = $this->budgetSummary->execute($this->budgetLines());
-        $taskSummary = $this->taskSummary->execute($this->taskLines(), new DateTimeImmutable);
-        $lpjReadiness = $this->lpjReadiness->execute($this->lpjItems());
+        $organizationIds = $this->organizationIds($actorUserId);
+        $budgetSummary = $this->budgetSummary->execute($this->budgetLines($organizationIds));
+        $taskSummary = $this->taskSummary->execute($this->taskLines($organizationIds), new DateTimeImmutable);
+        $lpjReadiness = $this->lpjReadiness->execute($this->lpjItems($organizationIds));
 
         return [
-            'metrics' => $this->metrics($taskSummary, $budgetSummary, $lpjReadiness),
-            'priorityProjects' => $this->priorityProjects(),
-            'weeklyFocus' => $this->weeklyFocus(),
+            'metrics' => $this->metrics($taskSummary, $budgetSummary, $lpjReadiness, $organizationIds),
+            'priorityProjects' => $this->priorityProjects($organizationIds),
+            'weeklyFocus' => $this->weeklyFocus($organizationIds),
             'memberSummary' => [
-                'value' => DB::table('organization_members')->count().' anggota aktif',
+                'value' => DB::table('organization_members')->whereIn('organization_id', $organizationIds)->count().' anggota aktif',
                 'note' => 'Role dan akses disiapkan dari seed multi-role MVP.',
             ],
         ];
     }
 
     /**
+     * @return array<int, int>
+     */
+    private function organizationIds(int $actorUserId): array
+    {
+        return DB::table('organization_members')
+            ->where('user_id', $actorUserId)
+            ->orderBy('id')
+            ->pluck('organization_id')
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->all();
+    }
+
+    /**
      * @return array<int, array{label: string, value: string, note: string, tone: string}>
      */
-    private function metrics($taskSummary, $budgetSummary, $lpjReadiness): array
+    private function metrics($taskSummary, $budgetSummary, $lpjReadiness, array $organizationIds): array
     {
         return [
             (new MetricCardData(
                 'Active Proker',
                 (string) DB::table('projects')
+                    ->whereIn('organization_id', $organizationIds)
                     ->whereNotIn('status', [ProjectStatus::Completed->value, ProjectStatus::Archived->value])
                     ->count(),
-                DB::table('projects')->where('status', ProjectStatus::ProposalReview->value)->count().' masuk fase proposal',
+                DB::table('projects')
+                    ->whereIn('organization_id', $organizationIds)
+                    ->where('status', ProjectStatus::ProposalReview->value)
+                    ->count().' masuk fase proposal',
                 DashboardTone::Primary,
             ))->toArray(),
             (new MetricCardData(
@@ -91,10 +109,11 @@ final readonly class GetDashboardOverviewAction
     /**
      * @return array<int, array{title: string, meta: string, status: string, progress: int, href: string|null}>
      */
-    private function priorityProjects(): array
+    private function priorityProjects(array $organizationIds): array
     {
         return DB::table('projects')
             ->join('organizations', 'organizations.id', '=', 'projects.organization_id')
+            ->whereIn('projects.organization_id', $organizationIds)
             ->select('projects.name', 'projects.status', 'projects.progress', 'organizations.name as organization_name')
             ->orderByDesc('projects.progress')
             ->limit(3)
@@ -112,10 +131,11 @@ final readonly class GetDashboardOverviewAction
     /**
      * @return array<int, string>
      */
-    private function weeklyFocus(): array
+    private function weeklyFocus(array $organizationIds): array
     {
         return DB::table('project_tasks')
             ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+            ->whereIn('projects.organization_id', $organizationIds)
             ->where('project_tasks.status', '!=', TaskStatus::Done->value)
             ->orderBy('project_tasks.due_at')
             ->limit(4)
@@ -127,11 +147,12 @@ final readonly class GetDashboardOverviewAction
     /**
      * @return array<int, TaskLineData>
      */
-    private function taskLines(): array
+    private function taskLines(array $organizationIds): array
     {
         return DB::table('project_tasks')
             ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
             ->leftJoin('users', 'users.id', '=', 'project_tasks.pic_user_id')
+            ->whereIn('projects.organization_id', $organizationIds)
             ->get(['project_tasks.title', 'project_tasks.status', 'project_tasks.due_at', 'projects.name as project_name', 'users.name as pic_name'])
             ->map(static fn (object $task): TaskLineData => new TaskLineData(
                 title: (string) $task->title,
@@ -146,9 +167,12 @@ final readonly class GetDashboardOverviewAction
     /**
      * @return array<int, BudgetLineData>
      */
-    private function budgetLines(): array
+    private function budgetLines(array $organizationIds): array
     {
         return DB::table('budget_lines')
+            ->join('projects', 'projects.id', '=', 'budget_lines.project_id')
+            ->whereIn('projects.organization_id', $organizationIds)
+            ->select('budget_lines.*')
             ->get()
             ->map(static fn (object $line): BudgetLineData => new BudgetLineData(
                 name: (string) $line->name,
@@ -163,9 +187,12 @@ final readonly class GetDashboardOverviewAction
     /**
      * @return array<int, LpjChecklistItemData>
      */
-    private function lpjItems(): array
+    private function lpjItems(array $organizationIds): array
     {
         return DB::table('lpj_checklist_items')
+            ->join('projects', 'projects.id', '=', 'lpj_checklist_items.project_id')
+            ->whereIn('projects.organization_id', $organizationIds)
+            ->select('lpj_checklist_items.*')
             ->get()
             ->map(static fn (object $item): LpjChecklistItemData => new LpjChecklistItemData(
                 title: (string) $item->title,
