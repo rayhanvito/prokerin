@@ -53,7 +53,7 @@ final class GetAdminPanelPayloadAction
                     'status' => $filamentInstalled ? 'Ready' : 'Pending package',
                 ],
                 [
-                    'resource' => 'ExportJobResource',
+                    'resource' => 'DocumentExportResource',
                     'owner' => 'Ops',
                     'purpose' => 'PDF/DOCX queue monitoring',
                     'package' => 'Filament',

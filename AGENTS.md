@@ -540,6 +540,7 @@ chore: configure Supervisor for queue workers
 - [x] Dashboard monitoring queries scoped for M11 to authenticated user's organizations with anti-leak unit coverage for metrics, priority projects, tasks, budget, LPJ, and member summary
 - [x] Notification Basic backend added for M12 with notifications table, queued task deadline reminder notification, tenant-scoped reminder dispatch Action, simulate route/button, and feature tests
 - [x] Internal Admin readiness payload added for M13 with backend-driven resource plan, queue/export/notification health counters, Filament install detection, and feature tests
+- [x] Filament admin package and internal panel scaffold added for M13 at `/internal-admin` with Organization, User, and DocumentExport resources
 
 # Sedang dikerjakan — jangan diubah tanpa konfirmasi
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
@@ -556,7 +557,7 @@ chore: configure Supervisor for queue workers
 - [x] M10 · LPJ Generator (overview, checklist UI, LPJ readiness Action, export queue planner, checklist table, seed data, database-backed tenant-scoped checklist payload, review submission, owner/admin approval or revision flow, project status transitions, and feature tests done)
 - [x] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, database-backed tenant-scoped overview metrics, priority projects, weekly focus, member summary, and anti-leak tests done)
 - [x] M12 · Notification Basic (notification rules/channel UI, default rule Action, notification rule table, seed data, database-backed rule payload, Laravel notification table, queued task deadline reminder delivery, email/database channels, simulate route, and feature tests done)
-- [~] M13 · Admin Panel Internal (planning UI scaffold, backend readiness payload, resource plan, system health counters, and Filament install detection done; Filament package/resources still pending compatibility install)
+- [x] M13 · Admin Panel Internal (planning UI scaffold, backend readiness payload, resource plan, system health counters, Filament package install, `/internal-admin` panel provider, and Organization/User/DocumentExport resources done)
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
 - [ ] M14 · Rapat & Notulen

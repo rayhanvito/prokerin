@@ -31,7 +31,7 @@ final class AdminPanelPayloadTest extends TestCase
             ->component('Admin/Index')
             ->has('cards', 3)
             ->has('resources', 3)
-            ->where('systemHealth.filamentInstalled', false)
-            ->where('resources.0.status', 'Pending package'));
+            ->where('systemHealth.filamentInstalled', true)
+            ->where('resources.0.status', 'Ready'));
     }
 }

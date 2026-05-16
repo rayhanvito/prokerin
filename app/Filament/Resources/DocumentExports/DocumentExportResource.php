@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\DocumentExports;
+
+use App\Filament\Resources\DocumentExports\Pages\CreateDocumentExport;
+use App\Filament\Resources\DocumentExports\Pages\EditDocumentExport;
+use App\Filament\Resources\DocumentExports\Pages\ListDocumentExports;
+use App\Filament\Resources\DocumentExports\Pages\ViewDocumentExport;
+use App\Filament\Resources\DocumentExports\Schemas\DocumentExportForm;
+use App\Filament\Resources\DocumentExports\Schemas\DocumentExportInfolist;
+use App\Filament\Resources\DocumentExports\Tables\DocumentExportsTable;
+use App\Models\DocumentExport;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Table;
+
+class DocumentExportResource extends Resource
+{
+    protected static ?string $model = DocumentExport::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function form(Schema $schema): Schema
+    {
+        return DocumentExportForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return DocumentExportInfolist::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return DocumentExportsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListDocumentExports::route('/'),
+            'create' => CreateDocumentExport::route('/create'),
+            'view' => ViewDocumentExport::route('/{record}'),
+            'edit' => EditDocumentExport::route('/{record}/edit'),
+        ];
+    }
+}
