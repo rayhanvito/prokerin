@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\SuperAdmin;
 
+use App\Filament\Resources\DocumentExports\DocumentExportResource;
+use App\Models\DocumentExport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -88,6 +90,31 @@ final class FilamentAccessTest extends TestCase
         $this->actingAs($superAdmin)
             ->get('/internal-admin/notification-rules')
             ->assertOk();
+    }
+
+    public function test_document_exports_resource_is_read_only(): void
+    {
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
+        $documentExport = DocumentExport::query()->firstOrFail();
+
+        $this->actingAs($superAdmin);
+
+        $this->assertFalse(DocumentExportResource::canCreate());
+        $this->assertFalse(DocumentExportResource::canEdit($documentExport));
+        $this->assertFalse(DocumentExportResource::canDelete($documentExport));
+
+        $this->actingAs($superAdmin)
+            ->get('/internal-admin/document-exports')
+            ->assertOk();
+
+        $createResponse = $this->actingAs($superAdmin)
+            ->get('/internal-admin/document-exports/create');
+
+        $editResponse = $this->actingAs($superAdmin)
+            ->get("/internal-admin/document-exports/{$documentExport->getKey()}/edit");
+
+        $this->assertContains($createResponse->getStatusCode(), [403, 404]);
+        $this->assertContains($editResponse->getStatusCode(), [403, 404]);
     }
 
     public function test_organization_owner_cannot_open_users_resource_route(): void

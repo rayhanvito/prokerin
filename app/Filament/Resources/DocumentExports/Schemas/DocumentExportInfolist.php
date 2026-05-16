@@ -27,7 +27,11 @@ class DocumentExportInfolist
                 TextEntry::make('queue_name'),
                 TextEntry::make('engine'),
                 TextEntry::make('storage_disk'),
-                TextEntry::make('output_path'),
+                TextEntry::make('artifact_status')
+                    ->label('Artifact')
+                    ->badge()
+                    ->state(static fn ($record): string => filled($record->output_path) ? 'Stored' : 'Pending')
+                    ->color(static fn (string $state): string => $state === 'Stored' ? 'success' : 'gray'),
                 TextEntry::make('status'),
                 TextEntry::make('created_at')
                     ->dateTime()

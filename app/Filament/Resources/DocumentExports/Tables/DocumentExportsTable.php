@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\DocumentExports\Tables;
 
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -36,8 +35,11 @@ class DocumentExportsTable
                     ->searchable(),
                 TextColumn::make('storage_disk')
                     ->searchable(),
-                TextColumn::make('output_path')
-                    ->searchable(),
+                TextColumn::make('artifact_status')
+                    ->label('Artifact')
+                    ->badge()
+                    ->state(static fn ($record): string => filled($record->output_path) ? 'Stored' : 'Pending')
+                    ->color(static fn (string $state): string => $state === 'Stored' ? 'success' : 'gray'),
                 TextColumn::make('status')
                     ->searchable(),
                 TextColumn::make('created_at')
@@ -54,7 +56,6 @@ class DocumentExportsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
             ])
             ->toolbarActions([]);
     }

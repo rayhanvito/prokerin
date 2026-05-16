@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\DocumentExports;
 
-use App\Filament\Resources\DocumentExports\Pages\CreateDocumentExport;
-use App\Filament\Resources\DocumentExports\Pages\EditDocumentExport;
 use App\Filament\Resources\DocumentExports\Pages\ListDocumentExports;
 use App\Filament\Resources\DocumentExports\Pages\ViewDocumentExport;
-use App\Filament\Resources\DocumentExports\Schemas\DocumentExportForm;
 use App\Filament\Resources\DocumentExports\Schemas\DocumentExportInfolist;
 use App\Filament\Resources\DocumentExports\Tables\DocumentExportsTable;
 use App\Filament\SuperAdminGate;
@@ -32,9 +29,19 @@ class DocumentExportResource extends Resource
         return SuperAdminGate::canAccess();
     }
 
-    public static function form(Schema $schema): Schema
+    public static function canCreate(): bool
     {
-        return DocumentExportForm::configure($schema);
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 
     public static function infolist(Schema $schema): Schema
@@ -58,9 +65,7 @@ class DocumentExportResource extends Resource
     {
         return [
             'index' => ListDocumentExports::route('/'),
-            'create' => CreateDocumentExport::route('/create'),
             'view' => ViewDocumentExport::route('/{record}'),
-            'edit' => EditDocumentExport::route('/{record}/edit'),
         ];
     }
 }

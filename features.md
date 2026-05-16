@@ -47,6 +47,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · SA01 document export hardening: `DocumentExportResource` is now read-only, create/edit/delete are blocked, raw `output_path` is replaced by an Artifact status badge in table and detail views, and BUG-006 is recorded in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · After SA01 document export hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **41 passed, 117 assertions**.
+- `[x]` 2026-05-17 · After SA01 document export hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **341 passed, 1703 assertions**.
+- `[x]` 2026-05-17 · After SA01 document export hardening: `npm run build` passed.
 - `[x]` 2026-05-17 · SA01 QA audit follow-up: seeded QA master users now include `secretary@prokerin.test`, `treasurer@prokerin.test`, `coordinator@prokerin.test`, `owner2@prokerin.test`, and `superadmin@prokerin.internal`; Super Admin tests now use the internal account. Impersonation routes are locally owned so `take` and `leave` both audit through `LogActivityAction`; `impersonate.stop` records the original super admin actor instead of the impersonated user. Added `SeededQaUserMatrixTest`.
 - `[x]` 2026-05-17 · After SA01 QA audit follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SeededQaUserMatrixTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin tests/Feature/Dashboard/DashboardRedirectsForPlatformAdminsTest.php` → **36 passed, 121 assertions**.
 - `[x]` 2026-05-17 · After SA01 QA audit follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **340 passed, 1697 assertions**.
@@ -1061,6 +1065,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - `OrganizationResource`: list with plan-tier filter and owner/member/active-project columns; edit form for name, slug, plan tier, status, and internal notes; force-delete row action with typed confirmation; plan-tier changes logged to `activity_logs` with `before`/`after` payload.
 - `ProjectResource`: read-only cross-org visibility (no create/edit/delete). Filterable by status and organization. View page surfaces task summary, planned budget, proposal status, and LPJ progress.
 - `NotificationRuleResource`: read/edit only. Edits global default notification rules (event type, label, audience, channels, status). No create or delete to preserve system-defined rules.
+- `DocumentExportResource`: read-only queue/export inspection. Create, edit, and delete are blocked; raw storage `output_path` is hidden behind an Artifact status badge.
 - User impersonation via `lab404/laravel-impersonate`. `User` model implements `canImpersonate()`/`canBeImpersonated()` (super admins can impersonate non-super-admins only). Impersonation start redirects to `/dashboard`. `StopImpersonationController` posts to `impersonate.stop`, leaves the impersonation session, and redirects back to `/internal-admin/users`.
 - `ImpersonationBanner.tsx` rendered inside `AuthenticatedLayout`. Visible only when `impersonating.active` shared prop is set; surfaces impersonator name and a "Stop Impersonating" button.
 - Inertia `HandleInertiaRequests` shares an `impersonating` prop with `active`, `impersonator`, and `leaveUrl`.
@@ -1077,7 +1082,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
   - `SuperAdminGate`: grants for super_admin role, denies for organization_owner/no-role/unauthenticated.
   - `LogActivityAction`: payload, user_id, ip_address/user_agent, null-payload behavior.
 - Feature:
-  - `FilamentAccessTest`: guest redirected, organization_owner blocked, member blocked, super_admin sees dashboard, super_admin lists users/organizations/projects/notification-rules, organization_owner cannot open users resource.
+  - `FilamentAccessTest`: guest redirected, organization_owner blocked, member blocked, super_admin sees dashboard, super_admin lists users/organizations/projects/notification-rules/document-exports, document exports are read-only, organization_owner cannot open users resource.
   - `OrganizationResourceTest`: plan-tier change updates org and logs `org.plan_tier.change` with before/after.
   - `UserResourceTest`: edit name/email, super_admin role excluded from assignable options, sole-organization-owner delete guard, self-delete guard, audit log on safe delete, list table renders.
   - `ImpersonationTest`: super_admin can impersonate regular user (and audit log written), super_admin cannot impersonate another super_admin, organization_owner cannot trigger impersonate, stop redirects to `/internal-admin/users` and writes `impersonate.stop` log.
@@ -1088,6 +1093,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/SuperAdmin tests/Feature/SuperAdmin` → **25 passed, 73 assertions**.
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **311 passed, 1528 assertions**.
 - `[x]` 2026-05-17 · `npm run build` passed (production frontend bundle).
+- `[x]` 2026-05-17 · SA01 QA hardening follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **41 passed, 117 assertions**; full `php artisan test` → **341 passed, 1703 assertions**; `npm run build` passed.
 
 ---
 
