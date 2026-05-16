@@ -34,7 +34,8 @@
 | Post-MVP Wave 2 | M20 | ✅ Complete |
 | Cross-module UX | M28.5 | ✅ Complete |
 | Post-MVP Wave 3 | M21 | ✅ Complete |
-| Post-MVP Planned | M22–M24 | 🔲 Not started |
+| Post-MVP Wave 3 | M22 | ✅ Complete |
+| Post-MVP Planned | M23–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -44,6 +45,12 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · M22 payment & ticketing completed: env/config, ticket tiers, payment orders, public ticket selection, free-tier bypass, paid pending order, Midtrans signature webhook, and tier capacity guards.
+- `[x]` 2026-05-17 · M22 local migration `2026_05_16_000015_create_payment_ticketing_tables.php` applied and `php artisan db:seed` added demo ticket tiers.
+- `[x]` 2026-05-17 · M22 browser smoke passed on `/events/seminar-karier-digital/register`; ticket selector renders `Free Pass` and paid tier pricing.
+- `[x]` 2026-05-17 · After M22 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **274 passed, 1389 assertions**.
+- `[x]` 2026-05-17 · After M22 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/PaymentTicketingTest.php tests/Feature/EventRegistrationTest.php` → **18 passed, 101 assertions**.
+- `[x]` 2026-05-17 · After M22 completion: `npm run build` passed.
 - `[x]` 2026-05-17 · M21 completed with internal settings management, queued PDF export through `document_exports`, event registration PDF content generation, browser smoke, build, targeted tests, and full regression.
 - `[x]` 2026-05-17 · M21 browser smoke passed on `/events/registrations`; settings form, seeded participant list, and `Export PDF` queue flash render as owner.
 - `[x]` 2026-05-17 · After M21 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **267 passed, 1351 assertions**.
@@ -858,18 +865,26 @@ Allow non-members of an organization to register for public events/projects — 
 
 ### M22 · Payment & Ticketing
 
-**Status:** `[ ]` Not started. **DO NOT START BEFORE M21 IS STABLE.**
+**Status:** `[x]` Complete.
 
 #### Product Goal
 Enable paid event registration via Midtrans (or compatible provider). Free and paid registrations coexist per event.
 
 #### Scope to Build
-- [ ] `.env.example` variables: `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION`.
-- [ ] `ticket_tiers` table: `id`, `project_id`, `name`, `price`, `capacity`, `is_active`.
-- [ ] `payment_orders` table: `id`, `registration_id`, `tier_id`, `amount`, `status`, `provider_order_id`, `paid_at`, `expires_at`.
-- [ ] Midtrans webhook handler: verifies signature, updates order status.
-- [ ] Free tier: bypass payment, directly confirm registration.
-- [ ] Tests: fake webhook signature verification, order status transitions, capacity enforcement per tier.
+- [x] `.env.example` variables: `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`, `MIDTRANS_IS_PRODUCTION`.
+- [x] `ticket_tiers` table: `id`, `project_id`, `name`, `price`, `capacity`, `is_active`.
+- [x] `payment_orders` table: `id`, `registration_id`, `tier_id`, `amount`, `status`, `provider_order_id`, `paid_at`, `expires_at`.
+- [x] Midtrans webhook handler: verifies signature, updates order status.
+- [x] Free tier: bypass payment, directly confirm registration.
+- [x] Tests: fake webhook signature verification, order status transitions, capacity enforcement per tier.
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000015_create_payment_ticketing_tables.php`.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` added `Free Pass`, `Early Bird`, and `Regular` demo ticket tiers.
+- `[x]` 2026-05-17 · Browser smoke passed for public `/events/seminar-karier-digital/register`; ticket tier selector renders free and paid tiers.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/PaymentTicketingTest.php tests/Feature/EventRegistrationTest.php` → **18 passed, 101 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **274 passed, 1389 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
 
 #### Rules
 - Never hardcode payment credentials.
@@ -922,10 +937,9 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M28.5
-1. **Start M22 (Payment & Ticketing)** now that M21 is stable.
-2. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-3. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
-4. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+1. **Define M23 (AI Assistant) use cases and data minimization design** before writing code.
+2. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+3. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test

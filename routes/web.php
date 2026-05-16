@@ -25,6 +25,7 @@ use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\ManualAttendanceController;
 use App\Http\Controllers\MeetingWhatsAppAlertController;
+use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
@@ -45,6 +46,7 @@ Route::get('/pricing', [LandingController::class, 'pricing'])->name('landing.pri
 Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
 Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
 Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
+Route::post('/payments/midtrans/webhook', [MidtransWebhookController::class, 'store'])->name('payments.midtrans.webhook');
 
 Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])

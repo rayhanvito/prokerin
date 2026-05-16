@@ -26,6 +26,7 @@ interface EventRegistrationPageProps extends PageProps {
         closesAt: string | null;
         requirePayment: boolean;
     };
+    ticketTiers: TicketTier[];
 }
 
 interface RegistrationFormData {
@@ -33,11 +34,22 @@ interface RegistrationFormData {
     participant_email: string;
     phone: string;
     institution: string;
+    ticket_tier_id: string;
+}
+
+interface TicketTier {
+    id: number;
+    name: string;
+    price: number;
+    capacity: number | null;
+    registeredCount: number;
+    remainingQuota: number | null;
 }
 
 export default function EventRegister({
     event,
     settings,
+    ticketTiers,
     flash,
 }: EventRegistrationPageProps) {
     const form = useForm<RegistrationFormData>({
@@ -45,6 +57,7 @@ export default function EventRegister({
         participant_email: '',
         phone: '',
         institution: '',
+        ticket_tier_id: '',
     });
     const canRegister =
         event.registrationStatus === 'open' &&
@@ -102,8 +115,9 @@ export default function EventRegister({
 
                     {settings.requirePayment && (
                         <div className="mt-6 rounded-[4px] bg-[rgba(186,137,93,0.1)] p-4 text-sm text-[#59667a] ring-1 ring-[rgba(186,137,93,0.25)]">
-                            Event ini membutuhkan pembayaran. Registrasi akan
-                            berstatus pending sampai modul pembayaran aktif.
+                            Event ini memiliki kategori tiket berbayar.
+                            Registrasi berbayar akan berstatus pending sampai
+                            pembayaran terverifikasi.
                         </div>
                     )}
                 </section>
@@ -137,6 +151,32 @@ export default function EventRegister({
                     )}
 
                     <form onSubmit={submit} className="mt-6 space-y-4">
+                        {ticketTiers.length > 0 && (
+                            <Field label="Kategori tiket" error={form.errors.ticket_tier_id}>
+                                <select
+                                    value={form.data.ticket_tier_id}
+                                    onChange={(inputEvent) =>
+                                        form.setData('ticket_tier_id', inputEvent.target.value)
+                                    }
+                                    className="block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
+                                    disabled={!canRegister}
+                                >
+                                    <option value="">Pilih tiket</option>
+                                    {ticketTiers.map((tier) => (
+                                        <option
+                                            key={tier.id}
+                                            value={String(tier.id)}
+                                            disabled={tier.remainingQuota === 0}
+                                        >
+                                            {tier.name} · {formatRupiah(tier.price)} ·{' '}
+                                            {tier.remainingQuota === null
+                                                ? 'Kuota tidak dibatasi'
+                                                : `${tier.remainingQuota} tersisa`}
+                                        </option>
+                                    ))}
+                                </select>
+                            </Field>
+                        )}
                         <Field label="Nama peserta" error={form.errors.participant_name}>
                             <TextInput
                                 value={form.data.participant_name}
@@ -239,4 +279,12 @@ function statusLabel(status: string): string {
     };
 
     return labels[status] ?? status;
+}
+
+function formatRupiah(amount: number): string {
+    return new Intl.NumberFormat('id-ID', {
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+        style: 'currency',
+    }).format(amount);
 }

@@ -23,6 +23,7 @@ final class StoreEventRegistrationRequest extends FormRequest
             'participant_email' => ['required', 'email', 'max:160'],
             'phone' => ['nullable', 'string', 'max:40'],
             'institution' => ['nullable', 'string', 'max:160'],
+            'ticket_tier_id' => ['nullable', 'integer'],
         ];
     }
 }

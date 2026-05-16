@@ -51,6 +51,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedAttendance($now);
         $this->seedCertificates($now);
         $this->seedEventRegistrations($now);
+        $this->seedTicketTiers($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
     }
@@ -827,6 +828,29 @@ final class DatabaseSeeder extends Seeder
                     'institution' => $registration['institution'],
                     'status' => $registration['status'],
                     'registered_at' => $now->copy()->subDays(2),
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+    }
+
+    private function seedTicketTiers($now): void
+    {
+        foreach ([
+            ['name' => 'Free Pass', 'price' => 0, 'capacity' => 60],
+            ['name' => 'Early Bird', 'price' => 25000, 'capacity' => 40],
+            ['name' => 'Regular', 'price' => 50000, 'capacity' => 20],
+        ] as $tier) {
+            DB::table('ticket_tiers')->updateOrInsert(
+                [
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                    'name' => $tier['name'],
+                ],
+                [
+                    'price' => $tier['price'],
+                    'capacity' => $tier['capacity'],
+                    'is_active' => true,
                     'updated_at' => $now,
                     'created_at' => $now,
                 ],

@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 final class RegisterPublicEventAction
 {
     /**
-     * @param  array{participant_name: string, participant_email: string, phone?: string|null, institution?: string|null}  $data
+     * @param  array{participant_name: string, participant_email: string, phone?: string|null, institution?: string|null, ticket_tier_id?: int|null}  $data
      *
      * @throws ValidationException
      */
@@ -68,9 +68,14 @@ final class RegisterPublicEventAction
                 ]);
             }
 
-            $status = (bool) $event->require_payment ? 'pending' : 'confirmed';
+            $ticketTierId = filled($data['ticket_tier_id'] ?? null) ? (int) $data['ticket_tier_id'] : null;
+            $tier = $this->resolveTicketTier((int) $event->id, (bool) $event->require_payment, $ticketTierId);
+            $this->ensureTierCapacity($tier);
+
+            $status = $tier !== null && (int) $tier->price > 0 ? 'pending' : 'confirmed';
             $registrationId = (int) DB::table('event_registrations')->insertGetId([
                 'project_id' => (int) $event->id,
+                'ticket_tier_id' => $tier?->id,
                 'participant_name' => $data['participant_name'],
                 'participant_email' => $email,
                 'phone' => $data['phone'] ?? null,
@@ -81,6 +86,20 @@ final class RegisterPublicEventAction
                 'updated_at' => $now,
             ]);
 
+            if ($tier !== null && (int) $tier->price > 0) {
+                DB::table('payment_orders')->insert([
+                    'registration_id' => $registrationId,
+                    'tier_id' => (int) $tier->id,
+                    'amount' => (int) $tier->price,
+                    'status' => 'pending',
+                    'provider_order_id' => $this->providerOrderId($registrationId),
+                    'paid_at' => null,
+                    'expires_at' => $now->copy()->addDay(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
             Notification::route('mail', $email)->notify(new EventRegistrationConfirmedNotification(
                 participantName: $data['participant_name'],
                 projectName: (string) $event->name,
@@ -90,6 +109,63 @@ final class RegisterPublicEventAction
 
             return $registrationId;
         });
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function resolveTicketTier(int $projectId, bool $requirePayment, ?int $ticketTierId): ?object
+    {
+        if ($ticketTierId === null) {
+            if ($requirePayment) {
+                throw ValidationException::withMessages([
+                    'ticket_tier_id' => 'Pilih kategori tiket untuk event ini.',
+                ]);
+            }
+
+            return null;
+        }
+
+        $tier = DB::table('ticket_tiers')
+            ->where('id', $ticketTierId)
+            ->where('project_id', $projectId)
+            ->where('is_active', true)
+            ->lockForUpdate()
+            ->first(['id', 'price', 'capacity']);
+
+        if ($tier === null) {
+            throw ValidationException::withMessages([
+                'ticket_tier_id' => 'Kategori tiket tidak tersedia untuk event ini.',
+            ]);
+        }
+
+        return $tier;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function ensureTierCapacity(?object $tier): void
+    {
+        if ($tier === null || $tier->capacity === null) {
+            return;
+        }
+
+        $registeredCount = DB::table('event_registrations')
+            ->where('ticket_tier_id', $tier->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+
+        if ($registeredCount >= (int) $tier->capacity) {
+            throw ValidationException::withMessages([
+                'ticket_tier_id' => 'Kuota kategori tiket ini sudah penuh.',
+            ]);
+        }
+    }
+
+    private function providerOrderId(int $registrationId): string
+    {
+        return 'PRK-M22-'.$registrationId.'-'.now()->format('YmdHis');
     }
 
     /**
