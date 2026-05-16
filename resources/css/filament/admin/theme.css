@@ -78,6 +78,42 @@
     box-shadow: 0 25px 50px rgba(8, 21, 66, 0.06);
 }
 
+.fi-grid:not(.fi-grid-direction-col) {
+    display: grid;
+    grid-template-columns: var(--cols-default, minmax(0, 1fr));
+}
+
+.fi-sc.fi-sc-has-gap {
+    gap: 1.5rem;
+}
+
+.fi-wi-stats-overview .fi-section-content {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .fi-wi-stats-overview .fi-section-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .fi-wi-stats-overview .fi-section-content {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.fi-wi-stats-overview-stat {
+    min-height: 8rem;
+    padding: 1.25rem;
+}
+
+.fi-wi-stats-overview-stat-content {
+    gap: 0.5rem;
+}
+
 .fi-section-header,
 .fi-ta-header,
 .fi-ta-content thead tr {
@@ -90,12 +126,12 @@
 }
 
 .fi-ta-row:hover,
-.fi-sidebar-item-active > .fi-sidebar-item-button,
-.fi-sidebar-item-button:hover {
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.fi-sidebar-item-btn:hover {
     background: #f8fafb;
 }
 
-.fi-sidebar-item-active > .fi-sidebar-item-button {
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
     color: var(--prokerin-primary);
 }
 
@@ -107,9 +143,66 @@
     color: var(--prokerin-muted);
 }
 
-.fi-sidebar-item-active .fi-sidebar-item-icon,
-.fi-sidebar-item-active .fi-sidebar-item-label {
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.fi-sidebar-item.fi-active .fi-sidebar-item-label {
     color: var(--prokerin-primary);
+}
+
+svg.fi-icon,
+.fi-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    max-width: 1.25rem;
+    max-height: 1.25rem;
+    flex: 0 0 auto;
+}
+
+svg.fi-icon.fi-size-xs,
+.fi-icon.fi-size-xs {
+    width: 0.75rem;
+    height: 0.75rem;
+    max-width: 0.75rem;
+    max-height: 0.75rem;
+}
+
+svg.fi-icon.fi-size-sm,
+.fi-icon.fi-size-sm {
+    width: 1rem;
+    height: 1rem;
+    max-width: 1rem;
+    max-height: 1rem;
+}
+
+svg.fi-icon.fi-size-md,
+.fi-icon.fi-size-md {
+    width: 1.25rem;
+    height: 1.25rem;
+    max-width: 1.25rem;
+    max-height: 1.25rem;
+}
+
+svg.fi-icon.fi-size-lg,
+.fi-icon.fi-size-lg {
+    width: 1.5rem;
+    height: 1.5rem;
+    max-width: 1.5rem;
+    max-height: 1.5rem;
+}
+
+svg.fi-icon.fi-size-xl,
+.fi-icon.fi-size-xl {
+    width: 1.75rem;
+    height: 1.75rem;
+    max-width: 1.75rem;
+    max-height: 1.75rem;
+}
+
+svg.fi-icon.fi-size-2xl,
+.fi-icon.fi-size-2xl {
+    width: 2rem;
+    height: 2rem;
+    max-width: 2rem;
+    max-height: 2rem;
 }
 
 .fi-btn,
