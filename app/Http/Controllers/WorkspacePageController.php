@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\Dashboard\GetDashboardOverviewAction;
 use App\Actions\Document\ValidateDocumentUploadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
+use App\Actions\Workspace\GetAdminPanelPayloadAction;
 use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
@@ -212,9 +213,9 @@ final class WorkspacePageController extends Controller
         ]);
     }
 
-    public function adminIndex(): Response
+    public function adminIndex(GetAdminPanelPayloadAction $adminPanel): Response
     {
-        return Inertia::render('Admin/Index');
+        return Inertia::render('Admin/Index', $adminPanel->execute());
     }
 
     /**

@@ -6,52 +6,49 @@ import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 
-const resources = [
-    {
-        title: 'Organizations',
-        description: 'Internal overview untuk tenant organisasi.',
-        icon: Database,
-        status: 'Filament later',
-    },
-    {
-        title: 'System Health',
-        description: 'Queue, storage, email, dan export worker status.',
-        icon: Gauge,
-        status: 'Planned',
-    },
-    {
-        title: 'Access Audit',
-        description: 'Audit role, policy, dan permission assignment.',
-        icon: Shield,
-        status: 'Planned',
-    },
-];
+interface AdminCard {
+    title: string;
+    description: string;
+    status: string;
+}
 
-const rows = [
-    {
-        resource: 'OrganizationResource',
-        owner: 'Internal Admin',
-        purpose: 'Tenant monitoring',
-        package: 'Filament',
-        status: 'Pending',
-    },
-    {
-        resource: 'UserResource',
-        owner: 'Internal Admin',
-        purpose: 'Account support',
-        package: 'Filament',
-        status: 'Pending',
-    },
-    {
-        resource: 'ExportJobResource',
-        owner: 'Ops',
-        purpose: 'PDF/DOCX queue monitoring',
-        package: 'Filament',
-        status: 'Pending',
-    },
-];
+interface AdminResource {
+    resource: string;
+    owner: string;
+    purpose: string;
+    package: string;
+    status: string;
+}
 
-export default function AdminIndex() {
+interface SystemHealth {
+    queuedExports: number;
+    failedExports: number;
+    pendingNotifications: number;
+    filamentInstalled: boolean;
+}
+
+interface AdminIndexProps {
+    cards: AdminCard[];
+    resources: AdminResource[];
+    systemHealth: SystemHealth;
+}
+
+const cardIcons = [Database, Gauge, Shield];
+
+export default function AdminIndex({
+    cards,
+    resources,
+    systemHealth,
+}: AdminIndexProps) {
+    const healthSummary = `${systemHealth.queuedExports} queued export · ${systemHealth.failedExports} failed · ${systemHealth.pendingNotifications} unread notification`;
+    const rows = resources.map((resource) => ({
+        owner: resource.owner,
+        package: resource.package,
+        purpose: resource.purpose,
+        resource: resource.resource,
+        status: resource.status,
+    }));
+
     return (
         <AuthenticatedLayout
             header={
@@ -79,10 +76,12 @@ export default function AdminIndex() {
                                     Internal admin readiness
                                 </h2>
                                 <p className="mt-2 max-w-3xl text-sm leading-6 text-[#59667a]">
-                                    Halaman ini bukan pengganti Filament. Ini
-                                    adalah permukaan perencanaan internal sampai
-                                    package Filament dipasang dan resource
-                                    dibuat.
+                                    Halaman ini membaca readiness backend M13.
+                                    Filament:{' '}
+                                    {systemHealth.filamentInstalled
+                                        ? 'installed'
+                                        : 'pending package'}
+                                    . {healthSummary}.
                                 </p>
                             </div>
                         </div>
@@ -93,8 +92,8 @@ export default function AdminIndex() {
                 </VihoCard>
 
                 <section className="grid gap-4 md:grid-cols-3">
-                    {resources.map((resource) => {
-                        const Icon = resource.icon;
+                    {cards.map((resource, index) => {
+                        const Icon = cardIcons[index] ?? Database;
 
                         return (
                             <VihoCard key={resource.title}>
