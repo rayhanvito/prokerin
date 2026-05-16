@@ -42,6 +42,9 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
+- `[x]` 2026-05-16 · After M18 Proposal/RAB/LPJ workflow integration: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **233 passed, 1063 assertions**.
+- `[x]` 2026-05-16 · After M18 Proposal/RAB/LPJ workflow integration: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/LpjApprovalTest.php` → **32 passed, 111 assertions**.
+- `[x]` 2026-05-16 · After M18 Proposal/RAB/LPJ workflow integration: `npm run build` passed.
 - `[x]` 2026-05-16 · After M18 workflow timeline: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **228 passed, 1044 assertions**.
 - `[x]` 2026-05-16 · After M18 workflow timeline: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/WorkspacePayloadTest.php` → **14 passed, 140 assertions**.
 - `[x]` 2026-05-16 · After M18 workflow timeline: `npm run build` passed.
@@ -621,7 +624,7 @@ Replace single-approver model with configurable multi-level approval chains for 
 - [x] Audit trail: step decisions are immutable after final decision; delegation is logged in `approval_delegations`.
 - [x] UI: approval queue per user (what I need to approve) on `finance.approval`, with decision/delegation controls.
 - [x] Workflow status timeline per subject, tenant-scoped and rendered on Proposal, RAB approval, and LPJ surfaces.
-- [ ] Integrate workflow engine into Proposal, RAB, and LPJ submission/decision routes.
+- [x] Integrate workflow engine into Proposal, RAB, and LPJ submission/decision routes, including final subject status sync.
 - [ ] Trigger next-step notifications when workflow advances.
 
 #### Test Coverage Required
@@ -633,6 +636,10 @@ Replace single-approver model with configurable multi-level approval chains for 
 
 #### Verification
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000012_create_approval_workflow_tables.php`.
+- `[x]` 2026-05-16 · Proposal/RAB/LPJ routes now start or process active workflow instances and sync final subject status when the workflow is approved/rejected/revision-requested.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/LpjApprovalTest.php` → **32 passed, 111 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **233 passed, 1063 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · Workflow timeline per subject renders through shared `ApprovalWorkflowTimeline` component on Proposal Editor, Finance Approval rows, and LPJ Checklist.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/WorkspacePayloadTest.php` → **14 passed, 140 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **228 passed, 1044 assertions**.

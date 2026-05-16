@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 final class ProcessApprovalStepAction
 {
+    public function __construct(private readonly SyncApprovalWorkflowSubjectAction $syncSubject) {}
+
     /**
      * @throws AuthorizationException
      * @throws ValidationException
@@ -65,6 +67,8 @@ final class ProcessApprovalStepAction
                         'updated_at' => $now,
                     ]);
 
+                $this->syncSubject->execute($instanceId);
+
                 return;
             }
 
@@ -80,6 +84,10 @@ final class ProcessApprovalStepAction
                     'current_step' => $nextStepExists ? (int) $instance->current_step + 1 : (int) $instance->current_step,
                     'updated_at' => $now,
                 ]);
+
+            if (! $nextStepExists) {
+                $this->syncSubject->execute($instanceId);
+            }
         });
     }
 }

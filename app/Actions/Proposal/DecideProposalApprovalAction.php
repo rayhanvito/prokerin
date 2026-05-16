@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Proposal;
 
+use App\Actions\Approval\ProcessApprovalStepAction;
 use App\Actions\Project\TransitionProjectStatusAction;
 use App\Domain\Organization\OrganizationRole;
 use App\Domain\Project\ProjectStatus;
@@ -18,6 +19,7 @@ final readonly class DecideProposalApprovalAction
 {
     public function __construct(
         private TransitionProjectStatusAction $transitionProjectStatus,
+        private ProcessApprovalStepAction $processApprovalStep,
     ) {}
 
     /**
@@ -59,6 +61,18 @@ final readonly class DecideProposalApprovalAction
                 ]);
             }
 
+            $workflowInstanceId = $this->pendingWorkflowInstanceId('proposal_draft', $proposalDraftId);
+
+            if ($workflowInstanceId !== null) {
+                $this->processApprovalStep->execute(
+                    actorUserId: $actorUserId,
+                    instanceId: $workflowInstanceId,
+                    decision: $decision === ProposalApprovalDecision::Approve ? 'approved' : 'revision_requested',
+                );
+
+                return;
+            }
+
             $targetProjectStatus = $decision === ProposalApprovalDecision::Approve
                 ? ProjectStatus::RabApproval
                 : ProjectStatus::Draft;
@@ -98,5 +112,17 @@ final readonly class DecideProposalApprovalAction
             OrganizationRole::Owner->value,
             OrganizationRole::Admin->value,
         ], true);
+    }
+
+    private function pendingWorkflowInstanceId(string $subjectType, int $subjectId): ?int
+    {
+        $instanceId = DB::table('approval_instances')
+            ->where('subject_type', $subjectType)
+            ->where('subject_id', $subjectId)
+            ->where('status', 'pending')
+            ->orderByDesc('id')
+            ->value('id');
+
+        return $instanceId === null ? null : (int) $instanceId;
     }
 }

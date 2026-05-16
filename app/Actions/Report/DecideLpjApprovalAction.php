@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Report;
 
+use App\Actions\Approval\ProcessApprovalStepAction;
 use App\Actions\Project\TransitionProjectStatusAction;
 use App\Domain\Organization\OrganizationRole;
 use App\Domain\Project\ProjectStatus;
@@ -17,6 +18,7 @@ final readonly class DecideLpjApprovalAction
 {
     public function __construct(
         private TransitionProjectStatusAction $transitionProjectStatus,
+        private ProcessApprovalStepAction $processApprovalStep,
     ) {}
 
     /**
@@ -42,6 +44,18 @@ final readonly class DecideLpjApprovalAction
                 ? ProjectStatus::Completed
                 : ProjectStatus::Running;
 
+            $workflowInstanceId = $this->pendingWorkflowInstanceId('project', $projectId);
+
+            if ($workflowInstanceId !== null) {
+                $this->processApprovalStep->execute(
+                    actorUserId: $actorUserId,
+                    instanceId: $workflowInstanceId,
+                    decision: $decision === LpjApprovalDecision::Approve ? 'approved' : 'revision_requested',
+                );
+
+                return;
+            }
+
             try {
                 $newStatus = $this->transitionProjectStatus->execute(
                     ProjectStatus::from((string) $project->status),
@@ -60,5 +74,17 @@ final readonly class DecideLpjApprovalAction
                     'updated_at' => now(),
                 ]);
         });
+    }
+
+    private function pendingWorkflowInstanceId(string $subjectType, int $subjectId): ?int
+    {
+        $instanceId = DB::table('approval_instances')
+            ->where('subject_type', $subjectType)
+            ->where('subject_id', $subjectId)
+            ->where('status', 'pending')
+            ->orderByDesc('id')
+            ->value('id');
+
+        return $instanceId === null ? null : (int) $instanceId;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Proposal;
 
+use App\Actions\Approval\StartApprovalWorkflowAction;
 use App\Actions\DocumentExport\PlanDocumentExportAction;
 use App\Actions\Notification\QueueWhatsAppNotificationAction;
 use App\Actions\Project\TransitionProjectStatusAction;
@@ -25,6 +26,7 @@ final readonly class SubmitProposalDraftForApprovalAction
         private PlanDocumentExportAction $planDocumentExport,
         private TransitionProjectStatusAction $transitionProjectStatus,
         private QueueWhatsAppNotificationAction $queueWhatsAppNotification,
+        private StartApprovalWorkflowAction $startApprovalWorkflow,
     ) {}
 
     /**
@@ -141,6 +143,16 @@ final readonly class SubmitProposalDraftForApprovalAction
                 message: sprintf('Review proposal Prokerin: %s menunggu pengecekan.', (string) $draft->title),
             );
 
+            if ($this->hasActiveWorkflow((int) $draft->organization_id, 'proposal')) {
+                $this->startApprovalWorkflow->execute(
+                    organizationId: (int) $draft->organization_id,
+                    workflowType: 'proposal',
+                    subjectType: 'proposal_draft',
+                    subjectId: $proposalDraftId,
+                    submittedByUserId: $actorUserId,
+                );
+            }
+
             return [
                 'id' => $proposalDraftId,
                 'project_slug' => (string) $draft->project_slug,
@@ -160,5 +172,14 @@ final readonly class SubmitProposalDraftForApprovalAction
             ->pluck('user_id')
             ->map(static fn (int|string $id): int => (int) $id)
             ->all();
+    }
+
+    private function hasActiveWorkflow(int $organizationId, string $workflowType): bool
+    {
+        return DB::table('approval_workflow_definitions')
+            ->where('organization_id', $organizationId)
+            ->where('workflow_type', $workflowType)
+            ->where('is_active', true)
+            ->exists();
     }
 }

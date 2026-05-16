@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Finance;
 
+use App\Actions\Approval\ProcessApprovalStepAction;
+use App\Actions\Approval\StartApprovalWorkflowAction;
 use App\Domain\Finance\BudgetApprovalDecision;
 use App\Domain\Finance\BudgetStatus;
 use App\DTOs\Finance\BudgetLineData;
@@ -17,6 +19,8 @@ final readonly class UpdateBudgetLineApprovalDecisionAction
 {
     public function __construct(
         private DecideBudgetApprovalAction $decideBudgetApproval,
+        private StartApprovalWorkflowAction $startApprovalWorkflow,
+        private ProcessApprovalStepAction $processApprovalStep,
     ) {}
 
     /**
@@ -38,12 +42,31 @@ final readonly class UpdateBudgetLineApprovalDecisionAction
                     'budget_lines.planned_amount',
                     'budget_lines.realized_amount',
                     'budget_lines.status',
+                    'projects.organization_id',
                 ])
                 ->lockForUpdate()
                 ->first();
 
             if ($line === null) {
                 throw new NotFoundHttpException('Budget line was not found for the active workspace.');
+            }
+
+            if ($this->hasActiveWorkflow((int) $line->organization_id, 'rab')) {
+                $instance = $this->startApprovalWorkflow->execute(
+                    organizationId: (int) $line->organization_id,
+                    workflowType: 'rab',
+                    subjectType: 'budget_line',
+                    subjectId: $budgetLineId,
+                    submittedByUserId: $actorUserId,
+                );
+
+                $this->processApprovalStep->execute(
+                    actorUserId: $actorUserId,
+                    instanceId: $instance['id'],
+                    decision: $decision === BudgetApprovalDecision::Approve ? 'approved' : 'rejected',
+                );
+
+                return;
             }
 
             try {
@@ -70,5 +93,14 @@ final readonly class UpdateBudgetLineApprovalDecisionAction
                     'updated_at' => now(),
                 ]);
         });
+    }
+
+    private function hasActiveWorkflow(int $organizationId, string $workflowType): bool
+    {
+        return DB::table('approval_workflow_definitions')
+            ->where('organization_id', $organizationId)
+            ->where('workflow_type', $workflowType)
+            ->where('is_active', true)
+            ->exists();
     }
 }

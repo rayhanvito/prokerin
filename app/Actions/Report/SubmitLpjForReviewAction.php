@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Report;
 
+use App\Actions\Approval\StartApprovalWorkflowAction;
 use App\Actions\Notification\QueueWhatsAppNotificationAction;
 use App\Actions\Project\TransitionProjectStatusAction;
 use App\Domain\Notification\NotificationEvent;
@@ -21,6 +22,7 @@ final readonly class SubmitLpjForReviewAction
         private CalculateLpjReadinessAction $calculateReadiness,
         private TransitionProjectStatusAction $transitionProjectStatus,
         private QueueWhatsAppNotificationAction $queueWhatsAppNotification,
+        private StartApprovalWorkflowAction $startApprovalWorkflow,
     ) {}
 
     /**
@@ -79,6 +81,16 @@ final readonly class SubmitLpjForReviewAction
                 messageType: NotificationEvent::LpjReviewRequested->value,
                 message: sprintf('Review LPJ Prokerin: %s sudah siap direview.', (string) $project->name),
             );
+
+            if ($this->hasActiveWorkflow((int) $project->organization_id, 'lpj')) {
+                $this->startApprovalWorkflow->execute(
+                    organizationId: (int) $project->organization_id,
+                    workflowType: 'lpj',
+                    subjectType: 'project',
+                    subjectId: (int) $project->id,
+                    submittedByUserId: $actorUserId,
+                );
+            }
         });
     }
 
@@ -114,5 +126,14 @@ final readonly class SubmitLpjForReviewAction
                 isRequired: (bool) $item->is_required,
             ))
             ->all();
+    }
+
+    private function hasActiveWorkflow(int $organizationId, string $workflowType): bool
+    {
+        return DB::table('approval_workflow_definitions')
+            ->where('organization_id', $organizationId)
+            ->where('workflow_type', $workflowType)
+            ->where('is_active', true)
+            ->exists();
     }
 }
