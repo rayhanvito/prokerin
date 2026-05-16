@@ -9,6 +9,7 @@ use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
+use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
@@ -57,6 +58,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/periods', [WorkspacePageController::class, 'organizationPeriods'])->name('periods');
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
+        Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
     });
 
     Route::prefix('tasks')->name('tasks.')->group(function () {

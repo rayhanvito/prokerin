@@ -13,6 +13,7 @@ use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceApprovalPayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
+use App\Actions\Workspace\GetHandoverPayloadAction;
 use App\Actions\Workspace\GetLpjChecklistPayloadAction;
 use App\Actions\Workspace\GetMeetingMinutePayloadAction;
 use App\Actions\Workspace\GetNotificationRulePayloadAction;
@@ -90,9 +91,9 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Organization/Calendar');
     }
 
-    public function organizationHandover(): Response
+    public function organizationHandover(Request $request, GetHandoverPayloadAction $handover): Response
     {
-        return Inertia::render('Organization/Handover');
+        return Inertia::render('Organization/Handover', $handover->execute((int) $request->user()->id));
     }
 
     public function taskIndex(): Response

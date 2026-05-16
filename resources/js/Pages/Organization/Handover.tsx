@@ -1,32 +1,74 @@
-import { Archive, CheckCircle2, FileText, Users } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
+import { Archive, CheckCircle2, ClipboardList, FileText, Landmark, Users } from 'lucide-react';
+import type { FormEvent } from 'react';
 
+import PrimaryButton from '@/Components/PrimaryButton';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
 
-const readiness = [
-    {
-        title: 'Dokumen proker lengkap',
-        description: 'Proposal, RAB, LPJ, dan dokumentasi akhir.',
-        icon: FileText,
-        status: '72%',
-    },
-    {
-        title: 'Role pengurus terdokumentasi',
-        description: 'Struktur role dan PIC per proyek siap diwariskan.',
-        icon: Users,
-        status: '64%',
-    },
-    {
-        title: 'Archive package',
-        description: 'Bundel arsip akhir periode untuk pengurus berikutnya.',
-        icon: Archive,
-        status: 'Planned',
-    },
-];
+interface HandoverMetric {
+    label: string;
+    value: string;
+    note: string;
+}
 
-export default function OrganizationHandover() {
+interface HandoverOrganization {
+    id: number;
+    name: string;
+    periodName: string | null;
+}
+
+interface HandoverPackage {
+    id: number;
+    status: string;
+    createdAt: string;
+    submittedAt: string | null;
+    acceptedAt: string | null;
+    snapshot: Record<string, unknown>;
+}
+
+interface HandoverItem {
+    id: number;
+    category: string;
+    label: string;
+    description: string | null;
+    status: string;
+    assignee: string | null;
+}
+
+interface OrganizationHandoverProps {
+    organization: HandoverOrganization | null;
+    metrics: HandoverMetric[];
+    package: HandoverPackage | null;
+    items: HandoverItem[];
+    canManage: boolean;
+}
+
+const categoryIcons = {
+    asset: Archive,
+    document: FileText,
+    finance: Landmark,
+    role: Users,
+} as const;
+
+export default function OrganizationHandover({
+    organization,
+    metrics,
+    package: handoverPackage,
+    items,
+    canManage,
+}: OrganizationHandoverProps) {
+    const { post, processing } = useForm({});
+
+    const initiateHandover = (event: FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        post(route('organization.handover.store'), {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -50,40 +92,136 @@ export default function OrganizationHandover() {
                                 Snapshot kesiapan serah terima
                             </h2>
                             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#59667a]">
-                                Area ini memastikan data yang dibangun di MVP
-                                sudah mendukung handover kepengurusan nanti.
+                                {organization
+                                    ? `${organization.name} · Periode ${organization.periodName ?? 'belum aktif'}`
+                                    : 'Belum ada organisasi aktif untuk user ini.'}
                             </p>
                         </div>
-                        <VihoStatusBadge tone="muted">Post-MVP</VihoStatusBadge>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <VihoStatusBadge tone={handoverPackage === null ? 'muted' : 'success'}>
+                                {handoverPackage?.status ?? 'not started'}
+                            </VihoStatusBadge>
+                            {handoverPackage === null && canManage ? (
+                                <form onSubmit={initiateHandover}>
+                                    <PrimaryButton disabled={processing}>
+                                        Buat Paket Handover
+                                    </PrimaryButton>
+                                </form>
+                            ) : null}
+                        </div>
                     </div>
                 </VihoCard>
 
                 <section className="grid gap-4 md:grid-cols-3">
-                    {readiness.map((item) => {
-                        const Icon = item.icon;
-
-                        return (
-                            <VihoCard key={item.title}>
-                                <span className="inline-flex h-12 w-12 items-center justify-center rounded-[4px] bg-[rgba(36,105,92,0.1)] text-[#24695c]">
-                                    <Icon className="h-6 w-6" />
-                                </span>
-                                <h2 className="mt-5 text-lg font-semibold text-[#242934]">
-                                    {item.title}
-                                </h2>
-                                <p className="mt-2 min-h-12 text-sm leading-6 text-[#59667a]">
-                                    {item.description}
-                                </p>
-                                <div className="mt-5 flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-[#24695c]" />
-                                    <span className="text-sm font-semibold text-[#24695c]">
-                                        {item.status}
-                                    </span>
-                                </div>
-                            </VihoCard>
-                        );
-                    })}
+                    {metrics.map((metric) => (
+                        <VihoCard key={metric.label}>
+                            <p className="text-sm font-semibold text-[#59667a]">
+                                {metric.label}
+                            </p>
+                            <p className="mt-3 text-3xl font-semibold text-[#242934]">
+                                {metric.value}
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-[#717171]">
+                                {metric.note}
+                            </p>
+                        </VihoCard>
+                    ))}
                 </section>
+
+                <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <VihoCard
+                        title="Checklist Handover"
+                        subtitle="Item awal dibuat otomatis dari snapshot proker, finance, dokumen, dan LPJ."
+                    >
+                        {items.length > 0 ? (
+                            <div className="-m-5 divide-y divide-[#e6edef]">
+                                {items.map((item) => {
+                                    const Icon =
+                                        categoryIcons[item.category as keyof typeof categoryIcons] ??
+                                        ClipboardList;
+
+                                    return (
+                                        <div key={item.id} className="p-5">
+                                            <div className="flex items-start gap-3">
+                                                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] bg-[rgba(36,105,92,0.1)] text-[#24695c]">
+                                                    <Icon className="h-5 w-5" />
+                                                </span>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                                        <p className="font-semibold text-[#242934]">
+                                                            {item.label}
+                                                        </p>
+                                                        <VihoStatusBadge tone="muted">
+                                                            {item.status}
+                                                        </VihoStatusBadge>
+                                                    </div>
+                                                    <p className="mt-2 text-sm leading-6 text-[#59667a]">
+                                                        {item.description ?? 'Belum ada deskripsi.'}
+                                                    </p>
+                                                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#717171]">
+                                                        {item.assignee ?? 'Belum ada assignee'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="rounded-[4px] bg-[#f5f7fb] p-5 text-sm leading-6 text-[#59667a] ring-1 ring-[#e6edef]">
+                                Paket handover belum dibuat. Owner/admin bisa membuat
+                                paket awal dari snapshot data saat ini.
+                            </div>
+                        )}
+                    </VihoCard>
+
+                    <VihoCard title="Snapshot Paket" subtitle="Data dibekukan saat paket dibuat.">
+                        {handoverPackage ? (
+                            <div className="space-y-4">
+                                <SnapshotLine
+                                    label="Paket dibuat"
+                                    value={handoverPackage.createdAt}
+                                />
+                                <SnapshotLine
+                                    label="Budget rencana"
+                                    value={formatRupiah(handoverPackage.snapshot.planned_budget)}
+                                />
+                                <SnapshotLine
+                                    label="Budget realisasi"
+                                    value={formatRupiah(handoverPackage.snapshot.realized_budget)}
+                                />
+                                <SnapshotLine
+                                    label="LPJ wajib belum lengkap"
+                                    value={String(handoverPackage.snapshot.outstanding_lpj_items ?? 0)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex items-start gap-3 rounded-[4px] bg-[#f5f7fb] p-5 ring-1 ring-[#e6edef]">
+                                <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#24695c]" />
+                                <p className="text-sm leading-6 text-[#59667a]">
+                                    Snapshot live sudah terlihat di metric. Klik buat
+                                    paket untuk membekukan data sebagai arsip handover.
+                                </p>
+                            </div>
+                        )}
+                    </VihoCard>
+                </div>
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function SnapshotLine({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-center justify-between gap-4 rounded-[4px] bg-[#f5f7fb] p-4 ring-1 ring-[#e6edef]">
+            <p className="text-sm font-semibold text-[#59667a]">{label}</p>
+            <p className="text-sm font-semibold text-[#242934]">{value}</p>
+        </div>
+    );
+}
+
+function formatRupiah(value: unknown): string {
+    const amount = typeof value === 'number' ? value : Number(value ?? 0);
+
+    return `Rp${amount.toLocaleString('id-ID')}`;
 }
