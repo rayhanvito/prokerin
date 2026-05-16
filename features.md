@@ -39,6 +39,9 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · Landing responsive smoke passed at 375px, 768px, and 1280px after removing horizontal feature-card animation overflow.
+- `[x]` 2026-05-16 · After landing responsive polish: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **202 passed, 897 assertions**.
+- `[x]` 2026-05-16 · After landing responsive polish: `npm run build` passed (TypeScript + production frontend build).
 - `[x]` 2026-05-16 · M16 initial browser smoke passed for `/certificates`, `/certificates/templates`, `/certificates/issue`, and public `/verify/11111111-1111-4111-8111-111111111111`.
 - `[x]` 2026-05-16 · M16 local migration + seeder ran clean on local MySQL.
 - `[x]` 2026-05-16 · After M16 initial implementation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **200 passed, 865 assertions**.

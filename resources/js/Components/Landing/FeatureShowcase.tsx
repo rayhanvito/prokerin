@@ -72,8 +72,8 @@ export default function FeatureShowcase() {
                         return (
                             <motion.article
                                 key={feature.title}
-                                initial={{ opacity: 0, x: isReversed ? 32 : -32 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5 }}
                                 className="grid items-center gap-8 lg:grid-cols-2"
