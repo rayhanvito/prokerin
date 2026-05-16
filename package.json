@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "framer-motion": "^12.38.0",
+        "html5-qrcode": "^2.3.8",
         "lucide-react": "^1.16.0",
         "qrcode.react": "^4.2.0"
     }

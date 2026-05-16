@@ -1,5 +1,6 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
+    Camera,
     CheckCircle2,
     Clock3,
     Download,
@@ -10,7 +11,9 @@ import {
     UserCheck,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 
+import QrCameraScanner from '@/Components/Attendance/QrCameraScanner';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
@@ -72,6 +75,7 @@ export default function AttendanceIndex({
         PageProps<{ flash: { attendanceQrToken?: AttendanceQrFlash } }>
     >();
     const issuedToken = props.flash.attendanceQrToken;
+    const [scannerOpen, setScannerOpen] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         token: '',
@@ -122,6 +126,11 @@ export default function AttendanceIndex({
         >
             <Head title="Absensi QR" />
 
+            <QrCameraScanner
+                open={scannerOpen}
+                onClose={() => setScannerOpen(false)}
+            />
+
             <div className="space-y-6">
                 <VihoCard>
                     <div className="grid gap-5 xl:grid-cols-[1fr_360px] xl:items-center">
@@ -166,6 +175,14 @@ export default function AttendanceIndex({
                                     Check-in
                                 </PrimaryButton>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => setScannerOpen(true)}
+                                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-[4px] bg-[#24695c] px-3 py-2 text-sm font-semibold text-white hover:bg-[#1b4c43]"
+                            >
+                                <Camera className="h-4 w-4" />
+                                Scan QR pakai kamera
+                            </button>
                             <InputError
                                 message={errors.token}
                                 className="mt-2"
