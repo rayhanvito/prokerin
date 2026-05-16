@@ -9,6 +9,7 @@ use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\ManualAttendanceController;
@@ -20,13 +21,14 @@ use App\Http\Controllers\ProjectTemplateGenerationController;
 use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\ProposalApprovalDecisionController;
 use App\Http\Controllers\ProposalDraftController;
-use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\TaskDeadlineReminderController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PublicPageController::class, 'welcome']);
+Route::get('/', [LandingController::class, 'home'])->name('landing.home');
+Route::get('/features', [LandingController::class, 'features'])->name('landing.features');
+Route::get('/pricing', [LandingController::class, 'pricing'])->name('landing.pricing');
 Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
 
 Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])

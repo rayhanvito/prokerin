@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 :root {
+    --color-primary: #24695c;
+    --color-primary-dark: #1b4c43;
+    --color-primary-light: #e8f5f2;
+    --color-secondary: #ba895d;
+    --color-secondary-light: #f5ede4;
+    --color-bg: #f5f7fb;
+    --color-surface: #ffffff;
+    --color-text: #242934;
+    --color-text-muted: #59667a;
+    --color-border: #e6edef;
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
     --viho-primary: #24695c;
     --viho-secondary: #ba895d;
     --viho-success: #1b4c43;
@@ -17,4 +30,19 @@
 body {
     background: var(--viho-page);
     color: var(--viho-body);
+}
+
+@keyframes landing-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.landing-float {
+    animation: landing-float 3s ease-in-out infinite;
 }
