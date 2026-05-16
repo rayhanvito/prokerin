@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
@@ -62,6 +63,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/budget-draft', [WorkspacePageController::class, 'financeBudgetDraft'])->name('budget-draft');
         Route::get('/realization', [WorkspacePageController::class, 'financeRealization'])->name('realization');
         Route::post('/budget-lines/{budgetLine}/realizations', [BudgetReceiptRealizationController::class, 'store'])->name('realizations.store');
+        Route::patch('/budget-lines/{budgetLine}/approval', [BudgetApprovalDecisionController::class, 'update'])->name('approvals.update');
         Route::get('/approval', [WorkspacePageController::class, 'financeApproval'])->name('approval');
     });
 

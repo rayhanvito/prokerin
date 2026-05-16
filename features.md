@@ -70,6 +70,7 @@
 - [x] Template generation flow added for M05 with one-click template generation, project/task/RAB/proposal/LPJ scaffold persistence, and feature tests
 - [x] Task kanban and calendar payloads wired for M06 with tenant-scoped database tasks, quick status updates, completion timestamps, and feature tests
 - [x] Finance receipt upload backend and UI wiring added for M07 with treasurer/admin/owner scope, private receipt document storage, budget transaction persistence, DB-backed realization payloads, and feature tests
+- [x] Finance approval queue wired for M07 with DB-backed review payload, treasurer/admin approve-reject route, Inertia controls, and feature tests
 - [x] Proposal submission flow added for M08 with tenant-scoped draft submit, project status transition to proposal review, queued PDF export dispatch, and feature tests
 - [x] Proposal approval decision flow added for M08 with owner/admin approve or revision request, project status transitions, and Inertia approval controls
 - [x] Proposal draft edit persistence added for M08 with section body editing, revision-to-draft save flow, locked submitted/approved states, and feature tests
@@ -90,7 +91,7 @@
 - [x] M04 · Proker / Event Management (overview, wired create/edit form, database-backed detail page with archive action, status flow UI scaffolds, progress calculation, status transition Action, template-based draft Action, create/update/archive backend, migration tables, and seed data done)
 - [x] M05 · Template Proker (UI scaffold, default template plan generator, template persistence table, seed data, database-backed template payload, and project/task/RAB/proposal/LPJ generation flow done)
 - [x] M06 · Timeline & Task Management (overview, database-backed kanban/calendar, quick status updates, PIC assignment UI scaffold, task board summary Action, and task PIC assignment Action done)
-- [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI scaffolds, server-side budget summary Action, approval decision Action, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
+- [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI, server-side budget summary Action, approval decision backend, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
 - [x] M08 · Proposal Generator (overview, proposal editor, export queue UI, proposal draft auto-fill Action, draft edit persistence, submit/revision/approval flow, queued PDF/DOCX export generation, draft/export tables, seed data, database-backed proposal/export payloads, and feature tests done)
 - [x] M09 · Document Management (overview, folder structure, upload center UI, upload validation Action, signed download planner, document table, seed data, DB-backed recent documents, tenant-scoped signed download route, and storage permission feature tests done)
 - [x] M10 · LPJ Generator (overview, checklist UI, LPJ readiness Action, export queue planner, checklist table, seed data, database-backed tenant-scoped checklist payload, review submission, owner/admin approval or revision flow, project status transitions, and feature tests done)

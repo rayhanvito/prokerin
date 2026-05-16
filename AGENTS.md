@@ -464,6 +464,7 @@ Feature completion tracker is maintained in `features.md` so this operating guid
 - [x] M08 export queue now generates PDF/DOCX files from proposal and LPJ database content.
 - [x] Export Queue exposes tenant-scoped signed downloads for completed exports.
 - [x] Filament MVP resources remove destructive delete actions until admin policies are formalized.
+- [x] Finance approval queue is wired to backend approve/reject mutations for review-stage RAB lines.
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
 - [ ] M14 · Rapat & Notulen

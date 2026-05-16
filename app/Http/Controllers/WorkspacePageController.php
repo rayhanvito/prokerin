@@ -10,6 +10,7 @@ use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
 use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
+use App\Actions\Workspace\GetFinanceApprovalPayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
 use App\Actions\Workspace\GetLpjChecklistPayloadAction;
 use App\Actions\Workspace\GetNotificationRulePayloadAction;
@@ -126,9 +127,9 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Finance/Realization', $financeRealization->execute((int) $request->user()->id));
     }
 
-    public function financeApproval(): Response
+    public function financeApproval(Request $request, GetFinanceApprovalPayloadAction $financeApproval): Response
     {
-        return Inertia::render('Finance/Approval');
+        return Inertia::render('Finance/Approval', $financeApproval->execute((int) $request->user()->id));
     }
 
     public function reportsIndex(): Response
