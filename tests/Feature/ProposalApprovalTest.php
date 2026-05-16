@@ -70,7 +70,7 @@ final class ProposalApprovalTest extends TestCase
         );
     }
 
-    public function test_document_export_job_generates_placeholder_and_marks_export_completed(): void
+    public function test_document_export_job_generates_pdf_and_marks_export_completed(): void
     {
         Storage::fake('s3');
 
@@ -84,6 +84,29 @@ final class ProposalApprovalTest extends TestCase
         (new GenerateDocumentExportJob($exportId))->handle();
 
         Storage::disk('s3')->assertExists($outputPath);
+        $this->assertStringStartsWith('%PDF', Storage::disk('s3')->get($outputPath));
+
+        $this->assertDatabaseHas('document_exports', [
+            'id' => $exportId,
+            'status' => 'completed',
+        ]);
+    }
+
+    public function test_document_export_job_generates_docx_and_marks_export_completed(): void
+    {
+        Storage::fake('s3');
+
+        $exportId = (int) DB::table('document_exports')
+            ->where('format', 'docx')
+            ->value('id');
+        $outputPath = (string) DB::table('document_exports')
+            ->where('id', $exportId)
+            ->value('output_path');
+
+        (new GenerateDocumentExportJob($exportId))->handle();
+
+        Storage::disk('s3')->assertExists($outputPath);
+        $this->assertStringStartsWith('PK', Storage::disk('s3')->get($outputPath));
 
         $this->assertDatabaseHas('document_exports', [
             'id' => $exportId,

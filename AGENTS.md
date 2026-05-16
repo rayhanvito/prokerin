@@ -458,106 +458,10 @@ chore: configure Supervisor for queue workers
 
 ## 13. Features
 
-```
-# Sudah selesai dan berjalan
-- [x] Project scaffold Laravel latest + Breeze React/Inertia TypeScript
-- [x] Viho-inspired app shell: fixed sidebar, top header, guest layout, copied Viho assets in `public/vendor/viho/`
-- [x] Dashboard Monitoring UI foundation with Viho cards and Prokerin metrics
-- [x] Inertia route/page scaffolds for Proker, Organization Setup, Timeline & Task, RAB & Finance, Proposal & LPJ, Documents, Members, and Period Calendar
-- [x] Shared frontend modules: `VihoSidebar`, `VihoHeader`, `VihoCard`, `ModuleOverview`, and `vihoMenu`
-- [x] Viho-style subpage scaffolds for Proker templates/status flow, Task kanban/calendar/PIC assignment, and Finance budget/realization/approval
-- [x] Viho-style subpage scaffolds for Proposal Editor, LPJ Checklist, Export Queue, Document Folders, Upload Center, Member Invites, and Role Matrix
-- [x] Viho-style UI scaffolds for Notification Basic and Internal Admin planning surface
-- [x] Public/workspace routes moved from closures into thin page controllers with domain route groups
-- [x] Viho form primitives plus Proker create/detail UI scaffolds
-- [x] Organization switcher and period management UI scaffolds
-- [x] Central TypeScript domain types, mock workspace data, formatting helpers, and `cn()` utility
-- [x] Breeze auth/profile form primitives and full account recovery pages restyled to match Viho tokens
-- [x] Inertia shared app/active organization props added for layout context
-- [x] Module overview actions and priority rows wired to existing Inertia subpages
-- [x] Legacy Breeze nav/dropdown components aligned with Viho colors for fallback usage
-- [x] Initial domain enums and value objects added for organization roles, project roles, invitations, project/task/finance status, money, and progress
-- [x] Unit test coverage scaffolded for initial domain enums and value objects
-- [x] Frontend TypeScript domain unions aligned with initial PHP enum vocabulary
-- [x] First domain action scaffolded for project progress calculation without database dependency
-- [x] Dashboard DTO scaffolds added for future typed Inertia payloads
-- [x] Dashboard mock payload moved into controller props using DTO-shaped arrays
-- [x] Dashboard TypeScript payload interfaces extracted into shared domain types
-- [x] Dashboard overview payload moved behind an Action to keep controller thin
-- [x] Product-facing scaffold/placeholder copy cleaned up across core UI surfaces
-- [x] Dashboard metric tones constrained with PHP enum and mirrored by TypeScript union
-- [x] Inertia shared flash props added for status/success/error messaging
-- [x] Viho-style flash banner mounted in authenticated layout
-- [x] Project status transition Action added for M04 status-flow domain rules
-- [x] Finance budget summary DTOs and Action added for M07 server-side RAB calculations
-- [x] Task board summary DTOs and Action added for M06 deadline/progress metrics
-- [x] Project template plan generator added for M05 default task, budget, proposal, and LPJ scaffolding
-- [x] Role permission matrix Action added for M03 backend permission planning
-- [x] Organization period resolver added for M02 active-period workspace context
-- [x] Default notification rule Action added for M12 notification planning
-- [x] Proposal draft builder added for M08 auto-fill from project and template data
-- [x] LPJ readiness calculator added for M10 required checklist validation
-- [x] Document upload validation Action added for M09 MIME, size, and signed URL rules
-- [x] Export queue planner added for M08/M10 PDF and DOCX export jobs
-- [x] Budget approval decision Action added for M07 approve/reject flow
-- [x] Invitation decision Action added for M03 accept/revoke/expire flow
-- [x] Project draft creation Action added for M04 template-based create flow
-- [x] Dashboard aggregate metrics Action added for M11 real-data preparation
-- [x] Frontend TypeScript domain unions extended for templates, permissions, notifications, document visibility, and export queue payloads
-- [x] Google OAuth config keys and readiness Action added for M01 setup validation
-- [x] Google OAuth package, web auth routes, callback user sync, and Login/Register entry points added for M01
-- [x] Budget realization Action added for M07 receipt-backed transaction recording
-- [x] Task PIC assignment Action added for M06 project-role guardrails
-- [x] Document download planner added for M09 signed URL and path-safety rules
-- [x] Organization logo upload planner added for M02 image validation and storage path rules
-- [x] Organization logo persistence flow added for M02 with server-derived organization scope, private storage write, and upload tests
-- [x] Organization member role mutation backend added for M03 with owner/admin guardrails and last-owner protection
-- [x] Email verification prompt Action added for M01 verification state copy
-- [x] Role matrix, notification rules, template plans, and proposal draft wired from backend Actions into Inertia page props
-- [x] Feature tests added for core workspace Inertia payload wiring
-- [x] LPJ readiness, export queue plans, and document upload validation wired into Inertia page props
-- [x] MySQL MVP persistence migration added for organizations, periods, members, proker, tasks, finance, documents, proposals, LPJ checklist, notifications, exports, and role matrix smoke testing
-- [x] Idempotent database seeder added for local parallel testing across all MVP roles and functional workspace modules
-- [x] Core workspace Inertia payloads switched from static controller arrays to database-backed payload Actions
-- [x] Dashboard overview Action switched from mock numbers to database-backed metrics, priority projects, weekly focus, and member summary
-- [x] Authenticated workspace route smoke test added for all current MVP Inertia pages using seeded role/workspace data
-- [x] Project create backend added for M04 with server-derived organization scope, active period/template lookup, unique slug generation, project lead membership guard, and feature tests
-- [x] Project detail payload added for M04 with tenant-scoped slug lookup, metrics, nearby tasks, and database-backed Inertia detail page
-- [x] Project update backend added for M04 with tenant-scoped slug lookup, lead membership guard, slug regeneration, and feature tests
-- [x] Project archive/delete backend added for M04 with owner/admin guardrails, non-destructive archived status, and feature tests
-- [x] Project create form wired for M04 with Inertia useForm, server validation errors, and live submit to backend store route
-- [x] Project detail archive button wired for M04 with Inertia delete, confirmation, and archived-state disabled guard
-- [x] Project edit page wired for M04 with tenant-scoped prefilled payload, Inertia patch submit, and detail-to-edit navigation
-- [x] Template generation flow added for M05 with one-click template generation, project/task/RAB/proposal/LPJ scaffold persistence, and feature tests
-- [x] Task kanban and calendar payloads wired for M06 with tenant-scoped database tasks, quick status updates, completion timestamps, and feature tests
-- [x] Finance receipt upload backend and UI wiring added for M07 with treasurer/admin/owner scope, private receipt document storage, budget transaction persistence, DB-backed realization payloads, and feature tests
-- [x] Proposal submission flow added for M08 with tenant-scoped draft submit, project status transition to proposal review, queued PDF export dispatch, and feature tests
-- [x] Proposal approval decision flow added for M08 with owner/admin approve or revision request, project status transitions, and Inertia approval controls
-- [x] Proposal draft edit persistence added for M08 with section body editing, revision-to-draft save flow, locked submitted/approved states, and feature tests
-- [x] Document signed download route added for M09 with tenant-scoped access checks, private/restricted signed URLs, committee download handling, and feature tests
-- [x] Upload Center recent documents switched to database-backed payload with download links instead of frontend mock data
-- [x] LPJ review submission and approval flow added for M10 with tenant-scoped checklist payload, readiness guard, project status transitions, Inertia controls, and feature tests
-- [x] Dashboard monitoring queries scoped for M11 to authenticated user's organizations with anti-leak unit coverage for metrics, priority projects, tasks, budget, LPJ, and member summary
-- [x] Notification Basic backend added for M12 with notifications table, queued task deadline reminder notification, tenant-scoped reminder dispatch Action, simulate route/button, and feature tests
-- [x] Internal Admin readiness payload added for M13 with backend-driven resource plan, queue/export/notification health counters, Filament install detection, and feature tests
-- [x] Filament admin package and internal panel scaffold added for M13 at `/internal-admin` with Organization, User, and DocumentExport resources
+Feature completion tracker is maintained in `features.md` so this operating guide stays readable. Keep `features.md` updated whenever a module status changes.
 
-# Sedang dikerjakan — jangan diubah tanpa konfirmasi
-- [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
-- [x] M02 · Organization Management (setup, switcher, period, calendar UI scaffolds, active-period resolver, logo upload planner, logo persistence flow, migration tables, and seed data done)
-- [x] M03 · Member & Role Management (members overview, invite queue, role matrix UI scaffold, permission matrix Action, invitation decision Action, role mutation backend, migration tables, and seed data done)
-
-# Belum dimulai — MVP Core
-- [x] M04 · Proker / Event Management (overview, wired create/edit form, database-backed detail page with archive action, status flow UI scaffolds, progress calculation, status transition Action, template-based draft Action, create/update/archive backend, migration tables, and seed data done)
-- [x] M05 · Template Proker (UI scaffold, default template plan generator, template persistence table, seed data, database-backed template payload, and project/task/RAB/proposal/LPJ generation flow done)
-- [x] M06 · Timeline & Task Management (overview, database-backed kanban/calendar, quick status updates, PIC assignment UI scaffold, task board summary Action, and task PIC assignment Action done)
-- [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI scaffolds, server-side budget summary Action, approval decision Action, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
-- [x] M08 · Proposal Generator (overview, proposal editor, export queue UI, proposal draft auto-fill Action, draft edit persistence, submit/revision/approval flow, queued export job placeholder, draft/export tables, seed data, database-backed proposal/export payloads, and feature tests done)
-- [x] M09 · Document Management (overview, folder structure, upload center UI, upload validation Action, signed download planner, document table, seed data, DB-backed recent documents, tenant-scoped signed download route, and storage permission feature tests done)
-- [x] M10 · LPJ Generator (overview, checklist UI, LPJ readiness Action, export queue planner, checklist table, seed data, database-backed tenant-scoped checklist payload, review submission, owner/admin approval or revision flow, project status transitions, and feature tests done)
-- [x] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, database-backed tenant-scoped overview metrics, priority projects, weekly focus, member summary, and anti-leak tests done)
-- [x] M12 · Notification Basic (notification rules/channel UI, default rule Action, notification rule table, seed data, database-backed rule payload, Laravel notification table, queued task deadline reminder delivery, email/database channels, simulate route, and feature tests done)
-- [x] M13 · Admin Panel Internal (planning UI scaffold, backend readiness payload, resource plan, system health counters, Filament package install, `/internal-admin` panel provider, and Organization/User/DocumentExport resources done)
+- [x] MVP M01-M13 completed and validated by automated tests.
+- [x] M08 export queue now generates PDF/DOCX files from proposal and LPJ database content.
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
 - [ ] M14 · Rapat & Notulen
@@ -571,7 +475,6 @@ chore: configure Supervisor for queue workers
 - [ ] M22 · Payment / Ticketing
 - [ ] M23 · AI Assistant
 - [ ] M24 · Campus Dashboard B2B
-```
 
 ---
 

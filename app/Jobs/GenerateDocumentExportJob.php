@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Actions\DocumentExport\GenerateDocumentExportContentAction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -37,10 +38,9 @@ final class GenerateDocumentExportJob implements ShouldQueue
                 'updated_at' => $now,
             ]);
 
-        Storage::disk((string) $export->storage_disk)->put(
-            (string) $export->output_path,
-            $this->placeholderContent($export),
-        );
+        $content = app(GenerateDocumentExportContentAction::class)->execute($export);
+
+        Storage::disk((string) $export->storage_disk)->put((string) $export->output_path, $content);
 
         DB::table('document_exports')
             ->where('id', $this->documentExportId)
@@ -58,17 +58,5 @@ final class GenerateDocumentExportJob implements ShouldQueue
                 'status' => 'failed',
                 'updated_at' => now(),
             ]);
-    }
-
-    private function placeholderContent(object $export): string
-    {
-        return implode(PHP_EOL, [
-            'Prokerin Document Export',
-            'Document: '.(string) $export->document_title,
-            'Type: '.(string) $export->document_type,
-            'Format: '.(string) $export->format,
-            'Engine: '.(string) $export->engine,
-            'Generated at: '.now()->toIso8601String(),
-        ]);
     }
 }
