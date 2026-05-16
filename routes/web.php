@@ -13,6 +13,7 @@ use App\Http\Controllers\HandoverItemStatusController;
 use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\HandoverPackageExportController;
 use App\Http\Controllers\HandoverPackageStatusController;
+use App\Http\Controllers\HandoverPackageTransitionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
@@ -64,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
         Route::post('/handover/packages/{package}/export', [HandoverPackageExportController::class, 'store'])->name('handover.packages.export');
         Route::patch('/handover/packages/{package}/status', [HandoverPackageStatusController::class, 'update'])->name('handover.packages.status');
+        Route::patch('/handover/packages/{package}/transition', [HandoverPackageTransitionController::class, 'update'])->name('handover.packages.transition');
         Route::patch('/handover/items/{item}', [HandoverItemStatusController::class, 'update'])->name('handover.items.update');
     });
 

@@ -182,8 +182,89 @@ final class HandoverPackageTest extends TestCase
         $this->assertDatabaseHas('handover_packages', [
             'id' => $packageId,
             'status' => 'accepted',
+            'accepted_by_user_id' => $owner->id,
         ]);
         $this->assertNotNull(DB::table('handover_packages')->where('id', $packageId)->value('accepted_at'));
+    }
+
+    public function test_incoming_owner_can_be_assigned_and_must_accept_handover_package(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $incomingOwner = User::query()->where('email', 'admin@prokerin.test')->firstOrFail();
+
+        DB::table('organization_members')
+            ->where('organization_id', $this->organizationId('bem-fakultas-teknologi'))
+            ->where('user_id', $incomingOwner->id)
+            ->update(['role' => 'organization_owner']);
+
+        $toPeriodId = $this->createFuturePeriod();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.transition', ['package' => $packageId]), [
+                'to_period_id' => $toPeriodId,
+                'incoming_owner_id' => $incomingOwner->id,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Penerima handover berhasil diperbarui.');
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'to_period_id' => $toPeriodId,
+            'incoming_owner_id' => $incomingOwner->id,
+        ]);
+
+        DB::table('handover_items')
+            ->where('package_id', $packageId)
+            ->update(['status' => 'done']);
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'submitted',
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'accepted',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($incomingOwner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'accepted',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'status' => 'accepted',
+            'accepted_by_user_id' => $incomingOwner->id,
+        ]);
+    }
+
+    public function test_member_cannot_assign_handover_transition(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        $this->actingAs($member)
+            ->patch(route('organization.handover.packages.transition', ['package' => $packageId]), [
+                'incoming_owner_id' => $owner->id,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'incoming_owner_id' => null,
+        ]);
     }
 
     public function test_member_cannot_submit_handover_package(): void
@@ -351,5 +432,18 @@ final class HandoverPackageTest extends TestCase
             ->where('organizations.slug', $organizationSlug)
             ->where('organization_periods.name', $periodName)
             ->value('organization_periods.id');
+    }
+
+    private function createFuturePeriod(): int
+    {
+        return (int) DB::table('organization_periods')->insertGetId([
+            'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+            'name' => '2027',
+            'starts_at' => '2027-01-01',
+            'ends_at' => '2027-12-31',
+            'is_active' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

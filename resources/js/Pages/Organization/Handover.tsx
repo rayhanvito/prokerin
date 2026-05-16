@@ -26,6 +26,12 @@ interface HandoverPackage {
     createdAt: string;
     submittedAt: string | null;
     acceptedAt: string | null;
+    acceptedByName: string | null;
+    toPeriodId: number | null;
+    toPeriodName: string | null;
+    incomingOwnerId: number | null;
+    incomingOwnerName: string | null;
+    canAccept: boolean;
     snapshot: Record<string, unknown>;
 }
 
@@ -43,6 +49,10 @@ interface OrganizationHandoverProps {
     metrics: HandoverMetric[];
     package: HandoverPackage | null;
     items: HandoverItem[];
+    transitionOptions: {
+        periods: { id: number; name: string }[];
+        incomingOwners: { id: number; name: string }[];
+    };
     canManage: boolean;
 }
 
@@ -58,11 +68,13 @@ export default function OrganizationHandover({
     metrics,
     package: handoverPackage,
     items,
+    transitionOptions,
     canManage,
 }: OrganizationHandoverProps) {
     const { post, processing } = useForm({});
     const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
     const [updatingPackage, setUpdatingPackage] = useState(false);
+    const [updatingTransition, setUpdatingTransition] = useState(false);
     const [exportingPackage, setExportingPackage] = useState(false);
     const canSubmitPackage =
         handoverPackage?.status === 'draft' &&
@@ -105,6 +117,29 @@ export default function OrganizationHandover({
             {
                 preserveScroll: true,
                 onFinish: () => setUpdatingPackage(false),
+            },
+        );
+    };
+
+    const updateTransition = (event: FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        if (handoverPackage === null) {
+            return;
+        }
+
+        const form = new FormData(event.currentTarget);
+        setUpdatingTransition(true);
+
+        router.patch(
+            route('organization.handover.packages.transition', handoverPackage.id),
+            {
+                to_period_id: form.get('to_period_id') || null,
+                incoming_owner_id: form.get('incoming_owner_id') || null,
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => setUpdatingTransition(false),
             },
         );
     };
@@ -174,7 +209,7 @@ export default function OrganizationHandover({
                                     Submit Paket
                                 </PrimaryButton>
                             ) : null}
-                            {handoverPackage?.status === 'submitted' && canManage ? (
+                            {handoverPackage?.status === 'submitted' && handoverPackage.canAccept ? (
                                 <PrimaryButton
                                     type="button"
                                     disabled={updatingPackage}
@@ -280,6 +315,20 @@ export default function OrganizationHandover({
                                     value={handoverPackage.createdAt}
                                 />
                                 <SnapshotLine
+                                    label="Periode penerima"
+                                    value={handoverPackage.toPeriodName ?? 'Belum ditentukan'}
+                                />
+                                <SnapshotLine
+                                    label="Incoming owner"
+                                    value={handoverPackage.incomingOwnerName ?? 'Belum ditentukan'}
+                                />
+                                {handoverPackage.acceptedByName ? (
+                                    <SnapshotLine
+                                        label="Diterima oleh"
+                                        value={handoverPackage.acceptedByName}
+                                    />
+                                ) : null}
+                                <SnapshotLine
                                     label="Budget rencana"
                                     value={formatRupiah(handoverPackage.snapshot.planned_budget)}
                                 />
@@ -291,6 +340,46 @@ export default function OrganizationHandover({
                                     label="LPJ wajib belum lengkap"
                                     value={String(handoverPackage.snapshot.outstanding_lpj_items ?? 0)}
                                 />
+                                {canManage && handoverPackage.status !== 'accepted' ? (
+                                    <form
+                                        onSubmit={updateTransition}
+                                        className="space-y-3 rounded-[4px] bg-[#f5f7fb] p-4 ring-1 ring-[#e6edef]"
+                                    >
+                                        <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#717171]">
+                                            Periode penerima
+                                            <select
+                                                name="to_period_id"
+                                                defaultValue={handoverPackage.toPeriodId ?? ''}
+                                                className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm font-medium text-[#242934] focus:border-[#24695c] focus:ring-[#24695c]"
+                                            >
+                                                <option value="">Belum ditentukan</option>
+                                                {transitionOptions.periods.map((period) => (
+                                                    <option key={period.id} value={period.id}>
+                                                        {period.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[#717171]">
+                                            Incoming owner
+                                            <select
+                                                name="incoming_owner_id"
+                                                defaultValue={handoverPackage.incomingOwnerId ?? ''}
+                                                className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm font-medium text-[#242934] focus:border-[#24695c] focus:ring-[#24695c]"
+                                            >
+                                                <option value="">Fallback owner/admin</option>
+                                                {transitionOptions.incomingOwners.map((owner) => (
+                                                    <option key={owner.id} value={owner.id}>
+                                                        {owner.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <PrimaryButton type="submit" disabled={updatingTransition}>
+                                            Simpan Penerima
+                                        </PrimaryButton>
+                                    </form>
+                                ) : null}
                             </div>
                         ) : (
                             <div className="flex items-start gap-3 rounded-[4px] bg-[#f5f7fb] p-5 ring-1 ring-[#e6edef]">

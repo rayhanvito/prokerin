@@ -19,7 +19,9 @@ final class UpdateHandoverPackageStatusAction
             ->whereIn('organization_members.role', ['organization_owner', 'organization_admin'])
             ->first([
                 'handover_packages.id',
+                'handover_packages.incoming_owner_id',
                 'handover_packages.status',
+                'organization_members.role as actor_role',
             ]);
 
         abort_if($package === null, 403);
@@ -40,14 +42,26 @@ final class UpdateHandoverPackageStatusAction
         }
 
         abort_unless((string) $package->status === 'submitted', 422);
+        abort_unless($this->canAccept($actorUserId, $package), 403);
 
         DB::table('handover_packages')
             ->where('id', $handoverPackageId)
             ->update([
                 'status' => 'accepted',
                 'accepted_at' => now(),
+                'accepted_by_user_id' => $actorUserId,
                 'updated_at' => now(),
             ]);
+    }
+
+    private function canAccept(int $actorUserId, object $package): bool
+    {
+        if ($package->incoming_owner_id === null) {
+            return in_array((string) $package->actor_role, ['organization_owner', 'organization_admin'], true);
+        }
+
+        return (int) $package->incoming_owner_id === $actorUserId
+            && (string) $package->actor_role === 'organization_owner';
     }
 
     private function allItemsComplete(int $handoverPackageId): bool

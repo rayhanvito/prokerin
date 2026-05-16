@@ -12,8 +12,9 @@ final class GetHandoverPayloadAction
      * @return array{
      *     organization: array{id: int, name: string, periodName: string|null}|null,
      *     metrics: array<int, array{label: string, value: string, note: string}>,
-     *     package: array{id: int, status: string, createdAt: string, submittedAt: string|null, acceptedAt: string|null, snapshot: array<string, mixed>}|null,
+     *     package: array{id: int, status: string, createdAt: string, submittedAt: string|null, acceptedAt: string|null, acceptedByName: string|null, toPeriodId: int|null, toPeriodName: string|null, incomingOwnerId: int|null, incomingOwnerName: string|null, canAccept: bool, snapshot: array<string, mixed>}|null,
      *     items: array<int, array{id: int, category: string, label: string, description: string|null, status: string, assignee: string|null}>,
+     *     transitionOptions: array{periods: array<int, array{id: int, name: string}>, incomingOwners: array<int, array{id: int, name: string}>},
      *     canManage: bool
      * }
      */
@@ -33,6 +34,7 @@ final class GetHandoverPayloadAction
                 'organization_periods.id as period_id',
                 'organization_periods.name as period_name',
                 'organization_members.role',
+                'organization_members.user_id',
             ]);
 
         if ($membership === null) {
@@ -41,16 +43,28 @@ final class GetHandoverPayloadAction
                 'metrics' => [],
                 'package' => null,
                 'items' => [],
+                'transitionOptions' => [
+                    'periods' => [],
+                    'incomingOwners' => [],
+                ],
                 'canManage' => false,
             ];
         }
 
         $canManage = in_array((string) $membership->role, ['organization_owner', 'organization_admin'], true);
         $package = DB::table('handover_packages')
-            ->where('organization_id', $membership->organization_id)
-            ->where('from_period_id', $membership->period_id)
-            ->orderByDesc('created_at')
-            ->first();
+            ->leftJoin('organization_periods as to_periods', 'to_periods.id', '=', 'handover_packages.to_period_id')
+            ->leftJoin('users as incoming_owners', 'incoming_owners.id', '=', 'handover_packages.incoming_owner_id')
+            ->leftJoin('users as accepted_by_users', 'accepted_by_users.id', '=', 'handover_packages.accepted_by_user_id')
+            ->where('handover_packages.organization_id', $membership->organization_id)
+            ->where('handover_packages.from_period_id', $membership->period_id)
+            ->orderByDesc('handover_packages.created_at')
+            ->first([
+                'handover_packages.*',
+                'to_periods.name as to_period_name',
+                'incoming_owners.name as incoming_owner_name',
+                'accepted_by_users.name as accepted_by_name',
+            ]);
 
         $items = $package === null
             ? collect()
@@ -84,6 +98,12 @@ final class GetHandoverPayloadAction
                 'createdAt' => (string) $package->created_at,
                 'submittedAt' => $package->submitted_at === null ? null : (string) $package->submitted_at,
                 'acceptedAt' => $package->accepted_at === null ? null : (string) $package->accepted_at,
+                'acceptedByName' => $package->accepted_by_name === null ? null : (string) $package->accepted_by_name,
+                'toPeriodId' => $package->to_period_id === null ? null : (int) $package->to_period_id,
+                'toPeriodName' => $package->to_period_name === null ? null : (string) $package->to_period_name,
+                'incomingOwnerId' => $package->incoming_owner_id === null ? null : (int) $package->incoming_owner_id,
+                'incomingOwnerName' => $package->incoming_owner_name === null ? null : (string) $package->incoming_owner_name,
+                'canAccept' => $this->canAcceptPackage((int) $membership->user_id, (string) $membership->role, $package),
                 'snapshot' => $snapshot,
             ],
             'items' => $items
@@ -96,8 +116,60 @@ final class GetHandoverPayloadAction
                     'assignee' => $item->assignee_name === null ? null : (string) $item->assignee_name,
                 ])
                 ->all(),
+            'transitionOptions' => [
+                'periods' => $this->periodOptions((int) $membership->organization_id, $membership->period_id === null ? null : (int) $membership->period_id),
+                'incomingOwners' => $this->incomingOwnerOptions((int) $membership->organization_id),
+            ],
             'canManage' => $canManage,
         ];
+    }
+
+    private function canAcceptPackage(int $actorUserId, string $actorRole, object $package): bool
+    {
+        if ((string) $package->status !== 'submitted') {
+            return false;
+        }
+
+        if ($package->incoming_owner_id === null) {
+            return in_array($actorRole, ['organization_owner', 'organization_admin'], true);
+        }
+
+        return (int) $package->incoming_owner_id === $actorUserId && $actorRole === 'organization_owner';
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function periodOptions(int $organizationId, ?int $currentPeriodId): array
+    {
+        return DB::table('organization_periods')
+            ->where('organization_id', $organizationId)
+            ->when($currentPeriodId !== null, fn ($query) => $query->where('id', '!=', $currentPeriodId))
+            ->orderByDesc('starts_at')
+            ->get(['id', 'name'])
+            ->map(static fn (object $period): array => [
+                'id' => (int) $period->id,
+                'name' => (string) $period->name,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function incomingOwnerOptions(int $organizationId): array
+    {
+        return DB::table('organization_members')
+            ->join('users', 'users.id', '=', 'organization_members.user_id')
+            ->where('organization_members.organization_id', $organizationId)
+            ->where('organization_members.role', 'organization_owner')
+            ->orderBy('users.name')
+            ->get(['users.id', 'users.name'])
+            ->map(static fn (object $user): array => [
+                'id' => (int) $user->id,
+                'name' => (string) $user->name,
+            ])
+            ->all();
     }
 
     /**
