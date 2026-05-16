@@ -28,7 +28,7 @@
 |-------|-------|--------|
 | MVP Core | M01–M13 | ✅ All complete and verified |
 | Post-MVP Wave 1 | M14–M16 | ✅ Complete |
-| Post-MVP Active | M19 | 〜 Handover persistence + snapshot started |
+| Post-MVP Active | M19 | 〜 Handover persistence + export verified |
 | Post-MVP Planned | M17–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -39,6 +39,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M19 export browser smoke passed on `/organization/handover`; accepted package shows `EXPORT PDF`, queues export, and displays success flash.
+- `[x]` 2026-05-16 · After M19 export: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **214 passed, 1000 assertions**.
+- `[x]` 2026-05-16 · After M19 export: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **11 passed, 84 assertions**.
+- `[x]` 2026-05-16 · After M19 export: `npm run build` passed.
 - `[x]` 2026-05-16 · M19 package submit/accept browser smoke passed on `/organization/handover`; owner can complete items, submit draft, and accept package with no console errors.
 - `[x]` 2026-05-16 · After M19 package submit/accept: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **210 passed, 983 assertions**.
 - `[x]` 2026-05-16 · After M19 package submit/accept: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **7 passed, 67 assertions**.
@@ -596,12 +600,14 @@ Replace single-approver model with configurable multi-level approval chains for 
 - Action: `InitiateHandoverPackageAction` — owner/admin creates one draft package for the active period, with generated checklist items.
 - Action: `UpdateHandoverItemStatusAction` — owner/admin or assignee can mark draft checklist items `pending`/`done`.
 - Action: `UpdateHandoverPackageStatusAction` — owner/admin submits completed draft packages and accepts submitted packages.
+- Action: `QueueHandoverPackageExportAction` — owner/admin queues accepted handover packages as PDF via `document_exports`.
 - Action: `GetHandoverPayloadAction` — tenant-scoped payload with live metrics, package snapshot, and checklist items.
 - Route: `POST /organization/handover` — creates initial handover package.
 - Route: `PATCH /organization/handover/items/{item}` — updates item status.
 - Route: `PATCH /organization/handover/packages/{package}/status` — submits or accepts package status.
-- UI: Handover page now shows database-backed metrics, package status, snapshot, generated checklist, item status buttons, and submit/accept actions.
-- Tests: payload, package initiation, item status mutation, submit/accept flow, owner/admin/assignee guard.
+- Route: `POST /organization/handover/packages/{package}/export` — queues accepted package export.
+- UI: Handover page now shows database-backed metrics, package status, snapshot, generated checklist, item status buttons, submit/accept actions, and accepted-package PDF export.
+- Tests: payload, package initiation, item status mutation, submit/accept flow, export queue/PDF generation, owner/admin/assignee guard.
 
 #### What Still Needs to Be Built
 - [x] `handover_packages` table: `id`, `organization_id`, `from_period_id`, `to_period_id`, `created_by`, `status`, `submitted_at`, `accepted_at`, plus JSON snapshot.
@@ -610,10 +616,13 @@ Replace single-approver model with configurable multi-level approval chains for 
 - [x] `InitiateHandoverAction` — creates package, auto-generates items from active data.
 - [x] Handover checklist UI: generated items render and draft item status can be toggled pending/done.
 - [x] Submit/accept flow: draft package can be submitted after all checklist items are done, then accepted.
-- [ ] Archive/export handover package as PDF.
+- [x] Archive/export handover package as PDF.
 - [~] Access policy: owner/admin can initiate; incoming-owner handover acceptance role is not modeled yet.
 
 #### Verification
+- `[x]` 2026-05-16 · Browser smoke passed for accepted-package export on `/organization/handover`; `EXPORT PDF` queues export and shows success flash.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **11 passed, 84 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **214 passed, 1000 assertions**.
 - `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **7 passed, 67 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **210 passed, 983 assertions**.
@@ -728,12 +737,11 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Add M19 export** — archive/export handover package as PDF via existing export patterns.
-2. **Model incoming owner acceptance** — replace temporary owner/admin accept guard with explicit incoming-owner transition when period/member handover data exists.
-3. **Then start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
-4. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
-5. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
-6. **M22 (Payment)** only after M21 is stable.
+1. **Model incoming owner acceptance** — replace temporary owner/admin accept guard with explicit incoming-owner transition when period/member handover data exists.
+2. **Then start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+3. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+4. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+5. **M22 (Payment)** only after M21 is stable.
 7. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
 8. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
 9. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:

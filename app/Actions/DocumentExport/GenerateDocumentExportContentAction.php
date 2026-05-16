@@ -41,6 +41,10 @@ final class GenerateDocumentExportContentAction
             return $this->lpjDocument($export, $project);
         }
 
+        if ((string) $export->document_type === 'handover') {
+            return $this->handoverDocument($export);
+        }
+
         return [
             'title' => (string) $export->document_title,
             'subtitle' => $project === null ? 'Prokerin export' : (string) $project->name,
@@ -51,6 +55,90 @@ final class GenerateDocumentExportContentAction
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}
+     */
+    private function handoverDocument(object $export): array
+    {
+        $packageId = $this->handoverPackageId($export);
+        $package = $packageId === null
+            ? null
+            : DB::table('handover_packages')
+                ->join('organizations', 'organizations.id', '=', 'handover_packages.organization_id')
+                ->leftJoin('organization_periods', 'organization_periods.id', '=', 'handover_packages.from_period_id')
+                ->where('handover_packages.id', $packageId)
+                ->first([
+                    'handover_packages.*',
+                    'organizations.name as organization_name',
+                    'organization_periods.name as period_name',
+                ]);
+
+        if ($package === null) {
+            return [
+                'title' => (string) $export->document_title,
+                'subtitle' => 'Paket handover tidak ditemukan.',
+                'sections' => [],
+            ];
+        }
+
+        $items = DB::table('handover_items')
+            ->leftJoin('users', 'users.id', '=', 'handover_items.assignee_id')
+            ->where('handover_items.package_id', $package->id)
+            ->orderBy('handover_items.id')
+            ->get([
+                'handover_items.category',
+                'handover_items.label',
+                'handover_items.description',
+                'handover_items.status',
+                'users.name as assignee_name',
+            ])
+            ->map(static function (object $item): string {
+                return sprintf(
+                    '[%s] %s - %s%s',
+                    (string) $item->status === 'done' ? 'x' : ' ',
+                    (string) $item->label,
+                    (string) ($item->description ?? '-'),
+                    $item->assignee_name === null ? '' : ' (PIC: '.(string) $item->assignee_name.')',
+                );
+            })
+            ->all();
+
+        $snapshot = json_decode((string) $package->snapshot, true) ?: [];
+
+        return [
+            'title' => (string) $export->document_title,
+            'subtitle' => sprintf(
+                '%s | Periode %s | Status %s',
+                (string) $package->organization_name,
+                (string) ($package->period_name ?? '-'),
+                (string) $package->status,
+            ),
+            'sections' => [
+                [
+                    'title' => 'Ringkasan Snapshot',
+                    'body' => implode(PHP_EOL, [
+                        'Task terbuka: '.(string) ($snapshot['open_tasks'] ?? 0),
+                        'Dokumen arsip: '.(string) ($snapshot['documents'] ?? 0),
+                        'Rencana budget: Rp'.number_format((int) ($snapshot['planned_budget'] ?? 0), 0, ',', '.'),
+                        'Realisasi budget: Rp'.number_format((int) ($snapshot['realized_budget'] ?? 0), 0, ',', '.'),
+                        'LPJ wajib belum lengkap: '.(string) ($snapshot['outstanding_lpj_items'] ?? 0),
+                    ]),
+                ],
+                [
+                    'title' => 'Checklist Handover',
+                    'body' => implode(PHP_EOL, $items),
+                ],
+            ],
+        ];
+    }
+
+    private function handoverPackageId(object $export): ?int
+    {
+        preg_match('/handover-package-(\d+)/', (string) $export->output_path, $matches);
+
+        return isset($matches[1]) ? (int) $matches[1] : null;
     }
 
     /**

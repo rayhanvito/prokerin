@@ -63,6 +63,7 @@ export default function OrganizationHandover({
     const { post, processing } = useForm({});
     const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
     const [updatingPackage, setUpdatingPackage] = useState(false);
+    const [exportingPackage, setExportingPackage] = useState(false);
     const canSubmitPackage =
         handoverPackage?.status === 'draft' &&
         items.length > 0 &&
@@ -104,6 +105,23 @@ export default function OrganizationHandover({
             {
                 preserveScroll: true,
                 onFinish: () => setUpdatingPackage(false),
+            },
+        );
+    };
+
+    const queueHandoverExport = (): void => {
+        if (handoverPackage === null) {
+            return;
+        }
+
+        setExportingPackage(true);
+
+        router.post(
+            route('organization.handover.packages.export', handoverPackage.id),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setExportingPackage(false),
             },
         );
     };
@@ -163,6 +181,15 @@ export default function OrganizationHandover({
                                     onClick={() => updatePackageStatus('accepted')}
                                 >
                                     Terima Paket
+                                </PrimaryButton>
+                            ) : null}
+                            {handoverPackage?.status === 'accepted' && canManage ? (
+                                <PrimaryButton
+                                    type="button"
+                                    disabled={exportingPackage}
+                                    onClick={queueHandoverExport}
+                                >
+                                    Export PDF
                                 </PrimaryButton>
                             ) : null}
                         </div>

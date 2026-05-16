@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Jobs\GenerateDocumentExportJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -206,6 +209,134 @@ final class HandoverPackageTest extends TestCase
             'id' => $packageId,
             'status' => 'draft',
         ]);
+    }
+
+    public function test_owner_can_queue_accepted_handover_package_export(): void
+    {
+        Queue::fake();
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $packageId = $this->acceptedHandoverPackageId($owner);
+
+        $this->actingAs($owner)
+            ->post(route('organization.handover.packages.export', ['package' => $packageId]))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Export handover PDF masuk antrean.');
+
+        $exportId = (int) DB::table('document_exports')
+            ->where('document_type', 'handover')
+            ->where('format', 'pdf')
+            ->value('id');
+
+        $this->assertGreaterThan(0, $exportId);
+        $this->assertDatabaseHas('document_exports', [
+            'id' => $exportId,
+            'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+            'project_id' => null,
+            'requested_by_user_id' => $owner->id,
+            'document_type' => 'handover',
+            'format' => 'pdf',
+            'status' => 'queued',
+        ]);
+
+        Queue::assertPushed(
+            GenerateDocumentExportJob::class,
+            fn (GenerateDocumentExportJob $job): bool => $job->documentExportId === $exportId,
+        );
+    }
+
+    public function test_owner_cannot_queue_handover_export_before_package_is_accepted(): void
+    {
+        Queue::fake();
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        $this->actingAs($owner)
+            ->post(route('organization.handover.packages.export', ['package' => $packageId]))
+            ->assertSessionHasErrors('handoverPackage');
+
+        $this->assertDatabaseMissing('document_exports', [
+            'document_type' => 'handover',
+        ]);
+
+        Queue::assertNotPushed(GenerateDocumentExportJob::class);
+    }
+
+    public function test_member_cannot_queue_handover_package_export(): void
+    {
+        Queue::fake();
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+        $packageId = $this->acceptedHandoverPackageId($owner);
+
+        $this->actingAs($member)
+            ->post(route('organization.handover.packages.export', ['package' => $packageId]))
+            ->assertNotFound();
+
+        $this->assertDatabaseMissing('document_exports', [
+            'document_type' => 'handover',
+        ]);
+
+        Queue::assertNotPushed(GenerateDocumentExportJob::class);
+    }
+
+    public function test_handover_export_job_generates_pdf_archive(): void
+    {
+        Queue::fake();
+        Storage::fake('s3');
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $packageId = $this->acceptedHandoverPackageId($owner);
+
+        $this->actingAs($owner)
+            ->post(route('organization.handover.packages.export', ['package' => $packageId]))
+            ->assertRedirect();
+
+        $export = DB::table('document_exports')
+            ->where('document_type', 'handover')
+            ->first();
+
+        $this->assertNotNull($export);
+
+        (new GenerateDocumentExportJob((int) $export->id))->handle();
+
+        Storage::disk('s3')->assertExists((string) $export->output_path);
+
+        $pdf = Storage::disk('s3')->get((string) $export->output_path);
+
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertDatabaseHas('document_exports', [
+            'id' => $export->id,
+            'status' => 'completed',
+        ]);
+    }
+
+    private function acceptedHandoverPackageId(User $owner): int
+    {
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        DB::table('handover_items')
+            ->where('package_id', $packageId)
+            ->update(['status' => 'done']);
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'submitted',
+            ]);
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'accepted',
+            ]);
+
+        return $packageId;
     }
 
     private function organizationId(string $slug): int
