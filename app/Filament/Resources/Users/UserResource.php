@@ -11,6 +11,7 @@ use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Schemas\UserInfolist;
 use App\Filament\Resources\Users\Tables\UsersTable;
+use App\Filament\SuperAdminGate;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -22,7 +23,21 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+
+    protected static ?string $navigationLabel = 'Users';
+
+    protected static ?int $navigationSort = 10;
+
+    public static function canViewAny(): bool
+    {
+        return SuperAdminGate::canAccess();
+    }
+
+    public static function canCreate(): bool
+    {
+        return SuperAdminGate::canAccess();
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -41,9 +56,7 @@ class UserResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
