@@ -47,6 +47,12 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'fake'),
+        'api_key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL', 'prokerin-local'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

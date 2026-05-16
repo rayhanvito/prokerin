@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn (): ?string => $this->sessionString($request, 'success'),
                 'error' => fn (): ?string => $this->sessionString($request, 'error'),
                 'status' => fn (): ?string => $this->sessionString($request, 'status'),
+                'aiSuggestion' => fn (): ?array => $this->sessionArray($request, 'aiSuggestion'),
             ],
         ];
     }
@@ -69,6 +70,16 @@ class HandleInertiaRequests extends Middleware
         $value = $request->session()->get($key);
 
         return is_string($value) ? $value : null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function sessionArray(Request $request, string $key): ?array
+    {
+        $value = $request->session()->get($key);
+
+        return is_array($value) ? $value : null;
     }
 
     /**

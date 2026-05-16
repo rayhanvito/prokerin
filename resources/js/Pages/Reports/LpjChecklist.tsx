@@ -1,10 +1,11 @@
-import { CheckCircle2, Circle, RotateCcw, Send } from 'lucide-react';
+import { CheckCircle2, Circle, RotateCcw, Send, WandSparkles } from 'lucide-react';
 
 import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
 import VihoCard from '@/Components/Viho/VihoCard';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import type { PageProps } from '@/types';
 import type { ApprovalWorkflowTimeline as ApprovalWorkflowTimelineData } from '@/types/prokerin';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 interface LpjChecklistItem {
     title: string;
@@ -32,12 +33,23 @@ interface LpjChecklistProps {
     workflowTimeline: ApprovalWorkflowTimelineData;
 }
 
+interface LpjAiSuggestion {
+    type: 'lpj_summary';
+    projectId: number;
+    summary: string;
+    recommendations: string[];
+    promptHash: string;
+}
+
 export default function LpjChecklist({
     project,
     checklistItems,
     readiness,
     workflowTimeline,
 }: LpjChecklistProps) {
+    const { flash } = usePage<PageProps>().props;
+    const aiSuggestion = resolveLpjAiSuggestion(flash.aiSuggestion, project.id);
+    const aiForm = useForm();
     const reviewForm = useForm();
     const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
         decision: 'approve',
@@ -49,6 +61,16 @@ export default function LpjChecklist({
         }
 
         reviewForm.post(route('reports.lpj.review', project.id), {
+            preserveScroll: true,
+        });
+    };
+
+    const generateAiSummary = (): void => {
+        if (project.id === null) {
+            return;
+        }
+
+        aiForm.post(route('reports.lpj.ai-summary', project.id), {
             preserveScroll: true,
         });
     };
@@ -85,6 +107,15 @@ export default function LpjChecklist({
                     subtitle={`${readiness.completionProgress}% lengkap · ${readiness.missingRequiredItems.length} item wajib belum lengkap.`}
                     action={
                         <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                disabled={project.id === null || aiForm.processing}
+                                onClick={generateAiSummary}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#ba895d] hover:text-[#ba895d] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                            >
+                                <WandSparkles className="h-4 w-4" />
+                                Ringkas AI
+                            </button>
                             <button
                                 type="button"
                                 disabled={
@@ -124,6 +155,38 @@ export default function LpjChecklist({
                     }
                 >
                     <div className="-m-5 divide-y divide-[#e6edef]">
+                        {aiSuggestion && (
+                            <div className="bg-[#f5f7fb] p-5">
+                                <div className="flex items-start gap-4">
+                                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] bg-white text-[#24695c]">
+                                        <WandSparkles className="h-5 w-5" />
+                                    </span>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-[#242934]">
+                                            Ringkasan AI LPJ
+                                        </p>
+                                        <p className="mt-2 text-sm leading-6 text-[#59667a]">
+                                            {aiSuggestion.summary}
+                                        </p>
+                                        <p className="mt-2 text-xs text-[#717171]">
+                                            Hash prompt: {aiSuggestion.promptHash.slice(0, 12)}
+                                        </p>
+                                        {aiSuggestion.recommendations.length > 0 && (
+                                            <div className="mt-3 space-y-2">
+                                                {aiSuggestion.recommendations.map((recommendation) => (
+                                                    <p
+                                                        key={recommendation}
+                                                        className="rounded-[4px] bg-white px-3 py-2 text-sm text-[#59667a]"
+                                                    >
+                                                        {recommendation}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {checklistItems.map((item) => (
                             <div
                                 key={item.title}
@@ -155,4 +218,31 @@ export default function LpjChecklist({
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function resolveLpjAiSuggestion(
+    value: Record<string, unknown> | undefined,
+    projectId: number | null,
+): LpjAiSuggestion | null {
+    if (
+        projectId === null ||
+        value?.type !== 'lpj_summary' ||
+        value.projectId !== projectId ||
+        typeof value.summary !== 'string' ||
+        !Array.isArray(value.recommendations) ||
+        typeof value.promptHash !== 'string'
+    ) {
+        return null;
+    }
+
+    return {
+        type: 'lpj_summary',
+        projectId,
+        summary: value.summary,
+        recommendations: value.recommendations.filter(
+            (recommendation): recommendation is string =>
+                typeof recommendation === 'string',
+        ),
+        promptHash: value.promptHash,
+    };
 }

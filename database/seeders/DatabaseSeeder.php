@@ -87,9 +87,9 @@ final class DatabaseSeeder extends Seeder
     private function seedOrganizations($now): void
     {
         foreach ([
-            ['name' => 'BEM Fakultas Teknologi', 'slug' => 'bem-fakultas-teknologi'],
-            ['name' => 'HIMA Informatika', 'slug' => 'hima-informatika'],
-            ['name' => 'UKM Kreatif', 'slug' => 'ukm-kreatif'],
+            ['name' => 'BEM Fakultas Teknologi', 'slug' => 'bem-fakultas-teknologi', 'plan_tier' => 'pro'],
+            ['name' => 'HIMA Informatika', 'slug' => 'hima-informatika', 'plan_tier' => 'free'],
+            ['name' => 'UKM Kreatif', 'slug' => 'ukm-kreatif', 'plan_tier' => 'free'],
         ] as $organization) {
             DB::table('organizations')->updateOrInsert(
                 ['slug' => $organization['slug']],
@@ -97,6 +97,7 @@ final class DatabaseSeeder extends Seeder
                     'name' => $organization['name'],
                     'logo_path' => 'organizations/'.$organization['slug'].'/logo.png',
                     'status' => 'active',
+                    'plan_tier' => $organization['plan_tier'],
                     'updated_at' => $now,
                     'created_at' => $now,
                 ],

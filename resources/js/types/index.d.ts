@@ -23,5 +23,6 @@ export type PageProps<
         success?: string;
         error?: string;
         status?: string;
+        aiSuggestion?: Record<string, unknown>;
     };
 };

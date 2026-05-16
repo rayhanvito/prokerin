@@ -35,7 +35,8 @@
 | Cross-module UX | M28.5 | ✅ Complete |
 | Post-MVP Wave 3 | M21 | ✅ Complete |
 | Post-MVP Wave 3 | M22 | ✅ Complete |
-| Post-MVP Planned | M23–M24 | 🔲 Not started |
+| Post-MVP Wave 3 | M23 | 🟡 Partial |
+| Post-MVP Planned | M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -45,6 +46,12 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[~]` 2026-05-17 · M23 AI Assistant foundation shipped: scoped use cases, env/config, plan-tier guard, fake swappable provider, AI usage logs, Proposal Editor suggestions, LPJ Checklist summary, data minimization tests, and browser smoke on port `8002`.
+- `[x]` 2026-05-17 · M23 local migration `2026_05_16_000016_create_ai_usage_logs_table.php` applied and `php artisan db:seed` set BEM demo organization to `pro` for AI access.
+- `[x]` 2026-05-17 · M23 browser smoke passed on `/reports/proposal-editor` and `/reports/lpj-checklist`; `Buat Saran AI` and `Ringkas AI` render generated suggestion panels.
+- `[x]` 2026-05-17 · After M23 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **278 passed, 1413 assertions**.
+- `[x]` 2026-05-17 · After M23 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php` → **23 passed, 84 assertions**.
+- `[x]` 2026-05-17 · After M23 foundation: `npm run build` passed.
 - `[x]` 2026-05-17 · M22 payment & ticketing completed: env/config, ticket tiers, payment orders, public ticket selection, free-tier bypass, paid pending order, Midtrans signature webhook, and tier capacity guards.
 - `[x]` 2026-05-17 · M22 local migration `2026_05_16_000015_create_payment_ticketing_tables.php` applied and `php artisan db:seed` added demo ticket tiers.
 - `[x]` 2026-05-17 · M22 browser smoke passed on `/events/seminar-karier-digital/register`; ticket selector renders `Free Pass` and paid tier pricing.
@@ -895,25 +902,52 @@ Enable paid event registration via Midtrans (or compatible provider). Free and p
 
 ### M23 · AI Assistant
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial.
 
 #### Product Goal
 Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal drafting from project data, LPJ summary generation, task priority suggestions, dashboard insight summaries.
 
-#### Scope to Build (define use case before any code)
-- [ ] Define exact use cases and user-facing surfaces (which pages, which actions).
-- [ ] `.env.example` variables: `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`.
-- [ ] `AiPromptAction` base class: wraps provider call, logs prompt hash + token count, enforces tenant data minimization.
-- [ ] `DraftProposalWithAiAction` — takes project data, returns proposal section suggestions.
-- [ ] `SummarizeLpjWithAiAction` — takes LPJ checklist + project data, returns summary narrative.
-- [ ] `AiUsageLog` table: `id`, `organization_id`, `user_id`, `action_type`, `prompt_tokens`, `completion_tokens`, `created_at`.
-- [ ] Permission guard: AI features gated by organization plan tier.
-- [ ] Tests: prompt payload construction (no sensitive data leakage), permission guard.
+#### Scoped Use Cases
+- **Proposal Draft Suggestions:** available on `Reports/ProposalEditor`; user clicks `Buat Saran AI`, receives suggested section bodies, and manually applies/saves them. AI does not auto-write to `proposal_drafts`.
+- **LPJ Summary Suggestions:** available on `Reports/LpjChecklist`; user clicks `Ringkas AI`, receives summary narrative plus missing-item recommendations. AI does not auto-submit or approve LPJ.
+- **Deferred:** task priority suggestions and dashboard insight summaries stay out of M23 foundation until the two report workflows are production-ready.
+
+#### Data Minimization Design
+- Allowed outbound proposal data: organization name/plan tier, project title/description/status/progress/dates, proposal title/subtitle, section headings, and budget totals by category.
+- Allowed outbound LPJ data: organization name/plan tier, project title/description/status/progress/dates, checklist titles/complete flags, and aggregate readiness.
+- Disallowed outbound data: member/participant email, phone, WhatsApp number, KTP/NIK, avatar, tokens, raw document paths/storage paths, payment provider order IDs.
+- `AiPromptAction` stores only prompt hash, token estimates, provider, model, action type, organization, and actor. Prompt body and provider response are not persisted.
+
+#### Scope to Build
+- [x] Define exact use cases and user-facing surfaces (which pages, which actions).
+- [x] `.env.example` variables: `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`.
+- [x] `AiPromptAction` base class: wraps provider call, logs prompt hash + token count, enforces tenant data minimization.
+- [x] `DraftProposalWithAiAction` — takes project data, returns proposal section suggestions.
+- [x] `SummarizeLpjWithAiAction` — takes LPJ checklist + project data, returns summary narrative.
+- [x] `AiUsageLog` table: `id`, `organization_id`, `user_id`, `action_type`, `prompt_tokens`, `completion_tokens`, `created_at`.
+- [x] Permission guard: AI features gated by organization plan tier.
+- [x] Tests: prompt payload construction (no sensitive data leakage), permission guard.
+
+#### Current Implementation
+- `AI_PROVIDER=fake` is the default local/test provider and returns deterministic suggestions so tests and local demos do not need secrets or external calls.
+- `organizations.plan_tier` gates AI access; `pro` and `campus` are allowed, `free` is blocked.
+- `ai_usage_logs` logs provider/model/action/prompt hash/token estimates for audit.
+
+#### Remaining Gap Before `[x]`
+- Add at least one real production provider adapter behind `AI_PROVIDER` and keep the same data minimization contract.
 
 #### Rules
 - Never send member personal data (phone, email, KTP) to AI provider.
 - Never start without an explicit use-case scoped spec.
 - Provider must be swappable via env (not hardcoded to any vendor).
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000016_create_ai_usage_logs_table.php`.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` set demo BEM organization `plan_tier=pro`.
+- `[x]` 2026-05-17 · Browser smoke passed on `/reports/proposal-editor` and `/reports/lpj-checklist`; AI buttons generate visible suggestion panels.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php` → **23 passed, 84 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **278 passed, 1413 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
 
 ---
 
@@ -936,9 +970,9 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ## Next Action (Ordered Priority)
 
-### After M28.5
-1. **Define M23 (AI Assistant) use cases and data minimization design** before writing code.
-2. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+### After M23 Foundation
+1. **Add a production AI provider adapter for M23** behind `AI_PROVIDER`, preserving the current data minimization and usage-log contract.
+2. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer after M23 provider readiness is decided.
 3. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build

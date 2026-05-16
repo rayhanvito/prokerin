@@ -4,6 +4,7 @@ import {
     RotateCcw,
     Save,
     Send,
+    WandSparkles,
 } from 'lucide-react';
 
 import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
@@ -12,8 +13,9 @@ import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { humanizeStatus } from '@/lib/format';
+import type { PageProps } from '@/types';
 import type { ProposalDraft } from '@/types/prokerin';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 interface ProposalEditorProps {
     proposalDraft: ProposalDraft;
@@ -23,10 +25,23 @@ interface ProposalDraftForm {
     sections: ProposalDraft['sections'];
 }
 
+interface ProposalAiSuggestion {
+    type: 'proposal_draft';
+    proposalDraftId: number;
+    sections: ProposalDraft['sections'];
+    promptHash: string;
+}
+
 export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
+    const { flash } = usePage<PageProps>().props;
+    const aiSuggestion = resolveProposalAiSuggestion(
+        flash.aiSuggestion,
+        proposalDraft.id,
+    );
     const draftForm = useForm<ProposalDraftForm>({
         sections: proposalDraft.sections,
     });
+    const aiForm = useForm();
     const submitForm = useForm();
     const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
         decision: 'approve',
@@ -52,6 +67,27 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                 preserveScroll: true,
             },
         );
+    };
+
+    const generateAiSuggestion = (): void => {
+        if (proposalDraft.id === null) {
+            return;
+        }
+
+        aiForm.post(
+            route('reports.proposal-drafts.ai-suggestions', proposalDraft.id),
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const applyAiSuggestion = (): void => {
+        if (aiSuggestion === null) {
+            return;
+        }
+
+        draftForm.setData('sections', aiSuggestion.sections);
     };
 
     const submitForApproval = (): void => {
@@ -127,6 +163,18 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 type="button"
                                 disabled={
                                     !proposalDraft.canEdit ||
+                                    aiForm.processing
+                                }
+                                onClick={generateAiSuggestion}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#ba895d] hover:text-[#ba895d] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                            >
+                                <WandSparkles className="h-4 w-4" />
+                                Buat Saran AI
+                            </button>
+                            <button
+                                type="button"
+                                disabled={
+                                    !proposalDraft.canEdit ||
                                     draftForm.processing
                                 }
                                 onClick={saveDraft}
@@ -198,6 +246,43 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 timeline={proposalDraft.workflowTimeline}
                             />
                         </div>
+                        {aiSuggestion && (
+                            <div className="mt-5 rounded-[4px] border border-[#e6edef] bg-white p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-sm font-semibold text-[#242934]">
+                                            Saran AI siap dipakai
+                                        </p>
+                                        <p className="mt-1 text-xs text-[#717171]">
+                                            Hash prompt: {aiSuggestion.promptHash.slice(0, 12)}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={applyAiSuggestion}
+                                        className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
+                                    >
+                                        <WandSparkles className="h-4 w-4" />
+                                        Terapkan
+                                    </button>
+                                </div>
+                                <div className="mt-4 space-y-3">
+                                    {aiSuggestion.sections.map((section) => (
+                                        <div
+                                            key={section.heading}
+                                            className="rounded-[4px] bg-[#f5f7fb] p-3"
+                                        >
+                                            <p className="text-sm font-semibold text-[#242934]">
+                                                {section.heading}
+                                            </p>
+                                            <p className="mt-1 text-sm leading-6 text-[#59667a]">
+                                                {section.body}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="mt-5 space-y-4">
                             {draftForm.data.sections.map((section, index) => (
                                 <label key={section.heading} className="block">
@@ -232,4 +317,39 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function resolveProposalAiSuggestion(
+    value: Record<string, unknown> | undefined,
+    proposalDraftId: number | null,
+): ProposalAiSuggestion | null {
+    if (
+        proposalDraftId === null ||
+        value?.type !== 'proposal_draft' ||
+        value.proposalDraftId !== proposalDraftId ||
+        !Array.isArray(value.sections) ||
+        typeof value.promptHash !== 'string'
+    ) {
+        return null;
+    }
+
+    return {
+        type: 'proposal_draft',
+        proposalDraftId,
+        sections: value.sections
+            .filter(
+                (section): section is { heading: string; body: string } =>
+                    typeof section === 'object' &&
+                    section !== null &&
+                    'heading' in section &&
+                    'body' in section &&
+                    typeof section.heading === 'string' &&
+                    typeof section.body === 'string',
+            )
+            .map((section) => ({
+                heading: section.heading,
+                body: section.body,
+            })),
+        promptHash: value.promptHash,
+    };
 }

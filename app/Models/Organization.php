@@ -16,5 +16,6 @@ final class Organization extends Model
         'slug',
         'logo_path',
         'status',
+        'plan_tier',
     ];
 }
