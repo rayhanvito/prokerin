@@ -1,9 +1,11 @@
 import { CheckCircle2, XCircle } from 'lucide-react';
 
+import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatRupiah, humanizeStatus } from '@/lib/format';
+import type { ApprovalWorkflowTimeline as ApprovalWorkflowTimelineData } from '@/types/prokerin';
 import { Head, useForm } from '@inertiajs/react';
 
 interface ApprovalItem {
@@ -15,6 +17,7 @@ interface ApprovalItem {
     requester: string;
     status: string;
     canDecide: boolean;
+    workflowTimeline: ApprovalWorkflowTimelineData;
 }
 
 interface FinanceApprovalProps {
@@ -52,39 +55,45 @@ function ApprovalRow({ approval }: { approval: ApprovalItem }) {
     const processing = approveForm.processing || rejectForm.processing;
 
     return (
-        <div className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center">
-            <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-[#242934]">
-                        {approval.title}
+        <div className="space-y-4 p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-[#242934]">
+                            {approval.title}
+                        </p>
+                        <VihoStatusBadge>
+                            {humanizeStatus(approval.status)}
+                        </VihoStatusBadge>
+                    </div>
+                    <p className="mt-1 text-sm text-[#717171]">
+                        {formatRupiah(approval.amount)} ·{' '}
+                        {approval.projectName} · {approval.category} ·
+                        Requested by {approval.requester}
                     </p>
-                    <VihoStatusBadge>{humanizeStatus(approval.status)}</VihoStatusBadge>
                 </div>
-                <p className="mt-1 text-sm text-[#717171]">
-                    {formatRupiah(approval.amount)} · {approval.projectName} ·{' '}
-                    {approval.category} · Requested by {approval.requester}
-                </p>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        disabled={!approval.canDecide || processing}
+                        onClick={() => decide('reject')}
+                        className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-3 py-2 text-sm font-semibold text-[#d22d3d] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <XCircle className="h-4 w-4" />
+                        Reject
+                    </button>
+                    <button
+                        type="button"
+                        disabled={!approval.canDecide || processing}
+                        onClick={() => decide('approve')}
+                        className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Approve
+                    </button>
+                </div>
             </div>
-            <div className="flex gap-2">
-                <button
-                    type="button"
-                    disabled={!approval.canDecide || processing}
-                    onClick={() => decide('reject')}
-                    className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-3 py-2 text-sm font-semibold text-[#d22d3d] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <XCircle className="h-4 w-4" />
-                    Reject
-                </button>
-                <button
-                    type="button"
-                    disabled={!approval.canDecide || processing}
-                    onClick={() => decide('approve')}
-                    className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <CheckCircle2 className="h-4 w-4" />
-                    Approve
-                </button>
-            </div>
+            <ApprovalWorkflowTimeline timeline={approval.workflowTimeline} />
         </div>
     );
 }

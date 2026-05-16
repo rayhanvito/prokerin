@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Actions\Approval\DelegateApprovalStepAction;
+use App\Actions\Approval\GetApprovalWorkflowTimelineAction;
 use App\Actions\Approval\ProcessApprovalStepAction;
 use App\Actions\Approval\StartApprovalWorkflowAction;
 use App\Models\User;
@@ -147,6 +148,34 @@ final class MultiLevelApprovalWorkflowTest extends TestCase
             'id' => $instanceId,
             'status' => 'approved',
         ]);
+    }
+
+    public function test_workflow_timeline_is_subject_scoped_and_tenant_scoped(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
+        $outsider = User::factory()->create();
+        $subjectId = $this->budgetLineId();
+        $instanceId = $this->startWorkflow([$treasurer->id], $secretary->id);
+
+        app(ProcessApprovalStepAction::class)->execute($treasurer->id, $instanceId, 'approved', 'RAB siap jalan.');
+
+        $timeline = app(GetApprovalWorkflowTimelineAction::class)->execute($secretary->id, 'budget_line', $subjectId);
+        $hiddenTimeline = app(GetApprovalWorkflowTimelineAction::class)->execute($outsider->id, 'budget_line', $subjectId);
+
+        $this->assertSame($instanceId, $timeline['id']);
+        $this->assertSame('approved', $timeline['status']);
+        $this->assertSame('rab', $timeline['workflowType']);
+        $this->assertSame([
+            'stepOrder' => 1,
+            'approverName' => $treasurer->name,
+            'decision' => 'approved',
+            'note' => 'RAB siap jalan.',
+            'decidedAt' => $timeline['steps'][0]['decidedAt'],
+        ], $timeline['steps'][0]);
+        $this->assertNotNull($timeline['steps'][0]['decidedAt']);
+        $this->assertNull($hiddenTimeline['id']);
+        $this->assertSame([], $hiddenTimeline['steps']);
     }
 
     /**

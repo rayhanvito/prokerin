@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Actions\Workspace;
 
+use App\Actions\Approval\GetApprovalWorkflowTimelineAction;
 use Illuminate\Support\Facades\DB;
 
-final class GetFinanceApprovalPayloadAction
+final readonly class GetFinanceApprovalPayloadAction
 {
+    public function __construct(private GetApprovalWorkflowTimelineAction $workflowTimeline) {}
+
     /**
-     * @return array{approvals: array<int, array{id: int, title: string, projectName: string, category: string, amount: int, requester: string, status: string, canDecide: bool}>, workflowApprovals: array<int, array{id: int, workflowType: string, subject: string, status: string, currentStep: int, submittedBy: string, canDecide: bool}>, delegateOptions: array<int, array{id: int, name: string}>}
+     * @return array{approvals: array<int, array{id: int, title: string, projectName: string, category: string, amount: int, requester: string, status: string, canDecide: bool, workflowTimeline: array<string, mixed>}>, workflowApprovals: array<int, array{id: int, workflowType: string, subject: string, status: string, currentStep: int, submittedBy: string, canDecide: bool}>, delegateOptions: array<int, array{id: int, name: string}>}
      */
     public function execute(int $actorUserId): array
     {
@@ -35,7 +38,7 @@ final class GetFinanceApprovalPayloadAction
 
         return [
             'approvals' => $rows
-                ->map(static fn (object $row): array => [
+                ->map(fn (object $row): array => [
                     'id' => (int) $row->id,
                     'title' => (string) $row->name,
                     'projectName' => (string) $row->project_name,
@@ -45,6 +48,7 @@ final class GetFinanceApprovalPayloadAction
                     'status' => (string) $row->status,
                     'canDecide' => (string) $row->status === 'review'
                         && in_array((string) $row->role, ['organization_owner', 'organization_admin', 'treasurer'], true),
+                    'workflowTimeline' => $this->workflowTimeline->execute($actorUserId, 'budget_line', (int) $row->id),
                 ])
                 ->all(),
             'workflowApprovals' => $this->workflowApprovals($actorUserId),

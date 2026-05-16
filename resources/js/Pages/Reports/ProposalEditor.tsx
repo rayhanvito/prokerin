@@ -6,6 +6,7 @@ import {
     Send,
 } from 'lucide-react';
 
+import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
 import InputError from '@/Components/InputError';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
@@ -192,6 +193,11 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 </button>
                             </div>
                         )}
+                        <div className="mt-5">
+                            <ApprovalWorkflowTimeline
+                                timeline={proposalDraft.workflowTimeline}
+                            />
+                        </div>
                         <div className="mt-5 space-y-4">
                             {draftForm.data.sections.map((section, index) => (
                                 <label key={section.heading} className="block">

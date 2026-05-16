@@ -149,6 +149,23 @@ export interface ProposalDraft {
         heading: string;
         body: string;
     }>;
+    workflowTimeline: ApprovalWorkflowTimeline;
+}
+
+export interface ApprovalWorkflowTimeline {
+    id: number | null;
+    workflowType: string | null;
+    status: string | null;
+    currentStep: number | null;
+    steps: ApprovalWorkflowTimelineStep[];
+}
+
+export interface ApprovalWorkflowTimelineStep {
+    stepOrder: number;
+    approverName: string;
+    decision: 'pending' | 'approved' | 'rejected' | 'revision_requested';
+    note: string | null;
+    decidedAt: string | null;
 }
 
 export interface TaskSummary {

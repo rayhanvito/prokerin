@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Actions\Workspace;
 
+use App\Actions\Approval\GetApprovalWorkflowTimelineAction;
 use Illuminate\Support\Facades\DB;
 
-final class GetProposalDraftPayloadAction
+final readonly class GetProposalDraftPayloadAction
 {
+    public function __construct(private GetApprovalWorkflowTimelineAction $workflowTimeline) {}
+
     /**
-     * @return array{id: int|null, title: string, subtitle: string, sections: array<int, array{heading: string, body: string}>, status: string, projectSlug: string|null, projectStatus: string|null, canEdit: bool, canSubmit: bool, canDecide: bool}
+     * @return array{id: int|null, title: string, subtitle: string, sections: array<int, array{heading: string, body: string}>, status: string, projectSlug: string|null, projectStatus: string|null, canEdit: bool, canSubmit: bool, canDecide: bool, workflowTimeline: array<string, mixed>}
      */
     public function execute(int $actorUserId): array
     {
@@ -41,6 +44,7 @@ final class GetProposalDraftPayloadAction
                 'canEdit' => false,
                 'canSubmit' => false,
                 'canDecide' => false,
+                'workflowTimeline' => $this->emptyWorkflowTimeline(),
             ];
         }
 
@@ -65,6 +69,21 @@ final class GetProposalDraftPayloadAction
                 || $status === 'revision_requested' && $projectStatus === 'draft',
             'canSubmit' => $status === 'draft' && in_array($projectStatus, ['draft', 'proposal_review'], true),
             'canDecide' => $status === 'submitted' && $projectStatus === 'proposal_review' && in_array($role, ['organization_owner', 'organization_admin'], true),
+            'workflowTimeline' => $this->workflowTimeline->execute($actorUserId, 'proposal_draft', (int) $draft->id),
+        ];
+    }
+
+    /**
+     * @return array{id: null, workflowType: null, status: null, currentStep: null, steps: array<int, mixed>}
+     */
+    private function emptyWorkflowTimeline(): array
+    {
+        return [
+            'id' => null,
+            'workflowType' => null,
+            'status' => null,
+            'currentStep' => null,
+            'steps' => [],
         ];
     }
 }

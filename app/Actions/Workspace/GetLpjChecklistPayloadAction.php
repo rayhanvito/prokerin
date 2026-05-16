@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Workspace;
 
+use App\Actions\Approval\GetApprovalWorkflowTimelineAction;
 use App\Actions\Report\CalculateLpjReadinessAction;
 use App\Domain\Organization\OrganizationRole;
 use App\DTOs\Report\LpjChecklistItemData;
@@ -11,10 +12,13 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class GetLpjChecklistPayloadAction
 {
-    public function __construct(private CalculateLpjReadinessAction $readiness) {}
+    public function __construct(
+        private CalculateLpjReadinessAction $readiness,
+        private GetApprovalWorkflowTimelineAction $workflowTimeline,
+    ) {}
 
     /**
-     * @return array{project: array{id: int|null, status: string|null, canSubmit: bool, canApprove: bool}, checklistItems: array<int, array{title: string, isComplete: bool, isRequired: bool}>, readiness: array<string, mixed>}
+     * @return array{project: array{id: int|null, status: string|null, canSubmit: bool, canApprove: bool}, checklistItems: array<int, array{title: string, isComplete: bool, isRequired: bool}>, readiness: array<string, mixed>, workflowTimeline: array<string, mixed>}
      */
     public function execute(int $actorUserId): array
     {
@@ -40,6 +44,7 @@ final readonly class GetLpjChecklistPayloadAction
                 ],
                 'checklistItems' => [],
                 'readiness' => $this->readiness->execute([])->toArray(),
+                'workflowTimeline' => $this->emptyWorkflowTimeline(),
             ];
         }
 
@@ -80,6 +85,21 @@ final readonly class GetLpjChecklistPayloadAction
                 $items,
             ),
             'readiness' => $readiness->toArray(),
+            'workflowTimeline' => $this->workflowTimeline->execute($actorUserId, 'project', (int) $project->id),
+        ];
+    }
+
+    /**
+     * @return array{id: null, workflowType: null, status: null, currentStep: null, steps: array<int, mixed>}
+     */
+    private function emptyWorkflowTimeline(): array
+    {
+        return [
+            'id' => null,
+            'workflowType' => null,
+            'status' => null,
+            'currentStep' => null,
+            'steps' => [],
         ];
     }
 }

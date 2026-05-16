@@ -42,6 +42,9 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
+- `[x]` 2026-05-16 · After M18 workflow timeline: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **228 passed, 1044 assertions**.
+- `[x]` 2026-05-16 · After M18 workflow timeline: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/WorkspacePayloadTest.php` → **14 passed, 140 assertions**.
+- `[x]` 2026-05-16 · After M18 workflow timeline: `npm run build` passed.
 - `[x]` 2026-05-16 · M18 finance approval browser smoke passed on `/finance/approval`; multi-level workflow panel renders with empty/active state.
 - `[x]` 2026-05-16 · After M18 route/UI wiring: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **227 passed, 1037 assertions**.
 - `[x]` 2026-05-16 · After M18 route/UI wiring: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/BudgetApprovalDecisionTest.php` → **11 passed, 40 assertions**.
@@ -617,7 +620,7 @@ Replace single-approver model with configurable multi-level approval chains for 
 - [x] `DelegateApprovalAction` — reassign a pending step to another eligible member.
 - [x] Audit trail: step decisions are immutable after final decision; delegation is logged in `approval_delegations`.
 - [x] UI: approval queue per user (what I need to approve) on `finance.approval`, with decision/delegation controls.
-- [ ] Workflow status timeline per subject.
+- [x] Workflow status timeline per subject, tenant-scoped and rendered on Proposal, RAB approval, and LPJ surfaces.
 - [ ] Integrate workflow engine into Proposal, RAB, and LPJ submission/decision routes.
 - [ ] Trigger next-step notifications when workflow advances.
 
@@ -630,6 +633,10 @@ Replace single-approver model with configurable multi-level approval chains for 
 
 #### Verification
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000012_create_approval_workflow_tables.php`.
+- `[x]` 2026-05-16 · Workflow timeline per subject renders through shared `ApprovalWorkflowTimeline` component on Proposal Editor, Finance Approval rows, and LPJ Checklist.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/WorkspacePayloadTest.php` → **14 passed, 140 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **228 passed, 1044 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · Browser smoke passed for `/finance/approval`; multi-level workflow panel renders.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/BudgetApprovalDecisionTest.php` → **11 passed, 40 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **227 passed, 1037 assertions**.
@@ -824,14 +831,6 @@ The following context is provided to help AI agents and contributors understand 
 3. **Retention (Post-MVP Wave 2)** (M17–M19): WhatsApp reminders, advanced approval, handover — makes renewal automatic.
 4. **Monetization (Post-MVP Wave 3)** (M21–M22): Event registration + ticketing — revenue-sharing model with organizations.
 5. **B2B / Enterprise** (M24): Campus-level dashboard sold to Student Affairs departments at universities.
-
-### Pricing Strategy (Suggested)
-| Tier | Target | Features |
-|------|--------|----------|
-| Free | 1 org, up to 20 members | M01–M13 (MVP) |
-| Starter (Rp 99K/month) | Small HIMA | + M14 meetings, M15 QR attendance |
-| Pro (Rp 299K/month) | BEM/UKM | + M16 certificates, M17 WhatsApp, M18 approval |
-| Campus (custom) | University | M24 dashboard, all features, SLA |
 
 ### Key Differentiators vs Indonesian Market
 1. **Proker-native:** Built specifically around Indonesian student organization workflows (proker → proposal → RAB → LPJ) — not a generic project management tool.
