@@ -6,29 +6,37 @@ namespace App\Http\Controllers;
 
 use App\Actions\Dashboard\DashboardPayloadAction;
 use App\Actions\Dashboard\DashboardRoleResolverAction;
-use App\Actions\Document\ValidateDocumentUploadAction;
 use App\Actions\EventRegistration\GetEventRegistrationManagementPayloadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
+use App\Actions\Workspace\GetBudgetDraftPayloadAction;
 use App\Actions\Workspace\GetCertificatePayloadAction;
+use App\Actions\Workspace\GetDocumentFolderTreePayloadAction;
 use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceApprovalPayloadAction;
+use App\Actions\Workspace\GetFinanceOverviewPayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
 use App\Actions\Workspace\GetHandoverPayloadAction;
 use App\Actions\Workspace\GetLpjChecklistPayloadAction;
 use App\Actions\Workspace\GetMeetingMinutePayloadAction;
+use App\Actions\Workspace\GetMemberInvitationsPayloadAction;
+use App\Actions\Workspace\GetMembersOverviewPayloadAction;
 use App\Actions\Workspace\GetNotificationRulePayloadAction;
+use App\Actions\Workspace\GetOrganizationCalendarPayloadAction;
+use App\Actions\Workspace\GetOrganizationPeriodsPayloadAction;
+use App\Actions\Workspace\GetOrganizationSwitcherPayloadAction;
 use App\Actions\Workspace\GetProjectTemplatePayloadAction;
+use App\Actions\Workspace\GetProkerIndexPayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
 use App\Actions\Workspace\GetQrAttendancePayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorDetailPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorPayloadAction;
+use App\Actions\Workspace\GetTaskAssignmentsPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
-use App\Domain\Document\DocumentVisibility;
-use App\DTOs\Document\DocumentUploadCandidateData;
+use App\Actions\Workspace\GetTaskOverviewPayloadAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -78,9 +86,17 @@ final class WorkspacePageController extends Controller
         ]);
     }
 
-    public function prokerIndex(): Response
+    public function prokerIndex(Request $request, GetProkerIndexPayloadAction $prokerIndex): Response
     {
-        return Inertia::render('Proker/Index');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Proker/Index', $prokerIndex->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+            search: $request->string('search')->toString(),
+            status: $request->string('status')->toString(),
+            period: $request->string('period')->toString(),
+        ));
     }
 
     public function prokerCreate(): Response
@@ -117,19 +133,35 @@ final class WorkspacePageController extends Controller
         ]);
     }
 
-    public function organizationSwitcher(): Response
+    public function organizationSwitcher(Request $request, GetOrganizationSwitcherPayloadAction $switcher): Response
     {
-        return Inertia::render('Organization/Switcher');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Organization/Switcher', $switcher->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function organizationPeriods(): Response
+    public function organizationPeriods(Request $request, GetOrganizationPeriodsPayloadAction $periods): Response
     {
-        return Inertia::render('Organization/Periods');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Organization/Periods', $periods->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function organizationCalendar(): Response
+    public function organizationCalendar(Request $request, GetOrganizationCalendarPayloadAction $calendar): Response
     {
-        return Inertia::render('Organization/Calendar');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Organization/Calendar', $calendar->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+            month: $request->string('month')->toString(),
+        ));
     }
 
     public function organizationHandover(Request $request, GetHandoverPayloadAction $handover): Response
@@ -157,34 +189,64 @@ final class WorkspacePageController extends Controller
         ));
     }
 
-    public function taskIndex(): Response
+    public function taskIndex(Request $request, GetTaskOverviewPayloadAction $taskOverview): Response
     {
-        return Inertia::render('Task/Index');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Task/Index', $taskOverview->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
     public function taskKanban(Request $request, GetTaskKanbanPayloadAction $kanbanPayload): Response
     {
-        return Inertia::render('Task/Kanban', $kanbanPayload->execute((int) $request->user()->id));
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Task/Kanban', $kanbanPayload->execute(
+            userId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
     public function taskCalendar(Request $request, GetTaskCalendarPayloadAction $calendarPayload): Response
     {
-        return Inertia::render('Task/Calendar', $calendarPayload->execute((int) $request->user()->id));
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Task/Calendar', $calendarPayload->execute(
+            userId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function taskAssignments(): Response
+    public function taskAssignments(Request $request, GetTaskAssignmentsPayloadAction $assignmentsPayload): Response
     {
-        return Inertia::render('Task/Assignments');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Task/Assignments', $assignmentsPayload->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function financeIndex(): Response
+    public function financeIndex(Request $request, GetFinanceOverviewPayloadAction $financeOverview): Response
     {
-        return Inertia::render('Finance/Index');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Finance/Index', $financeOverview->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function financeBudgetDraft(): Response
+    public function financeBudgetDraft(Request $request, GetBudgetDraftPayloadAction $budgetDraft): Response
     {
-        return Inertia::render('Finance/BudgetDraft');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Finance/BudgetDraft', $budgetDraft->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
     public function financeRealization(Request $request, GetFinanceRealizationPayloadAction $financeRealization): Response
@@ -226,43 +288,53 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Documents/Index');
     }
 
-    public function documentFolders(): Response
+    public function documentFolders(Request $request, GetDocumentFolderTreePayloadAction $folders): Response
     {
-        return Inertia::render('Documents/Folders');
+        return Inertia::render('Documents/Folders', [
+            'folders' => $folders->execute(
+                actorUserId: (int) $request->user()->id,
+                preferredOrganizationId: $request->session()->get('active_organization_id') === null
+                    ? null
+                    : (int) $request->session()->get('active_organization_id'),
+            ),
+        ]);
     }
 
     public function uploadCenter(
         Request $request,
-        ValidateDocumentUploadAction $validateUpload,
-        GetDocumentUploadCenterPayloadAction $documents,
+        GetDocumentUploadCenterPayloadAction $uploadCenter,
     ): Response {
-        $validation = $validateUpload->execute(
-            new DocumentUploadCandidateData(
-                originalName: 'proposal-v2.pdf',
-                mimeType: 'application/pdf',
-                sizeInKilobytes: 2048,
-                visibility: DocumentVisibility::Private,
-            ),
+        $payload = $uploadCenter->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: $request->session()->get('active_organization_id') === null
+                ? null
+                : (int) $request->session()->get('active_organization_id'),
         );
 
         return Inertia::render('Documents/UploadCenter', [
-            'documents' => $documents->execute((int) $request->user()->id),
-            'uploadValidation' => [
-                'isValid' => $validation->isValid,
-                'errors' => $validation->errors,
-                'requiresSignedUrl' => $validation->requiresSignedUrl,
-            ],
+            'documents' => $payload['documents'],
+            'projects' => $payload['projects'],
         ]);
     }
 
-    public function membersIndex(): Response
+    public function membersIndex(Request $request, GetMembersOverviewPayloadAction $members): Response
     {
-        return Inertia::render('Members/Index');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Members/Index', $members->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
-    public function memberInvites(): Response
+    public function memberInvites(Request $request, GetMemberInvitationsPayloadAction $invitations): Response
     {
-        return Inertia::render('Members/Invites');
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        return Inertia::render('Members/Invites', $invitations->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: is_numeric($activeOrganizationId) ? (int) $activeOrganizationId : null,
+        ));
     }
 
     public function memberRoles(GetRolePermissionPayloadAction $rolePermissionMatrix): Response
@@ -316,10 +388,11 @@ final class WorkspacePageController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string, type: string, periodName: string, periodStart: string, periodEnd: string, hasLogo: bool, memberCount: int}|null
+     * @return array{id: int, name: string, description: string, type: string, periodName: string, periodStart: string, periodEnd: string, hasLogo: bool, memberCount: int, canManage: bool}|null
      */
     private function organizationSetupPayload(Request $request): ?array
     {
+        $activeOrganizationId = $request->session()->get('active_organization_id');
         $organization = DB::table('organizations')
             ->join('organization_members', 'organization_members.organization_id', '=', 'organizations.id')
             ->leftJoin('organization_periods', function ($join): void {
@@ -327,16 +400,27 @@ final class WorkspacePageController extends Controller
                     ->where('organization_periods.is_active', true);
             })
             ->where('organization_members.user_id', $request->user()?->id)
+            ->when(is_numeric($activeOrganizationId), static function ($query) use ($activeOrganizationId): void {
+                $query->where('organizations.id', (int) $activeOrganizationId);
+            })
             ->select([
                 'organizations.id',
                 'organizations.name',
+                'organizations.description',
                 'organizations.logo_path',
+                'organization_members.role',
                 'organization_periods.name as period_name',
                 'organization_periods.starts_at',
                 'organization_periods.ends_at',
             ])
             ->orderBy('organization_members.id')
             ->first();
+
+        if ($organization === null && is_numeric($activeOrganizationId)) {
+            $request->session()->forget('active_organization_id');
+
+            return $this->organizationSetupPayload($request);
+        }
 
         if ($organization === null) {
             return null;
@@ -345,6 +429,7 @@ final class WorkspacePageController extends Controller
         return [
             'id' => (int) $organization->id,
             'name' => (string) $organization->name,
+            'description' => (string) ($organization->description ?? ''),
             'type' => 'BEM / Executive Board',
             'periodName' => (string) ($organization->period_name ?? 'Belum ada periode aktif'),
             'periodStart' => (string) ($organization->starts_at ?? '-'),
@@ -353,6 +438,7 @@ final class WorkspacePageController extends Controller
             'memberCount' => DB::table('organization_members')
                 ->where('organization_id', $organization->id)
                 ->count(),
+            'canManage' => in_array((string) $organization->role, ['organization_owner', 'organization_admin'], true),
         ];
     }
 }

@@ -7,12 +7,14 @@ use App\Http\Controllers\AttendanceQrCheckInController;
 use App\Http\Controllers\AttendanceQrImageController;
 use App\Http\Controllers\AttendanceQrTokenController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
+use App\Http\Controllers\BudgetLineController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\CampusDashboardController;
 use App\Http\Controllers\CertificateDownloadController;
 use App\Http\Controllers\CertificateIssueController;
 use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateVerificationController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
 use App\Http\Controllers\EventRegistrationController;
@@ -35,10 +37,16 @@ use App\Http\Controllers\MeetingMinutesController;
 use App\Http\Controllers\MeetingMinutesExportController;
 use App\Http\Controllers\MeetingWhatsAppAlertController;
 use App\Http\Controllers\MidtransWebhookController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\OrganizationLogoController;
+use App\Http\Controllers\OrganizationMemberController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\ProjectStatusTransitionController;
 use App\Http\Controllers\ProjectTemplateGenerationController;
 use App\Http\Controllers\ProposalAiSuggestionController;
 use App\Http\Controllers\ProposalApprovalController;
@@ -46,7 +54,9 @@ use App\Http\Controllers\ProposalApprovalDecisionController;
 use App\Http\Controllers\ProposalDraftController;
 use App\Http\Controllers\SponsorVendorController;
 use App\Http\Controllers\StopImpersonationController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskDeadlineReminderController;
+use App\Http\Controllers\TaskPicController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +68,7 @@ Route::get('/verify/{token}', [CertificateVerificationController::class, 'show']
 Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
 Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
 Route::post('/payments/midtrans/webhook', [MidtransWebhookController::class, 'store'])->name('payments.midtrans.webhook');
+Route::get('/invitations/{token}', [OrganizationInvitationController::class, 'show'])->name('invitations.show');
 
 Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
@@ -73,22 +84,32 @@ Route::middleware('auth')->group(function () {
         Route::post('/templates/{template}/generate', [ProjectTemplateGenerationController::class, 'store'])->name('templates.generate');
         Route::get('/status-flow', [WorkspacePageController::class, 'prokerStatusFlow'])->name('status-flow');
         Route::get('/{project}/edit', [WorkspacePageController::class, 'prokerEdit'])->name('edit');
+        Route::post('/{project}/members', [ProjectMemberController::class, 'store'])->name('members.store');
+        Route::delete('/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('members.destroy');
         Route::patch('/{project}', [ProjectController::class, 'update'])->name('update');
+        Route::patch('/{project}/status', [ProjectStatusTransitionController::class, 'update'])->name('status.update');
         Route::delete('/{project}', [ProjectController::class, 'destroy'])->name('destroy');
         Route::get('/{project}', [WorkspacePageController::class, 'prokerShow'])->name('detail');
     });
 
     Route::prefix('organization')->name('organization.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'organizationSetup'])->name('setup');
+        Route::post('/', [OrganizationController::class, 'store'])->name('store');
+        Route::patch('/', [OrganizationController::class, 'update'])->name('update');
         Route::post('/logo', [OrganizationLogoController::class, 'store'])->name('logo.store');
         Route::get('/switcher', [WorkspacePageController::class, 'organizationSwitcher'])->name('switcher');
+        Route::post('/switch', [OrganizationController::class, 'switch'])->name('switch');
         Route::get('/periods', [WorkspacePageController::class, 'organizationPeriods'])->name('periods');
+        Route::post('/periods', [OrganizationController::class, 'storePeriod'])->name('periods.store');
+        Route::patch('/periods/{period}', [OrganizationController::class, 'updatePeriod'])->name('periods.update');
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
         Route::get('/sponsors-vendors', [WorkspacePageController::class, 'organizationSponsorsVendors'])->name('sponsors-vendors');
         Route::get('/sponsors-vendors/{sponsorVendor}', [WorkspacePageController::class, 'organizationSponsorVendorDetail'])->name('sponsors-vendors.show');
         Route::post('/sponsors-vendors', [SponsorVendorController::class, 'store'])->name('sponsors-vendors.store');
         Route::patch('/sponsors-vendors/{sponsorVendor}', [SponsorVendorController::class, 'update'])->name('sponsors-vendors.update');
+        Route::post('/invitations', [OrganizationInvitationController::class, 'store'])->name('invitations.store');
+        Route::delete('/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
         Route::post('/handover/packages/{package}/export', [HandoverPackageExportController::class, 'store'])->name('handover.packages.export');
         Route::patch('/handover/packages/{package}/status', [HandoverPackageStatusController::class, 'update'])->name('handover.packages.status');
@@ -98,16 +119,21 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('tasks')->name('tasks.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'taskIndex'])->name('index');
+        Route::post('/', [TaskController::class, 'store'])->name('store');
         Route::get('/kanban', [WorkspacePageController::class, 'taskKanban'])->name('kanban');
         Route::get('/calendar', [WorkspacePageController::class, 'taskCalendar'])->name('calendar');
         Route::get('/assignments', [WorkspacePageController::class, 'taskAssignments'])->name('assignments');
+        Route::patch('/{task}/pic', [TaskPicController::class, 'update'])->name('pic.update');
         Route::patch('/{task}/status', [TaskStatusController::class, 'update'])->name('status.update');
     });
 
-    Route::prefix('finance')->name('finance.')->group(function () {
+    Route::prefix('finance')->middleware('finance')->name('finance.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'financeIndex'])->name('index');
         Route::get('/budget-draft', [WorkspacePageController::class, 'financeBudgetDraft'])->name('budget-draft');
         Route::get('/realization', [WorkspacePageController::class, 'financeRealization'])->name('realization');
+        Route::post('/budget-lines', [BudgetLineController::class, 'store'])->name('budget-lines.store');
+        Route::patch('/budget-lines/{budgetLine}', [BudgetLineController::class, 'update'])->name('budget-lines.update');
+        Route::delete('/budget-lines/{budgetLine}', [BudgetLineController::class, 'destroy'])->name('budget-lines.destroy');
         Route::post('/budget-lines/{budgetLine}/realizations', [BudgetReceiptRealizationController::class, 'store'])->name('realizations.store');
         Route::patch('/budget-lines/{budgetLine}/approval', [BudgetApprovalDecisionController::class, 'update'])->name('approvals.update');
         Route::get('/approval', [WorkspacePageController::class, 'financeApproval'])->name('approval');
@@ -130,6 +156,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'documentsIndex'])->name('index');
+        Route::post('/', [DocumentController::class, 'store'])->name('store');
         Route::get('/folders', [WorkspacePageController::class, 'documentFolders'])->name('folders');
         Route::get('/upload-center', [WorkspacePageController::class, 'uploadCenter'])->name('upload-center');
         Route::get('/{document}/download', [DocumentDownloadController::class, 'show'])->name('download');
@@ -174,6 +201,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/{certificateNumber}/download', [CertificateDownloadController::class, 'show'])->name('download');
     });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::post('/invitations/{token}/accept', [OrganizationInvitationController::class, 'accept'])->name('invitations.accept');
+    Route::post('/invitations/{token}/decline', [OrganizationInvitationController::class, 'decline'])->name('invitations.decline');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
     Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])->name('notifications.meeting-alerts.store');
     Route::patch('/approval-workflows/{instance}/decision', [ApprovalWorkflowDecisionController::class, 'update'])->name('approval-workflows.decision');
@@ -184,6 +213,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
 });
 
 Route::middleware('auth')->group(function () {
