@@ -363,16 +363,16 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 15.1 | Task deadline reminder | Task due < 24h → trigger reminder | Notification created in database | `[ ]` |
+| 15.1 | Task deadline reminder | Task due < 24h → trigger reminder | Notification created in database | `[P]` |
 | 15.2 | Email channel | Notification with email channel | Email queued (check queue log) | `[ ]` |
-| 15.3 | WhatsApp channel | WhatsApp enabled, task due | WhatsApp job queued, delivery log created | `[ ]` |
-| 15.4 | WhatsApp opt-out | Disable WhatsApp channel for org | No WhatsApp job queued | `[ ]` |
-| 15.5 | WhatsApp delivery log | After WA job runs | `whatsapp_delivery_logs` record created with status | `[ ]` |
+| 15.3 | WhatsApp channel | WhatsApp enabled, task due | WhatsApp job queued, delivery log created | `[P]` |
+| 15.4 | WhatsApp opt-out | Disable WhatsApp channel for org | No WhatsApp job queued | `[P]` |
+| 15.5 | WhatsApp delivery log | After WA job runs | `whatsapp_delivery_logs` record created with status | `[P]` |
 | 15.6 | Proposal approval notification | Owner approves proposal | Submitter receives notification | `[ ]` |
 | 15.7 | LPJ revision notification | Owner requests revision | LPJ submitter notified | `[ ]` |
-| 15.8 | Meeting alert | Trigger meeting alert | WhatsApp queued for all attendees with WA enabled | `[ ]` |
+| 15.8 | Meeting alert | Trigger meeting alert | WhatsApp queued for all attendees with WA enabled | `[P]` |
 | 15.9 | Notification rules page | Visit /notifications | Rules, channels, and delivery log render | `[ ]` |
-| 15.10 | Simulate reminder | Click "Simulate" button | Job dispatched, flash success shown | `[ ]` |
+| 15.10 | Simulate reminder | Click "Simulate" button | Job dispatched, flash success shown | `[P]` |
 
 ---
 
@@ -380,11 +380,11 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 16.1 | Meeting list loads | Navigate to /meetings | Meeting cards with agenda, date, attendee count | `[ ]` |
-| 16.2 | Meeting metrics | Top of /meetings | Count of total meetings, published minutes, etc. | `[ ]` |
-| 16.3 | Attendee count display | Click meeting | Shows total invited vs present | `[ ]` |
-| 16.4 | Latest decisions display | Meeting with published minutes | Decisions and action items shown | `[ ]` |
-| 16.5 | Tenant scope | Login as owner2 (different org) | Sees ONLY own org's meetings | `[ ]` |
+| 16.1 | Meeting list loads | Navigate to /meetings | Meeting cards with agenda, date, attendee count | `[P]` |
+| 16.2 | Meeting metrics | Top of /meetings | Count of total meetings, published minutes, etc. | `[P]` |
+| 16.3 | Attendee count display | Click meeting | Shows total invited vs present | `[P]` |
+| 16.4 | Latest decisions display | Meeting with published minutes | Decisions and action items shown | `[P]` |
+| 16.5 | Tenant scope | Login as owner2 (different org) | Sees ONLY own org's meetings | `[P]` |
 
 ---
 
@@ -392,14 +392,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 17.1 | Attendance list loads | Navigate to /attendance | Session list, metrics shown | `[ ]` |
-| 17.2 | Valid check-in | Submit valid token | Check-in recorded, success shown | `[ ]` |
-| 17.3 | Duplicate scan | Submit same token twice | Error: already checked in | `[ ]` |
-| 17.4 | Expired token | Submit expired token | Error: token expired | `[ ]` |
-| 17.5 | Cross-tenant token | Submit token from org2 in org1 context | Error: rejected | `[ ]` |
-| 17.6 | Manual attendance | Owner manually records attendance | Record created | `[ ]` |
-| 17.7 | Manual attendance role guard | Member tries manual attendance | 403 | `[ ]` |
-| 17.8 | Session metrics | View attendance session | QR count, manual count, present %, shown | `[ ]` |
+| 17.1 | Attendance list loads | Navigate to /attendance | Session list, metrics shown | `[P]` |
+| 17.2 | Valid check-in | Submit valid token | Check-in recorded, success shown | `[P]` |
+| 17.3 | Duplicate scan | Submit same token twice | Error: already checked in | `[P]` |
+| 17.4 | Expired token | Submit expired token | Error: token expired | `[P]` |
+| 17.5 | Cross-tenant token | Submit token from org2 in org1 context | Error: rejected | `[P]` |
+| 17.6 | Manual attendance | Owner manually records attendance | Record created | `[P]` |
+| 17.7 | Manual attendance role guard | Member tries manual attendance | 403 | `[P]` |
+| 17.8 | Session metrics | View attendance session | QR count, manual count, present %, shown | `[P]` |
 
 ---
 
@@ -407,17 +407,17 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 18.1 | Certificate list | Navigate to /certificates | Issued certificates with stats shown | `[ ]` |
-| 18.2 | Create template | Fill template HTML + signature → Save | Template created, appears in list | `[ ]` |
-| 18.3 | Edit template | Edit existing template | Changes saved | `[ ]` |
-| 18.4 | Activate/deactivate template | Toggle is_active | Status changes | `[ ]` |
-| 18.5 | Issue to members | Select template + members → Issue | PDF job queued, certificates appear | `[ ]` |
-| 18.6 | Certificate number format | Check issued certificate number | Format: PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE} | `[ ]` |
-| 18.7 | Download certificate | Authenticated member downloads | Signed URL → PDF downloaded | `[ ]` |
-| 18.8 | Public verification | Visit /verify/{token} without login | Verification page loads, shows recipient details + QR | `[ ]` |
+| 18.1 | Certificate list | Navigate to /certificates | Issued certificates with stats shown | `[P]` |
+| 18.2 | Create template | Fill template HTML + signature → Save | Template created, appears in list | `[P]` |
+| 18.3 | Edit template | Edit existing template | Changes saved | `[P]` |
+| 18.4 | Activate/deactivate template | Toggle is_active | Status changes | `[P]` |
+| 18.5 | Issue to members | Select template + members → Issue | PDF job queued, certificates appear | `[P]` |
+| 18.6 | Certificate number format | Check issued certificate number | Format: PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE} | `[P]` |
+| 18.7 | Download certificate | Authenticated member downloads | Signed URL → PDF downloaded | `[P]` |
+| 18.8 | Public verification | Visit /verify/{token} without login | Verification page loads, shows recipient details + QR | `[P]` |
 | 18.9 | Invalid verification token | Visit /verify/fake-token | 404 or "Certificate not found" | `[ ]` |
-| 18.10 | Cross-tenant | org2 tries to download org1 certificate | 403 | `[ ]` |
-| 18.11 | Non-owner cannot issue | Login as member → try to issue | No issue button visible / 403 | `[ ]` |
+| 18.10 | Cross-tenant | org2 tries to download org1 certificate | 403 | `[P]` |
+| 18.11 | Non-owner cannot issue | Login as member → try to issue | No issue button visible / 403 | `[P]` |
 
 ---
 
@@ -425,15 +425,15 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 19.1 | Full workflow execution | Proposal → submit → step 1 approves → step 2 approves | Final status: Approved | `[ ]` |
-| 19.2 | Rejection at step 2 | Step 1 approves, step 2 rejects | Workflow terminated, proposal Rejected | `[ ]` |
-| 19.3 | Revision request | Step 1 requests revision | Subject status → Revision Requested, submitter can edit | `[ ]` |
-| 19.4 | Workflow timeline display | View proposal with active workflow | Timeline shows step sequence and current step | `[ ]` |
-| 19.5 | Cross-tenant approval | org2 approver tries org1 workflow | Blocked — 403 | `[ ]` |
-| 19.6 | Delegate approval | Approver delegates to another member | New approver assigned, step advances correctly | `[ ]` |
-| 19.7 | Delegation logged | After delegation | `approval_delegations` record created | `[ ]` |
-| 19.8 | Next-step notification | Workflow advances to step 2 | Step 2 approver notified (in-app + WhatsApp if enabled) | `[ ]` |
-| 19.9 | Finance approval queue | Log in as treasurer | Pending finance items with approve/reject controls | `[ ]` |
+| 19.1 | Full workflow execution | Proposal → submit → step 1 approves → step 2 approves | Final status: Approved | `[P]` |
+| 19.2 | Rejection at step 2 | Step 1 approves, step 2 rejects | Workflow terminated, proposal Rejected | `[P]` |
+| 19.3 | Revision request | Step 1 requests revision | Subject status → Revision Requested, submitter can edit | `[P]` |
+| 19.4 | Workflow timeline display | View proposal with active workflow | Timeline shows step sequence and current step | `[P]` |
+| 19.5 | Cross-tenant approval | org2 approver tries org1 workflow | Blocked — 403 | `[P]` |
+| 19.6 | Delegate approval | Approver delegates to another member | New approver assigned, step advances correctly | `[P]` |
+| 19.7 | Delegation logged | After delegation | `approval_delegations` record created | `[P]` |
+| 19.8 | Next-step notification | Workflow advances to step 2 | Step 2 approver notified (in-app + WhatsApp if enabled) | `[P]` |
+| 19.9 | Finance approval queue | Log in as treasurer | Pending finance items with approve/reject controls | `[P]` |
 
 ---
 
@@ -441,13 +441,13 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 20.1 | Create handover package | Owner at /organization/handover → Create | Draft package with generated checklist | `[ ]` |
-| 20.2 | Mark checklist item done | Check an item | Item status → done, reverted | `[ ]` |
-| 20.3 | Assign transition | Owner assigns incoming owner + recipient period | Transition details saved | `[ ]` |
-| 20.4 | Submit package | All items done → Submit | Status → Submitted | `[ ]` |
-| 20.5 | Accept package | Incoming owner accepts | Status → Accepted | `[ ]` |
-| 20.6 | Export handover PDF | Accepted package → Export | PDF job queued, downloadable | `[ ]` |
-| 20.7 | Non-owner cannot initiate | Login as member | No create handover button | `[ ]` |
+| 20.1 | Create handover package | Owner at /organization/handover → Create | Draft package with generated checklist | `[P]` |
+| 20.2 | Mark checklist item done | Check an item | Item status → done, reverted | `[P]` |
+| 20.3 | Assign transition | Owner assigns incoming owner + recipient period | Transition details saved | `[P]` |
+| 20.4 | Submit package | All items done → Submit | Status → Submitted | `[P]` |
+| 20.5 | Accept package | Incoming owner accepts | Status → Accepted | `[P]` |
+| 20.6 | Export handover PDF | Accepted package → Export | PDF job queued, downloadable | `[P]` |
+| 20.7 | Non-owner cannot initiate | Login as member | No create handover button | `[P]` |
 | 20.8 | Incoming owner view | Login as designated incoming owner | Sees incoming summary on handover page | `[ ]` |
 
 ---
@@ -456,14 +456,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 21.1 | Vendor list | Navigate to /organization/sponsors-vendors | List with search, type filter | `[ ]` |
-| 21.2 | Filter by type | Filter "vendor" | Only vendors shown | `[ ]` |
-| 21.3 | Search | Search "Audio" | Matching contacts returned | `[ ]` |
-| 21.4 | Create contact | Owner fills form → Save | Contact created | `[ ]` |
-| 21.5 | Edit contact | Owner edits → Save | Changes persisted | `[ ]` |
-| 21.6 | View detail page | Click contact | Profile, project history, linked documents shown | `[ ]` |
-| 21.7 | Member cannot create | Login as member | No create button / 403 | `[ ]` |
-| 21.8 | Cross-tenant | org2 tries to access org1 vendor | 403 | `[ ]` |
+| 21.1 | Vendor list | Navigate to /organization/sponsors-vendors | List with search, type filter | `[P]` |
+| 21.2 | Filter by type | Filter "vendor" | Only vendors shown | `[P]` |
+| 21.3 | Search | Search "Audio" | Matching contacts returned | `[P]` |
+| 21.4 | Create contact | Owner fills form → Save | Contact created | `[P]` |
+| 21.5 | Edit contact | Owner edits → Save | Changes persisted | `[P]` |
+| 21.6 | View detail page | Click contact | Profile, project history, linked documents shown | `[P]` |
+| 21.7 | Member cannot create | Login as member | No create button / 403 | `[P]` |
+| 21.8 | Cross-tenant | org2 tries to access org1 vendor | 403 | `[P]` |
 
 ---
 
@@ -493,7 +493,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 23.1 | Home page loads | Visit / | Hero, all sections, footer visible | `[ ]` |
+| 23.1 | Home page loads | Visit / | Hero, all sections, footer visible | `[P]` |
 | 23.2 | Navbar sticky | Scroll down | Navbar turns white with shadow | `[ ]` |
 | 23.3 | Mobile menu | At 375px → click hamburger | Full-screen overlay opens | `[ ]` |
 | 23.4 | Mobile menu close | Click X or outside | Menu closes | `[ ]` |
@@ -502,7 +502,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 23.7 | CTA links | All "Coba Gratis" buttons | Link to /register | `[ ]` |
 | 23.8 | FAQ accordion | Click a question | Answer expands smoothly | `[ ]` |
 | 23.9 | Pricing toggle | Toggle Bulanan/Tahunan | Prices update | `[ ]` |
-| 23.10 | Features page | Visit /features | All feature sections with correct hierarchy | `[ ]` |
+| 23.10 | Features page | Visit /features | All feature sections with correct hierarchy | `[P]` |
 | 23.11 | Pricing page | Visit /pricing | Pricing table, FAQ section shown | `[P]` |
 | 23.12 | No horizontal overflow | At 375px | No horizontal scroll bar | `[ ]` |
 | 23.13 | All images have alt text | Inspect DOM | No img without alt | `[ ]` |
@@ -556,10 +556,10 @@ Owner approves → Proposal status → Approved
 
 | Step | Test | Status |
 |------|------|--------|
-| F2.1 | Each step notifications fire correctly | `[ ]` |
-| F2.2 | WhatsApp notification queued at each step (if enabled) | `[ ]` |
+| F2.1 | Each step notifications fire correctly | `[P]` |
+| F2.2 | WhatsApp notification queued at each step (if enabled) | `[P]` |
 | F2.3 | Final approval syncs proposal status to Approved | `[ ]` |
-| F2.4 | Rejection at any step terminates workflow | `[ ]` |
+| F2.4 | Rejection at any step terminates workflow | `[P]` |
 
 ### Flow 3 — Board Transition (Handover)
 
@@ -576,9 +576,9 @@ New period starts with incoming owner as new organization_owner
 
 | Step | Test | Status |
 |------|------|--------|
-| F3.1 | Handover checklist items generated from actual org data | `[ ]` |
+| F3.1 | Handover checklist items generated from actual org data | `[P]` |
 | F3.2 | Incoming owner sees transition summary before accepting | `[ ]` |
-| F3.3 | PDF export contains all checklist items and completion status | `[ ]` |
+| F3.3 | PDF export contains all checklist items and completion status | `[P]` |
 
 ### Flow 4 — QR Attendance at a Meeting
 
@@ -593,8 +593,8 @@ After event: Owner issues digital certificates to attendees
 
 | Step | Test | Status |
 |------|------|--------|
-| F4.1 | QR token → check-in → attendance record created | `[ ]` |
-| F4.2 | Duplicate scan rejected | `[ ]` |
+| F4.1 | QR token → check-in → attendance record created | `[P]` |
+| F4.2 | Duplicate scan rejected | `[P]` |
 | F4.3 | Certificate issued to attendees only | `[ ]` |
 
 ### Flow 5 — Dashboard Data Accuracy After Actions
@@ -1224,7 +1224,7 @@ Run this as the final gate before any public beta or paid plan activation.
 
 # Security
 [P] All /internal-admin routes inaccessible to non-super_admin
-[ ] All organization data routes return 403 for unauthenticated requests
+[P] All organization data routes protected from unauthenticated requests
 [ ] Cross-tenant isolation verified: org2 cannot see org1 data
 [ ] File upload MIME validation active on all upload endpoints
 [ ] S3 signed URLs working — raw S3 paths return 403
@@ -1236,13 +1236,13 @@ Run this as the final gate before any public beta or paid plan activation.
 [ ] Soft deletes in place for all core models
 
 # Functionality
-[ ] All 6 dashboard variants render correctly (owner, admin, secretary, treasurer, lead, member)
+[P] All 6 dashboard variants render correctly (owner, admin, secretary, treasurer, lead, member)
 [ ] Full proker lifecycle flow completes end-to-end (Flow 1 above)
-[ ] Multi-level approval chain executes correctly (Flow 2 above)
-[ ] Board handover flow completes (Flow 3 above)
-[ ] Certificate issuance + public verification works
+[P] Multi-level approval chain executes correctly (Flow 2 above)
+[P] Board handover flow completes (Flow 3 above)
+[P] Certificate issuance + public verification works
 [ ] PDF and DOCX export jobs complete successfully
-[ ] WhatsApp delivery log shows correct status
+[P] WhatsApp delivery log shows correct status
 [P] Super admin panel accessible, impersonation works, audit log written
 
 # UX

@@ -21,6 +21,10 @@ Status automated regression terakhir:
 | Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
 | Targeted task/finance/proposal/lpj/document | Pass | `49 passed, 322 assertions` |
 | Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |
+| Targeted handover/sponsor/approval | Pass | `26 passed, 146 assertions` |
+| Targeted landing/campus/admin payload | Pass | `7 passed, 88 assertions` |
+| Targeted attendance/certificate/notification | Pass | `31 passed, 171 assertions` |
+| Targeted meeting/event/payment | Pass | `28 passed, 184 assertions` |
 | Pint targeted | Pass | Tidak ada formatting violation |
 | npm lint | Pass | `tsc --noEmit` pass |
 | npm build | Pass | `tsc && vite build` pass |
@@ -41,6 +45,10 @@ Area yang sudah cukup aman dari automated QA:
 - Finance receipt realization, MIME rejection, budget approval/rejection, workflow approval.
 - Proposal edit/submit/approve/revision, LPJ review/decision, signed document/export download.
 - Meeting create/attendance/minutes/export, QR attendance issue/revoke/check-in/export, event registration/ticketing/payment webhook, certificate template/issue/verify/download, and notification reminder jobs.
+- Handover kepengurusan: create package, generated checklist, item status, transition assignment, submit/accept, PDF export queue/job, and member guards.
+- Sponsor/vendor: filterable list payload, search/type filter, create, edit, detail history, member guard, and cross-tenant detail guard.
+- Multi-level approval: ordered approval chain, rejection, revision request, delegation, timeline payload, cross-tenant guard, and next-step notification.
+- Landing public pages render for `/`, `/features`, and `/pricing`.
 
 ---
 
