@@ -47,6 +47,7 @@ final class WorkspaceRouteSmokeTest extends TestCase
             'organization.periods',
             'organization.calendar',
             'organization.handover',
+            'organization.sponsors-vendors',
             'tasks.index',
             'tasks.kanban',
             'tasks.calendar',

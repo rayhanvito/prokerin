@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/periods', [WorkspacePageController::class, 'organizationPeriods'])->name('periods');
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
+        Route::get('/sponsors-vendors', [WorkspacePageController::class, 'organizationSponsorsVendors'])->name('sponsors-vendors');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
         Route::post('/handover/packages/{package}/export', [HandoverPackageExportController::class, 'store'])->name('handover.packages.export');
         Route::patch('/handover/packages/{package}/status', [HandoverPackageStatusController::class, 'update'])->name('handover.packages.status');

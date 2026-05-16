@@ -47,6 +47,48 @@ final class WorkspacePayloadTest extends TestCase
             ->where('notificationRules.0.channels.1', 'email'));
     }
 
+    public function test_sponsor_vendor_page_receives_tenant_scoped_filterable_payload(): void
+    {
+        $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($user)
+            ->get(route('organization.sponsors-vendors', ['type' => 'vendor', 'search' => 'Audio']));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Organization/SponsorsVendors')
+            ->where('filters.type', 'vendor')
+            ->where('filters.search', 'Audio')
+            ->where('metrics.total', 3)
+            ->has('contacts', 1)
+            ->where('contacts.0.name', 'CV Audio Visual Nusantara')
+            ->where('contacts.0.linkedProjects', 1));
+    }
+
+    public function test_sponsor_vendor_payload_does_not_leak_unlinked_organization_contacts(): void
+    {
+        $user = User::factory()->create();
+        $organizationId = (int) DB::table('organizations')->where('slug', 'hima-informatika')->value('id');
+
+        DB::table('organization_members')->insert([
+            'organization_id' => $organizationId,
+            'user_id' => $user->id,
+            'role' => 'viewer',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('organization.sponsors-vendors'));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Organization/SponsorsVendors')
+            ->where('metrics.total', 0)
+            ->has('contacts', 0));
+    }
+
     public function test_template_page_receives_template_plan_payload(): void
     {
         $response = $this->actingAs(User::factory()->create())

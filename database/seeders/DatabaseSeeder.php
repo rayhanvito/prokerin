@@ -43,6 +43,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedProjectMembers($now);
         $this->seedProjectTasks($now);
         $this->seedDocuments($now);
+        $this->seedSponsorsVendors($now);
         $this->seedBudgetLinesAndTransactions($now);
         $this->seedProposalDrafts($now);
         $this->seedLpjChecklist($now);
@@ -354,6 +355,103 @@ final class DatabaseSeeder extends Seeder
                     'size_kb' => $document['size'],
                     'visibility' => $document['visibility'],
                     'status' => $document['status'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+    }
+
+    private function seedSponsorsVendors($now): void
+    {
+        foreach ([
+            [
+                'type' => 'sponsor',
+                'name' => 'Bank Jatim Youth Program',
+                'category' => 'Financial sponsor',
+                'contact_person' => 'Rina Maharani',
+                'phone' => '+6282111002200',
+                'email' => 'partnership@bankjatim.example',
+                'address' => 'Jl. Basuki Rahmat, Surabaya',
+                'status' => 'active',
+                'notes' => 'Tertarik pada program karier dan literasi keuangan mahasiswa.',
+                'role' => 'Gold sponsor seminar',
+                'amount' => 7500000,
+                'document' => 'proposal-v2.pdf',
+            ],
+            [
+                'type' => 'vendor',
+                'name' => 'CV Audio Visual Nusantara',
+                'category' => 'Sound system',
+                'contact_person' => 'Agus Santoso',
+                'phone' => '+6281233004400',
+                'email' => 'sales@avn.example',
+                'address' => 'Ruko Manyar Indah, Surabaya',
+                'status' => 'active',
+                'notes' => 'Vendor langganan untuk aula sedang dan outdoor kecil.',
+                'role' => 'Vendor sound system',
+                'amount' => 8250000,
+                'document' => 'receipt-consumption.jpg',
+            ],
+            [
+                'type' => 'vendor',
+                'name' => 'Studio Kreatif Campus',
+                'category' => 'Design & printing',
+                'contact_person' => 'Maya Putri',
+                'phone' => '+6285551007700',
+                'email' => 'hello@campuscreative.example',
+                'address' => 'Jl. Kaliurang, Yogyakarta',
+                'status' => 'inactive',
+                'notes' => 'Perlu update price list sebelum dipakai lagi.',
+                'role' => 'Vendor publikasi',
+                'amount' => 1750000,
+                'document' => 'documentation-day-1.zip',
+            ],
+        ] as $contact) {
+            DB::table('sponsors_vendors')->updateOrInsert(
+                [
+                    'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+                    'name' => $contact['name'],
+                ],
+                [
+                    'type' => $contact['type'],
+                    'category' => $contact['category'],
+                    'contact_person' => $contact['contact_person'],
+                    'phone' => $contact['phone'],
+                    'email' => $contact['email'],
+                    'address' => $contact['address'],
+                    'status' => $contact['status'],
+                    'notes' => $contact['notes'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+
+            $contactId = (int) DB::table('sponsors_vendors')
+                ->where('organization_id', $this->organizationId('bem-fakultas-teknologi'))
+                ->where('name', $contact['name'])
+                ->value('id');
+
+            DB::table('sponsor_vendor_project_links')->updateOrInsert(
+                [
+                    'sponsor_vendor_id' => $contactId,
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                ],
+                [
+                    'role_description' => $contact['role'],
+                    'amount' => $contact['amount'],
+                    'linked_at' => $now,
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+
+            DB::table('sponsor_vendor_documents')->updateOrInsert(
+                [
+                    'sponsor_vendor_id' => $contactId,
+                    'document_id' => $this->documentId((string) $contact['document']),
+                ],
+                [
                     'updated_at' => $now,
                     'created_at' => $now,
                 ],

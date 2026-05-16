@@ -31,7 +31,8 @@
 | Post-MVP Wave 2 | M19 | ✅ Complete |
 | Post-MVP Wave 2 | M17, M19 | ✅ Complete |
 | Post-MVP Wave 2 | M18 | ✅ Complete |
-| Post-MVP Planned | M20–M24 | 🔲 Not started |
+| Post-MVP Active | M20 | 〜 Sponsor/vendor foundation started |
+| Post-MVP Planned | M21–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -42,6 +43,11 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-16 · M18 local migration `2026_05_16_000012_create_approval_workflow_tables.php` applied cleanly after shortening MySQL index name.
+- `[x]` 2026-05-16 · M20 local migration `2026_05_16_000013_create_sponsor_vendor_tables.php` applied and `php artisan db:seed` added demo sponsor/vendor contacts.
+- `[x]` 2026-05-16 · M20 browser smoke passed on `/organization/sponsors-vendors?type=vendor&search=Audio`; filtered vendor contact renders with no console errors.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **237 passed, 1107 assertions**.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **10 passed, 193 assertions**.
+- `[x]` 2026-05-16 · After M20 sponsor/vendor foundation: `npm run build` passed.
 - `[x]` 2026-05-16 · M18 local `php artisan db:seed` refreshed notification rules with `approval_workflow_step_assigned`.
 - `[x]` 2026-05-16 · After M18 next-step workflow notifications: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **235 passed, 1070 assertions**.
 - `[x]` 2026-05-16 · After M18 next-step workflow notifications: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MultiLevelApprovalWorkflowTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/LpjApprovalTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php tests/Feature/WorkspacePayloadTest.php` → **44 passed, 249 assertions**.
@@ -720,17 +726,25 @@ Replace single-approver model with configurable multi-level approval chains for 
 
 ### M20 · Sponsor & Vendor Database
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
 
 #### Product Goal
 Maintain a reusable contact book of sponsors and vendors per organization — searchable by category, linked to historical projects, with contact person and document tracking.
 
 #### Scope to Build
-- [ ] `sponsors_vendors` table: `id`, `organization_id`, `type` (sponsor/vendor), `name`, `category`, `contact_person`, `phone`, `email`, `address`, `status` (active/inactive), `notes`.
-- [ ] `sponsor_vendor_project_links` table: `id`, `sponsor_vendor_id`, `project_id`, `role_description`, `amount`, `linked_at`.
-- [ ] `sponsor_vendor_documents` table: `id`, `sponsor_vendor_id`, `document_id` (FK to documents).
-- [ ] Inertia pages: list (searchable/filterable), detail (with history), create/edit form.
-- [ ] Tests: tenant scoping, CRUD authorization (admin+ only), cross-org read prevention.
+- [x] `sponsors_vendors` table: `id`, `organization_id`, `type` (sponsor/vendor), `name`, `category`, `contact_person`, `phone`, `email`, `address`, `status` (active/inactive), `notes`.
+- [x] `sponsor_vendor_project_links` table: `id`, `sponsor_vendor_id`, `project_id`, `role_description`, `amount`, `linked_at`.
+- [x] `sponsor_vendor_documents` table: `id`, `sponsor_vendor_id`, `document_id` (FK to documents).
+- [~] Inertia pages: list is searchable/filterable; detail with history and create/edit form are still pending.
+- [~] Tests: tenant scoping and cross-org read prevention covered; CRUD authorization (admin+ only) still pending.
+
+#### Verification
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000013_create_sponsor_vendor_tables.php`.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` added demo sponsor/vendor contacts, project links, and document links.
+- `[x]` 2026-05-16 · Browser smoke passed for `/organization/sponsors-vendors?type=vendor&search=Audio`; page renders filtered `CV Audio Visual Nusantara` with no console errors.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php` → **10 passed, 193 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **237 passed, 1107 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 
 ---
 
@@ -818,11 +832,12 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Start M20 or M21 next** depending on product priority: M20 if admin/config readiness matters first, M21 if public-facing event registration is next.
-2. **M22 (Payment)** only after M21 is stable.
-3. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-4. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
-5. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+1. **Continue M20** with sponsor/vendor detail history and create/edit forms with admin-only authorization.
+2. **Start M21 (Event Registration)** only after M20 is complete or explicitly deprioritized.
+3. **M22 (Payment)** only after M21 is stable.
+4. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+5. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+6. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test

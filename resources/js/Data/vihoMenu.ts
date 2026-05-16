@@ -13,6 +13,7 @@ import {
     Shield,
     Bell,
     ReceiptText,
+    Handshake,
     Settings,
     Users,
 } from 'lucide-react';
@@ -150,6 +151,12 @@ export const vihoMenu: VihoMenuSection[] = [
                 title: 'Handover',
                 href: route('organization.handover'),
                 icon: Archive,
+            },
+            {
+                title: 'Sponsor & Vendor',
+                href: route('organization.sponsors-vendors'),
+                icon: Handshake,
+                badge: 'M20',
             },
             {
                 title: 'Period Calendar',

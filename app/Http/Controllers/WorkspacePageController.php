@@ -21,6 +21,7 @@ use App\Actions\Workspace\GetProjectTemplatePayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
 use App\Actions\Workspace\GetQrAttendancePayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
+use App\Actions\Workspace\GetSponsorVendorPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
 use App\Domain\Document\DocumentVisibility;
@@ -94,6 +95,15 @@ final class WorkspacePageController extends Controller
     public function organizationHandover(Request $request, GetHandoverPayloadAction $handover): Response
     {
         return Inertia::render('Organization/Handover', $handover->execute((int) $request->user()->id));
+    }
+
+    public function organizationSponsorsVendors(Request $request, GetSponsorVendorPayloadAction $sponsorsVendors): Response
+    {
+        return Inertia::render('Organization/SponsorsVendors', $sponsorsVendors->execute(
+            actorUserId: (int) $request->user()->id,
+            search: $request->string('search')->toString(),
+            type: $request->string('type')->toString(),
+        ));
     }
 
     public function taskIndex(): Response
