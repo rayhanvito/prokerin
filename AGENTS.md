@@ -458,17 +458,18 @@ chore: configure Supervisor for queue workers
 
 ## 13. Features
 
-Feature completion tracker is maintained in `features.md` so this operating guide stays readable. Keep `features.md` updated whenever a module status changes.
+Feature status is maintained in `features.md`. Any AI/agent that needs to continue Prokerin feature work MUST read `features.md` first before deciding what to build, test, or mark complete.
 
-- [x] MVP M01-M13 completed and validated by automated tests.
-- [x] M08 export queue now generates PDF/DOCX files from proposal and LPJ database content.
-- [x] Export Queue exposes tenant-scoped signed downloads for completed exports.
-- [x] Filament MVP resources remove destructive delete actions until admin policies are formalized.
-- [x] Finance approval queue is wired to backend approve/reject mutations for review-stage RAB lines.
+Rules for feature tracking:
+
+- Do not duplicate detailed feature status in `AGENTS.md`.
+- Keep `features.md` as the single source of truth for completed work, partial work, pending work, verification results, and next actions.
+- Update `features.md` whenever a module status changes, a test/build result changes, a migration is added, or a Post-MVP module moves forward.
+- Before starting new feature work, check `features.md` sections `Ringkasan Status`, `Verifikasi Terakhir`, target module breakdown, and `Next Action`.
+- Before marking a feature `[x]`, make sure it has code, route/UI or backend integration as applicable, tests, and a recorded verification result in `features.md`.
 
 ### Current Handoff Notes — 2026-05-16
 
-- `features.md` is the source of truth for detailed feature status; keep AGENTS.md limited to rules, constraints, and short handoff notes.
 - MVP M01-M13 are implemented, listed in `features.md`, and validated by automated tests.
 - Frontend build verification passed on 2026-05-16 with `npm run build`.
 - PHP platform verification passed on 2026-05-16 with PHP 8.4.10 via `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.

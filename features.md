@@ -1,123 +1,470 @@
-# Sudah selesai dan berjalan
-- [x] Feature tracker consolidated here from `AGENTS.md`; keep detailed module status in this file so future agents do not need to scan the operating guide for completion details.
-- [x] Project scaffold Laravel latest + Breeze React/Inertia TypeScript
-- [x] Viho-inspired app shell: fixed sidebar, top header, guest layout, copied Viho assets in `public/vendor/viho/`
-- [x] Dashboard Monitoring UI foundation with Viho cards and Prokerin metrics
-- [x] Inertia route/page scaffolds for Proker, Organization Setup, Timeline & Task, RAB & Finance, Proposal & LPJ, Documents, Members, and Period Calendar
-- [x] Shared frontend modules: `VihoSidebar`, `VihoHeader`, `VihoCard`, `ModuleOverview`, and `vihoMenu`
-- [x] Viho-style subpage scaffolds for Proker templates/status flow, Task kanban/calendar/PIC assignment, and Finance budget/realization/approval
-- [x] Viho-style subpage scaffolds for Proposal Editor, LPJ Checklist, Export Queue, Document Folders, Upload Center, Member Invites, and Role Matrix
-- [x] Viho-style UI scaffolds for Notification Basic and Internal Admin planning surface
-- [x] Public/workspace routes moved from closures into thin page controllers with domain route groups
-- [x] Viho form primitives plus Proker create/detail UI scaffolds
-- [x] Organization switcher and period management UI scaffolds
-- [x] Central TypeScript domain types, mock workspace data, formatting helpers, and `cn()` utility
-- [x] Breeze auth/profile form primitives and full account recovery pages restyled to match Viho tokens
-- [x] Inertia shared app/active organization props added for layout context
-- [x] Module overview actions and priority rows wired to existing Inertia subpages
-- [x] Legacy Breeze nav/dropdown components aligned with Viho colors for fallback usage
-- [x] Initial domain enums and value objects added for organization roles, project roles, invitations, project/task/finance status, money, and progress
-- [x] Unit test coverage scaffolded for initial domain enums and value objects
-- [x] Frontend TypeScript domain unions aligned with initial PHP enum vocabulary
-- [x] First domain action scaffolded for project progress calculation without database dependency
-- [x] Dashboard DTO scaffolds added for future typed Inertia payloads
-- [x] Dashboard mock payload moved into controller props using DTO-shaped arrays
-- [x] Dashboard TypeScript payload interfaces extracted into shared domain types
-- [x] Dashboard overview payload moved behind an Action to keep controller thin
-- [x] Product-facing scaffold/placeholder copy cleaned up across core UI surfaces
-- [x] Dashboard metric tones constrained with PHP enum and mirrored by TypeScript union
-- [x] Inertia shared flash props added for status/success/error messaging
-- [x] Viho-style flash banner mounted in authenticated layout
-- [x] Project status transition Action added for M04 status-flow domain rules
-- [x] Finance budget summary DTOs and Action added for M07 server-side RAB calculations
-- [x] Task board summary DTOs and Action added for M06 deadline/progress metrics
-- [x] Project template plan generator added for M05 default task, budget, proposal, and LPJ scaffolding
-- [x] Role permission matrix Action added for M03 backend permission planning
-- [x] Organization period resolver added for M02 active-period workspace context
-- [x] Default notification rule Action added for M12 notification planning
-- [x] Proposal draft builder added for M08 auto-fill from project and template data
-- [x] LPJ readiness calculator added for M10 required checklist validation
-- [x] Document upload validation Action added for M09 MIME, size, and signed URL rules
-- [x] Export queue planner added for M08/M10 PDF and DOCX export jobs
-- [x] Budget approval decision Action added for M07 approve/reject flow
-- [x] Invitation decision Action added for M03 accept/revoke/expire flow
-- [x] Project draft creation Action added for M04 template-based create flow
-- [x] Dashboard aggregate metrics Action added for M11 real-data preparation
-- [x] Frontend TypeScript domain unions extended for templates, permissions, notifications, document visibility, and export queue payloads
-- [x] Google OAuth config keys and readiness Action added for M01 setup validation
-- [x] Google OAuth package, web auth routes, callback user sync, and Login/Register entry points added for M01
-- [x] Budget realization Action added for M07 receipt-backed transaction recording
-- [x] Task PIC assignment Action added for M06 project-role guardrails
-- [x] Document download planner added for M09 signed URL and path-safety rules
-- [x] Organization logo upload planner added for M02 image validation and storage path rules
-- [x] Organization logo persistence flow added for M02 with server-derived organization scope, private storage write, and upload tests
-- [x] Organization member role mutation backend added for M03 with owner/admin guardrails and last-owner protection
-- [x] Email verification prompt Action added for M01 verification state copy
-- [x] Role matrix, notification rules, template plans, and proposal draft wired from backend Actions into Inertia page props
-- [x] Feature tests added for core workspace Inertia payload wiring
-- [x] LPJ readiness, export queue plans, and document upload validation wired into Inertia page props
-- [x] MySQL MVP persistence migration added for organizations, periods, members, proker, tasks, finance, documents, proposals, LPJ checklist, notifications, exports, and role matrix smoke testing
-- [x] Idempotent database seeder added for local parallel testing across all MVP roles and functional workspace modules
-- [x] Core workspace Inertia payloads switched from static controller arrays to database-backed payload Actions
-- [x] Dashboard overview Action switched from mock numbers to database-backed metrics, priority projects, weekly focus, and member summary
-- [x] Authenticated workspace route smoke test added for all current MVP Inertia pages using seeded role/workspace data
-- [x] Project create backend added for M04 with server-derived organization scope, active period/template lookup, unique slug generation, project lead membership guard, and feature tests
-- [x] Project detail payload added for M04 with tenant-scoped slug lookup, metrics, nearby tasks, and database-backed Inertia detail page
-- [x] Project update backend added for M04 with tenant-scoped slug lookup, lead membership guard, slug regeneration, and feature tests
-- [x] Project archive/delete backend added for M04 with owner/admin guardrails, non-destructive archived status, and feature tests
-- [x] Project create form wired for M04 with Inertia useForm, server validation errors, and live submit to backend store route
-- [x] Project detail archive button wired for M04 with Inertia delete, confirmation, and archived-state disabled guard
-- [x] Project edit page wired for M04 with tenant-scoped prefilled payload, Inertia patch submit, and detail-to-edit navigation
-- [x] Template generation flow added for M05 with one-click template generation, project/task/RAB/proposal/LPJ scaffold persistence, and feature tests
-- [x] Task kanban and calendar payloads wired for M06 with tenant-scoped database tasks, quick status updates, completion timestamps, and feature tests
-- [x] Finance receipt upload backend and UI wiring added for M07 with treasurer/admin/owner scope, private receipt document storage, budget transaction persistence, DB-backed realization payloads, and feature tests
-- [x] Finance approval queue wired for M07 with DB-backed review payload, treasurer/admin approve-reject route, Inertia controls, and feature tests
-- [x] Proposal submission flow added for M08 with tenant-scoped draft submit, project status transition to proposal review, queued PDF export dispatch, and feature tests
-- [x] Proposal approval decision flow added for M08 with owner/admin approve or revision request, project status transitions, and Inertia approval controls
-- [x] Proposal draft edit persistence added for M08 with section body editing, revision-to-draft save flow, locked submitted/approved states, and feature tests
-- [x] Document signed download route added for M09 with tenant-scoped access checks, private/restricted signed URLs, committee download handling, and feature tests
-- [x] Upload Center recent documents switched to database-backed payload with download links instead of frontend mock data
-- [x] LPJ review submission and approval flow added for M10 with tenant-scoped checklist payload, readiness guard, project status transitions, Inertia controls, and feature tests
-- [x] Dashboard monitoring queries scoped for M11 to authenticated user's organizations with anti-leak unit coverage for metrics, priority projects, tasks, budget, LPJ, and member summary
-- [x] Notification Basic backend added for M12 with notifications table, queued task deadline reminder notification, tenant-scoped reminder dispatch Action, simulate route/button, and feature tests
-- [x] Internal Admin readiness payload added for M13 with backend-driven resource plan, queue/export/notification health counters, Filament install detection, and feature tests
-- [x] Filament admin package and internal panel scaffold added for M13 at `/internal-admin` with Organization, User, and DocumentExport resources
-- [x] Export queue download route added with tenant-scoped signed URL access for completed PDF/DOCX exports
-- [x] Filament MVP resources hardened by removing destructive row and bulk delete actions from internal admin tables
+# Prokerin Feature Tracker
 
-# Sudah dikerjakan 
-- [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
-- [x] M02 · Organization Management (setup, switcher, period, calendar UI scaffolds, active-period resolver, logo upload planner, logo persistence flow, migration tables, and seed data done)
-- [x] M03 · Member & Role Management (members overview, invite queue, role matrix UI scaffold, permission matrix Action, invitation decision Action, role mutation backend, migration tables, and seed data done)
-- [x] M04 · Proker / Event Management (overview, wired create/edit form, database-backed detail page with archive action, status flow UI scaffolds, progress calculation, status transition Action, template-based draft Action, create/update/archive backend, migration tables, and seed data done)
-- [x] M05 · Template Proker (UI scaffold, default template plan generator, template persistence table, seed data, database-backed template payload, and project/task/RAB/proposal/LPJ generation flow done)
-- [x] M06 · Timeline & Task Management (overview, database-backed kanban/calendar, quick status updates, PIC assignment UI scaffold, task board summary Action, and task PIC assignment Action done)
-- [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI, server-side budget summary Action, approval decision backend, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
-- [x] M08 · Proposal Generator (overview, proposal editor, export queue UI, proposal draft auto-fill Action, draft edit persistence, submit/revision/approval flow, queued PDF/DOCX export generation, draft/export tables, seed data, database-backed proposal/export payloads, and feature tests done)
-- [x] M09 · Document Management (overview, folder structure, upload center UI, upload validation Action, signed download planner, document table, seed data, DB-backed recent documents, tenant-scoped signed download route, and storage permission feature tests done)
-- [x] M10 · LPJ Generator (overview, checklist UI, LPJ readiness Action, export queue planner, checklist table, seed data, database-backed tenant-scoped checklist payload, review submission, owner/admin approval or revision flow, project status transitions, and feature tests done)
-- [x] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, database-backed tenant-scoped overview metrics, priority projects, weekly focus, member summary, and anti-leak tests done)
-- [x] M12 · Notification Basic (notification rules/channel UI, default rule Action, notification rule table, seed data, database-backed rule payload, Laravel notification table, queued task deadline reminder delivery, email/database channels, simulate route, and feature tests done)
-- [x] M13 · Admin Panel Internal (planning UI scaffold, backend readiness payload, resource plan, system health counters, Filament package install, `/internal-admin` panel provider, and Organization/User/DocumentExport resources done)
+Dokumen ini adalah sumber utama status fitur Prokerin. `AGENTS.md` hanya menyimpan aturan kerja dan harus mengarahkan pembaca ke file ini untuk status fitur.
 
-# Verifikasi terakhir
-- [x] 2026-05-16 · Frontend production build passed with `npm run build` (`tsc && vite build`).
-- [x] 2026-05-16 · Platform check passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.
-- [x] 2026-05-16 · Full PHP test suite passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`181 passed`, `712 assertions`).
-- [x] 2026-05-16 · M14 Rapat & Notulen validation passed after implementation: `npm run build` and `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`183 passed`, `755 assertions`).
+## Cara Membaca
 
-# Belum dilanjutkan
-- [ ] Default shell PHP still points to `/opt/homebrew/opt/php@8.3/bin/php`; use the PHP 8.4 PATH prefix for Composer/Artisan or relink Homebrew PHP before future validation.
+- `[x]` berarti selesai, terhubung ke kode, dan sudah masuk verifikasi yang tertulis di bagian `Verifikasi Terakhir`.
+- `[~]` berarti sebagian sudah ada, tetapi belum boleh dianggap selesai.
+- `[ ]` berarti belum dikerjakan.
+- Setiap perubahan status modul wajib memperbarui bagian modul terkait, `Verifikasi Terakhir`, dan `Next Action`.
+- Jangan mulai modul Post-MVP berikutnya kalau full test suite sedang merah.
 
-# Post-MVP
-- [x] M14 · Rapat & Notulen (database-backed meeting schedule, attendee status, published minutes payload, Viho-style Inertia page, seeded demo data, route smoke coverage, tenant-scope payload tests, and frontend build validation done)
-- [ ] M15 · Absensi QR
-- [ ] M16 · Sertifikat Digital
-- [ ] M17 · WhatsApp Reminder
-- [ ] M18 · Approval Workflow Advanced
-- [~] M19 · Handover Kepengurusan (post-MVP planning/readiness UI scaffold only; full feature deferred)
-- [ ] M20 · Sponsor & Vendor Database
-- [ ] M21 · Event Registration
-- [ ] M22 · Payment / Ticketing
-- [ ] M23 · AI Assistant
-- [ ] M24 · Campus Dashboard B2B
+## Ringkasan Status
+
+- MVP M01-M13: selesai dan tervalidasi.
+- Post-MVP M14: selesai dan tervalidasi.
+- Post-MVP berikutnya: M15 Absensi QR.
+- Risiko operasional saat ini: shell default masih menunjuk PHP 8.3, sedangkan proyek membutuhkan PHP 8.4+.
+
+## Verifikasi Terakhir
+
+- [x] 2026-05-16 · `composer validate --strict` berhasil.
+- [x] 2026-05-16 · PHP platform check berhasil dengan PHP 8.4.10:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`
+- [x] 2026-05-16 · MVP baseline test berhasil:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
+  Hasil: `181 passed`, `712 assertions`.
+- [x] 2026-05-16 · Setelah M14, full test suite berhasil:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
+  Hasil: `183 passed`, `755 assertions`.
+- [x] 2026-05-16 · Frontend production build berhasil:
+  `npm run build`
+- [x] 2026-05-16 · Browser smoke test untuk `/meetings` berhasil setelah login seeded user `owner@prokerin.test`.
+
+## Environment Notes
+
+- Proyek sekarang butuh PHP 8.4+.
+- PHP 8.4 tersedia di `/opt/homebrew/bin/php`.
+- Shell default masih menunjuk `/opt/homebrew/opt/php@8.3/bin/php`.
+- Untuk Composer/Artisan, gunakan prefix ini sampai Homebrew PHP direlink:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`
+- Database lokal menggunakan MySQL di `.env` port `8889`.
+- Migration additive M14 sudah dijalankan di database lokal pada 2026-05-16.
+- Seeder idempotent sudah dijalankan ulang setelah M14.
+
+## Fondasi Selesai
+
+- [x] Laravel + Breeze React/Inertia TypeScript scaffold.
+- [x] Inertia app shell dengan Viho-inspired fixed sidebar, white header, compact SaaS admin layout, dan copied Viho assets di `public/vendor/viho/`.
+- [x] Shared frontend modules: `VihoSidebar`, `VihoHeader`, `VihoCard`, `VihoDataTable`, `VihoStatusBadge`, `ModuleOverview`, `FlashBanner`, dan `vihoMenu`.
+- [x] Breeze auth/profile/account recovery pages sudah disejajarkan dengan Viho tokens.
+- [x] Inertia shared props untuk auth, active organization, app context, dan flash messages.
+- [x] Public/workspace routes dipindah dari closure ke controller tipis.
+- [x] Domain enums/value objects untuk organization, membership, project, task, finance, proposal, report, notification, document, export, `Money`, dan `Progress`.
+- [x] DTO dan Action pattern dipakai untuk payload dan business logic utama.
+- [x] MySQL workspace persistence migration untuk MVP modules.
+- [x] Seeder idempotent untuk demo roles, organizations, periods, projects, tasks, finance, documents, proposals, LPJ, notifications, exports, meetings, dan role matrix.
+- [x] Route smoke test untuk semua workspace pages yang aktif.
+- [x] Dashboard dan workspace payload penting sudah database-backed dan tenant-scoped.
+
+## MVP Modules
+
+### M01 · Auth & Account
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Breeze login, register, forgot password, reset password, confirm password, verify email, dan profile edit.
+- UI auth sudah Viho-style.
+- Google OAuth package, config keys, readiness Action, redirect URL builder, code exchange, callback user sync, web routes, dan Login/Register entry points.
+- Email verification prompt Action.
+- Feature tests untuk authentication, registration, password reset/update/confirmation, email verification, profile, dan Google OAuth.
+
+Belum/next:
+- Tidak ada blocker fitur MVP.
+- Production Google OAuth credentials tetap harus diisi via `.env`, bukan kode.
+
+### M02 · Organization Management
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Organization setup, switcher, periods, calendar, dan logo upload UI.
+- Active organization/period context di Inertia shared props.
+- Organization period resolver Action.
+- Organization logo upload planner dan persistence flow.
+- Server-derived organization scope untuk upload logo.
+- Tables: `organizations`, `organization_periods`, `organization_members`, `organization_invitations`.
+- Seed organizations dan active periods.
+- Feature test upload logo.
+
+Belum/next:
+- Calendar organisasi masih berfungsi sebagai overview/scaffold, bukan full drag-drop scheduler.
+- Advanced period closing/handover masuk area Post-MVP/M19.
+
+### M03 · Member & Role Management
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Members overview, invite queue, dan role matrix UI.
+- Role permission matrix Action dan database-backed payload.
+- Invitation decision Action.
+- Organization member role mutation backend.
+- Owner/admin guardrails dan last-owner protection.
+- Seed multi-role users.
+- Feature tests untuk role update dan workspace payload.
+
+Belum/next:
+- Invitation email delivery aktual belum dijadikan flow utama.
+- Spatie permission formalization masih dapat diperluas saat authorization makin detail.
+
+### M04 · Proker / Event Management
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Proker index, create, detail, edit, status flow, dan archive.
+- Create backend dengan server-derived organization scope, active period/template lookup, unique slug, dan project lead membership guard.
+- Detail payload database-backed dengan tenant-scoped slug lookup, metrics, dan nearby tasks.
+- Update backend dengan tenant-scoped slug lookup dan slug regeneration.
+- Archive/delete backend non-destructive memakai status `archived`.
+- Project status transition Action.
+- Project progress calculation Action.
+- Template-based project draft Action.
+- Inertia create/edit forms memakai `useForm`.
+- Feature tests create, detail, update, archive.
+
+Belum/next:
+- Full project member assignment UI masih bisa diperdalam.
+- Project-level policy formalization perlu diperluas bila role matrix mulai enforce semua mutation.
+
+### M05 · Template Proker
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Template Proker UI.
+- Default template plan generator untuk tasks, budget lines, proposal outline, dan LPJ checklist.
+- `project_templates` persistence.
+- Database-backed template payload.
+- One-click generate flow yang membuat project/task/RAB/proposal/LPJ scaffold.
+- Feature test template generation.
+
+Belum/next:
+- Custom template builder belum ada.
+- Versioning template belum ada.
+
+### M06 · Timeline & Task Management
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Timeline/task overview, kanban, calendar, dan PIC assignment scaffold.
+- Database-backed kanban/calendar payload.
+- Quick task status update backend.
+- Completion timestamp handling.
+- Task board summary Action.
+- Task PIC assignment Action guardrails.
+- Feature tests untuk task interaction.
+
+Belum/next:
+- Full create/edit task form belum menjadi fokus.
+- Drag-drop kanban belum ada.
+- Reminder lebih lanjut terkait M12/M17.
+
+### M07 · RAB & Finance
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Finance overview, budget draft, realization, dan approval queue.
+- Budget summary DTO/Action.
+- Budget approval decision Action.
+- Receipt-backed realization Action.
+- Receipt upload backend dengan private receipt document storage.
+- Budget transaction persistence.
+- DB-backed realization payload.
+- Review-stage approve/reject route dan Inertia controls.
+- Feature tests receipt realization dan budget approval decision.
+
+Belum/next:
+- Multi-level approval masuk M18.
+- Export finance-specific report bisa diperluas setelah LPJ/export stabil.
+
+### M08 · Proposal Generator
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Proposal editor UI dan export queue UI.
+- Proposal draft builder auto-fill dari project/template data.
+- Draft edit persistence untuk section body.
+- Submit flow ke approval.
+- Revision-to-draft save flow.
+- Locked state untuk submitted/approved draft.
+- Owner/admin approve atau request revision.
+- Project status transitions.
+- Queued PDF/DOCX export generation dari database content.
+- Export queue download route dengan tenant-scoped signed URL.
+- Feature tests proposal approval/edit/export queue.
+
+Belum/next:
+- Rich text editor belum ada.
+- Proposal template customization belum ada.
+
+### M09 · Document Management
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Documents overview, folder structure, dan upload center UI.
+- Document upload validation Action untuk MIME, size, visibility, signed URL rule.
+- Document download planner.
+- Documents table dan seed data.
+- Upload center recent documents database-backed.
+- Tenant-scoped signed download route.
+- Private/restricted/committee download handling.
+- Feature tests untuk document download/storage permission.
+
+Belum/next:
+- Real upload center form untuk semua jenis dokumen belum penuh.
+- S3/R2 production credentials tetap environment-only.
+
+### M10 · LPJ Generator
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- LPJ checklist UI.
+- LPJ readiness Action.
+- Checklist persistence.
+- Database-backed tenant-scoped checklist payload.
+- Review submission flow dengan readiness guard.
+- Owner/admin approval atau revision request.
+- Project status transitions.
+- Export queue planner terhubung M08/M10.
+- Feature tests LPJ approval.
+
+Belum/next:
+- Full LPJ document editor belum ada.
+- LPJ export layout bisa dipoles lebih lanjut.
+
+### M11 · Dashboard Monitoring
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Viho dashboard UI.
+- DTO payload dan aggregate metrics Action.
+- Database-backed overview metrics, priority projects, weekly focus, member summary.
+- Tenant scoping untuk authenticated user's organizations.
+- Anti-leak unit coverage untuk metrics, priority projects, tasks, budget, LPJ, dan member summary.
+
+Belum/next:
+- Drilldown analytics masih per modul, belum dashboard advanced.
+
+### M12 · Notification Basic
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Notification rules/channel UI.
+- Default rule Action.
+- `notification_rules` table dan Laravel notification table.
+- Database-backed rules payload.
+- Queued task deadline reminder notification.
+- Email/database channels.
+- Simulate reminder route/button.
+- Tenant-scoped reminder dispatch Action.
+- Feature tests notification reminder.
+
+Belum/next:
+- WhatsApp reminder masuk M17.
+- User notification preference belum detail.
+
+### M13 · Admin Panel Internal
+
+Status: `[x]` Selesai.
+
+Sudah ada:
+- Internal admin planning UI scaffold.
+- Backend readiness payload.
+- Resource plan dan system health counters.
+- Filament package install.
+- `/internal-admin` panel provider.
+- Filament Organization, User, dan DocumentExport resources.
+- Destructive delete row/bulk actions dihapus dari MVP resources.
+- Feature tests admin panel payload.
+
+Belum/next:
+- Admin policies belum formal penuh.
+- Resource coverage bisa diperluas setelah policy matang.
+
+## Post-MVP Modules
+
+### M14 · Rapat & Notulen
+
+Status: `[x]` Selesai untuk scope awal Post-MVP.
+
+Sudah ada:
+- Additive migration `2026_05_16_000006_create_meeting_minute_tables.php`.
+- Tables: `meetings`, `meeting_attendees`, `meeting_minutes`.
+- Seed demo rapat, attendees, dan published minutes.
+- Tenant-scoped `GetMeetingMinutePayloadAction`.
+- Route `meetings.index` di `/meetings`.
+- Sidebar menu `Rapat & Notulen` dengan badge `M14`.
+- Inertia page `resources/js/Pages/Meetings/Index.tsx`.
+- UI menampilkan metrics, agenda rapat, attendee count, present count, status notulen, latest decisions, dan action items.
+- Route smoke test ditambahkan.
+- Feature test payload dan anti-leak tenant scope.
+- Browser smoke test `/meetings` berhasil.
+
+Belum/next:
+- Create/edit meeting belum ada.
+- Publish/edit notulen belum ada.
+- Attendance taking belum interaktif.
+- Export notulen belum ada.
+- Jika modul ini dilanjutkan, tambah Form Request, controller mutation, policies, dan tests sebelum memperkaya UI.
+
+### M15 · Absensi QR
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Tables untuk attendance sessions, QR tokens, dan attendance records.
+- Tenant/project/meeting scoped attendance session.
+- QR token generation dengan expiry.
+- Check-in endpoint dengan guard anti replay.
+- Manual attendance fallback.
+- Inertia page untuk session list dan scan/check-in result.
+- Tests untuk tenant scope, expired token, duplicate check-in, dan valid check-in.
+
+Catatan dependensi:
+- Bisa terhubung ke M14 meeting attendees.
+- Jangan implement native mobile app; tetap PWA/web.
+
+### M16 · Sertifikat Digital
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Certificate template table.
+- Recipient table.
+- Certificate number generator.
+- PDF export job.
+- Signed verification URL.
+- Inertia page untuk template/recipient/issue queue.
+- Tests untuk unique certificate number dan tenant-scoped verification.
+
+### M17 · WhatsApp Reminder
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Environment variables untuk provider WhatsApp di `.env.example`.
+- Notification channel abstraction.
+- Queue job untuk send WhatsApp reminder.
+- Delivery log table.
+- Retry/failure status.
+- Tenant/user opt-in guard.
+- Tests dengan fake provider.
+
+Catatan:
+- Jangan hardcode token/provider URL.
+- Jangan kirim pesan real dari test/local tanpa explicit user approval.
+
+### M18 · Approval Workflow Advanced
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Approval workflow definitions.
+- Approval steps dan approvers.
+- Multi-level approval instance per proposal/RAB/LPJ.
+- Delegate/reassign flow.
+- Audit trail.
+- Tests untuk role order, reject, revision, and cross-tenant access.
+
+### M19 · Handover Kepengurusan
+
+Status: `[~]` Partial scaffold only.
+
+Sudah ada:
+- Route/page `organization.handover`.
+- Viho-style planning/readiness UI scaffold.
+
+Belum/next:
+- Handover package persistence belum ada.
+- Data snapshot antar periode belum ada.
+- Handover checklist/action owner belum ada.
+- Archive/export handover belum ada.
+- Access policy belum formal.
+
+### M20 · Sponsor & Vendor Database
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Sponsor/vendor tables scoped by organization.
+- Contact person, category, status, documents, and historical project links.
+- Inertia list/detail page.
+- Tests tenant scoping and CRUD authorization.
+
+### M21 · Event Registration
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Public registration form per project/event.
+- Participant table.
+- Capacity and registration period guard.
+- Confirmation email/notification.
+- Export participant list.
+- Tests for capacity, duplicate email, and tenant/project scope.
+
+### M22 · Payment / Ticketing
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Payment provider config in env.
+- Ticket tiers.
+- Order/payment tables.
+- Webhook handling.
+- Paid/free registration integration with M21.
+- Tests with fake webhook signatures.
+
+Catatan:
+- Jangan mulai sebelum M21 cukup stabil.
+- Jangan hardcode payment credentials.
+
+### M23 · AI Assistant
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Use-case definition first: proposal drafting, LPJ summary, task suggestions, or dashboard insight.
+- Provider config through env.
+- Prompt/action classes with auditability.
+- Tenant data minimization.
+- Tests for prompt payload construction and permission guard.
+
+Catatan:
+- Jangan mulai tanpa scope eksplisit.
+- Jangan kirim data sensitif ke provider tanpa desain permission dan env config.
+
+### M24 · Campus Dashboard B2B
+
+Status: `[ ]` Belum dikerjakan.
+
+Target scope yang disarankan:
+- Campus/super-admin aggregate dashboard.
+- Cross-organization metrics with strict authorization.
+- Read-only analytics first.
+- Tests for super admin access and org data isolation.
+
+## Next Action
+
+1. Relink shell PHP ke PHP 8.4 atau terus gunakan PATH prefix untuk semua Composer/Artisan commands.
+2. Mulai M15 Absensi QR dengan desain migration additive.
+3. Hubungkan M15 ke M14 meeting attendees bila absensi rapat menjadi use case pertama.
+4. Tambahkan tests sebelum menganggap M15 selesai.
+5. Setelah M15 selesai, update bagian `Verifikasi Terakhir`, `Post-MVP Modules`, dan commit dengan pesan `feat: add qr attendance module`.
+
+## Riwayat Commit Penting
+
+- `f2c148a` · `docs: record MVP verification handoff`
+- `4f37fb5` · `docs: mark MVP validation complete`
+- `af3de2a` · `feat: add meeting minutes module`
