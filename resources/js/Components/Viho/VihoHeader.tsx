@@ -46,6 +46,13 @@ export default function VihoHeader({
             <div className="flex min-h-[77px] items-center gap-4 px-4 sm:px-6 lg:px-8">
                 <button
                     type="button"
+                    aria-expanded={mobileOpen}
+                    aria-label={
+                        mobileOpen
+                            ? 'Tutup menu navigasi'
+                            : 'Buka menu navigasi'
+                    }
+                    aria-controls="mobile-navigation"
                     onClick={onToggleMobile}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-[#e6edef] text-[#59667a] transition hover:bg-[#f5f7fb] lg:hidden"
                 >
@@ -135,6 +142,7 @@ export default function VihoHeader({
             </div>
 
             <div
+                id="mobile-navigation"
                 className={
                     (mobileOpen ? 'block' : 'hidden') +
                     ' border-t border-[#e6edef] bg-white lg:hidden'

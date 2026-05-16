@@ -471,21 +471,21 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 22.1 | Guest redirect | Visit /internal-admin without login | Redirect to login | `[ ]` |
-| 22.2 | Non-super access | Login as organization_owner → visit /internal-admin | 403 | `[ ]` |
-| 22.3 | Super admin access | Login as superadmin@prokerin.internal | Lands on /internal-admin dashboard | `[ ]` |
-| 22.4 | Platform stats | Dashboard | User count, org count, active projects count shown | `[ ]` |
-| 22.5 | Users list | /internal-admin/users | All users from all orgs listed | `[ ]` |
-| 22.6 | Edit user | Edit name → Save | Updated | `[ ]` |
+| 22.1 | Guest redirect | Visit /internal-admin without login | Redirect to login | `[P]` |
+| 22.2 | Non-super access | Login as organization_owner → visit /internal-admin | 403 | `[P]` |
+| 22.3 | Super admin access | Login as superadmin@prokerin.internal | Lands on /internal-admin dashboard | `[P]` |
+| 22.4 | Platform stats | Dashboard | User count, org count, active projects count shown | `[P]` |
+| 22.5 | Users list | /internal-admin/users | All users from all orgs listed | `[P]` |
+| 22.6 | Edit user | Edit name → Save | Updated | `[P]` |
 | 22.7 | Force verify email | Toggle email verified | Updated | `[ ]` |
-| 22.8 | Organizations list | /internal-admin/organizations | All orgs listed | `[ ]` |
-| 22.9 | Change plan tier | Edit org plan tier | Changed, logged to activity_logs | `[ ]` |
-| 22.10 | Impersonate user | Click Impersonate on a member | Redirected to /dashboard as that member, banner visible | `[ ]` |
+| 22.8 | Organizations list | /internal-admin/organizations | All orgs listed | `[P]` |
+| 22.9 | Change plan tier | Edit org plan tier | Changed, logged to activity_logs | `[P]` |
+| 22.10 | Impersonate user | Click Impersonate on a member | Redirected to /dashboard as that member, banner visible | `[P]` |
 | 22.11 | Impersonation banner | During impersonation | "You are impersonating [Name]" banner visible in Inertia app | `[ ]` |
-| 22.12 | Stop impersonating | Click "Stop Impersonating" | Back to /internal-admin, banner gone | `[ ]` |
-| 22.13 | Cannot impersonate super_admin | Try to impersonate another super_admin | Blocked | `[ ]` |
-| 22.14 | Activity logs written | After impersonation and plan change | Records in activity_logs table | `[ ]` |
-| 22.15 | Projects read-only | /internal-admin/projects | List visible, no edit/delete buttons | `[ ]` |
+| 22.12 | Stop impersonating | Click "Stop Impersonating" | Back to /internal-admin, banner gone | `[P]` |
+| 22.13 | Cannot impersonate super_admin | Try to impersonate another super_admin | Blocked | `[P]` |
+| 22.14 | Activity logs written | After impersonation and plan change | Records in activity_logs table | `[P]` |
+| 22.15 | Projects read-only | /internal-admin/projects | List visible, no edit/delete buttons | `[P]` |
 
 ---
 
@@ -503,7 +503,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 23.8 | FAQ accordion | Click a question | Answer expands smoothly | `[ ]` |
 | 23.9 | Pricing toggle | Toggle Bulanan/Tahunan | Prices update | `[ ]` |
 | 23.10 | Features page | Visit /features | All feature sections with correct hierarchy | `[ ]` |
-| 23.11 | Pricing page | Visit /pricing | Pricing table, FAQ section shown | `[ ]` |
+| 23.11 | Pricing page | Visit /pricing | Pricing table, FAQ section shown | `[P]` |
 | 23.12 | No horizontal overflow | At 375px | No horizontal scroll bar | `[ ]` |
 | 23.13 | All images have alt text | Inspect DOM | No img without alt | `[ ]` |
 | 23.14 | External links | Check all external links | Have rel="noopener noreferrer" and target="_blank" | `[ ]` |
@@ -1174,14 +1174,27 @@ Notes: [Any additional context]
 
 | ID | Severity | Module | Title | Status | Assignee |
 |----|----------|--------|-------|--------|----------|
-| BUG-001 | MEDIUM | QA Tooling | `npm run lint` fails because `package.json` has no `lint` script | Open | TBD |
+| BUG-001 | MEDIUM | QA Tooling | `npm run lint` fails because `package.json` has no `lint` script | Fixed | Codex |
 | BUG-002 | HIGH | Seed / QA Data | Seeded test users do not match Section 2 QA matrix (`secretary@`, `treasurer@`, `coordinator@`, `owner2@`, `superadmin@prokerin.internal` missing; localized/test alternatives exist) | Fixed | Codex |
-| BUG-003 | LOW | L01 Pricing | `/pricing` emits React duplicate-key warnings in feature comparison table because repeated cells use `key={cell}` | Open | TBD |
-| BUG-004 | LOW | Mobile App Shell | Workspace mobile menu button is icon-only without an accessible label, so QA/accessibility tooling cannot identify it as the sidebar toggle | Open | TBD |
+| BUG-003 | LOW | L01 Pricing | `/pricing` emits React duplicate-key warnings in feature comparison table because repeated cells use `key={cell}` | Fixed | Codex |
+| BUG-004 | LOW | Mobile App Shell | Workspace mobile menu button is icon-only without an accessible label, so QA/accessibility tooling cannot identify it as the sidebar toggle | Fixed | Codex |
 | BUG-005 | HIGH | SA01 Impersonation | `/impersonate/leave` could stop impersonation through the package route without Prokerin audit logging, and stop logs used the impersonated user as actor instead of the super admin | Fixed | Codex |
 | BUG-006 | MEDIUM | SA01 Document Exports | Internal admin `DocumentExportResource` exposed raw `output_path` and still allowed create/edit routes even though exports should be generated by the queue | Fixed | Codex |
 | BUG-007 | MEDIUM | SA01 User Delete | Super Admin user deletion used a generic confirmation modal instead of requiring typed confirmation for destructive actions | Fixed | Codex |
 | BUG-008 | HIGH | SA01 Filament Assets | `/internal-admin` loaded without Filament CSS/JS because published assets under `public/css`, `public/js`, and `public/fonts` were missing, causing oversized icons and broken layout | Fixed | Codex |
+
+### QA Execution Notes
+
+- 2026-05-17 · Automated gate rerun after BUG-001/003/004 fixes:
+  - `npm run lint` → passed (`tsc --noEmit` baseline).
+  - `npm run build` → passed.
+  - `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` → passed.
+  - `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **343 passed, 1714 assertions**.
+  - Targeted SA01/Payload suite: `tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/AdminPanelPayloadTest.php` → **12 passed, 36 assertions**.
+- 2026-05-17 · Browser smoke:
+  - `/pricing` rendered 10 comparison rows with no React duplicate-key warning and no horizontal overflow in the current desktop viewport.
+  - `/internal-admin` visual regression from oversized Filament icons was already verified fixed: sidebar icons 24px, table icons 20px, compact stats grid.
+  - `/dashboard` mobile button browser check was blocked by the current browser session being logged in as `super_admin`, which correctly redirects `/dashboard` to `/internal-admin`; the accessibility fix is verified by source inspection and TypeScript/build gate.
 
 ---
 
@@ -1191,13 +1204,13 @@ Run this as the final gate before any public beta or paid plan activation.
 
 ```
 # Automated
-[ ] php artisan test → 100% green
-[ ] npm run build → no errors
-[ ] npm run lint → no errors
-[ ] ./vendor/bin/pint --test → no formatting violations
+[P] php artisan test → 100% green
+[P] npm run build → no errors
+[P] npm run lint → no errors
+[P] ./vendor/bin/pint --test → no formatting violations
 
 # Security
-[ ] All /internal-admin routes inaccessible to non-super_admin
+[P] All /internal-admin routes inaccessible to non-super_admin
 [ ] All organization data routes return 403 for unauthenticated requests
 [ ] Cross-tenant isolation verified: org2 cannot see org1 data
 [ ] File upload MIME validation active on all upload endpoints
@@ -1217,7 +1230,7 @@ Run this as the final gate before any public beta or paid plan activation.
 [ ] Certificate issuance + public verification works
 [ ] PDF and DOCX export jobs complete successfully
 [ ] WhatsApp delivery log shows correct status
-[ ] Super admin panel accessible, impersonation works, audit log written
+[P] Super admin panel accessible, impersonation works, audit log written
 
 # UX
 [ ] No empty states show blank white space — all have illustration + CTA

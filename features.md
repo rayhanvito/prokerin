@@ -48,6 +48,9 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-17 · SA01 Filament asset fix: published Filament CSS/JS/font assets to `public/css`, `public/js`, and `public/fonts`; `/internal-admin/login` now loads `css/filament/filament/app.css` successfully and the broken oversized-icon layout is resolved. Added `FilamentAssetTest`; BUG-008 recorded in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · QA-MASTER follow-up: fixed BUG-001 (`npm run lint` baseline), BUG-003 (`/pricing` duplicate React keys), and BUG-004 (workspace mobile menu accessible label). Updated QA checklist statuses in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · After QA-MASTER follow-up: `npm run lint` passed; `npm run build` passed; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` passed; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **343 passed, 1714 assertions**.
+- `[x]` 2026-05-17 · After QA-MASTER follow-up: targeted SA01/Payload suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/AdminPanelPayloadTest.php` → **12 passed, 36 assertions**.
 - `[x]` 2026-05-17 · SA01 Super Admin theme regression fix: corrected Filament v5 icon sizing and stats grid fallback so `/internal-admin` no longer renders oversized sidebar/widget/table icons. Browser smoke on `http://127.0.0.1:8000/internal-admin` confirmed sidebar icon 24px, table icon 20px, four compact stat cards, and normal page height.
 - `[x]` 2026-05-17 · After SA01 Super Admin theme regression fix: `npm run build` passed.
 - `[x]` 2026-05-17 · After SA01 Super Admin theme regression fix: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php` → **11 passed, 18 assertions**.
