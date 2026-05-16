@@ -139,6 +139,75 @@ final class HandoverPackageTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_submit_and_accept_completed_handover_package(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'submitted',
+            ])
+            ->assertUnprocessable();
+
+        DB::table('handover_items')
+            ->where('package_id', $packageId)
+            ->update(['status' => 'done']);
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'submitted',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Status paket handover berhasil diperbarui.');
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'status' => 'submitted',
+        ]);
+        $this->assertNotNull(DB::table('handover_packages')->where('id', $packageId)->value('submitted_at'));
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'accepted',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'status' => 'accepted',
+        ]);
+        $this->assertNotNull(DB::table('handover_packages')->where('id', $packageId)->value('accepted_at'));
+    }
+
+    public function test_member_cannot_submit_handover_package(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $packageId = (int) DB::table('handover_packages')->value('id');
+
+        DB::table('handover_items')
+            ->where('package_id', $packageId)
+            ->update(['status' => 'done']);
+
+        $this->actingAs($member)
+            ->patch(route('organization.handover.packages.status', ['package' => $packageId]), [
+                'status' => 'submitted',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('handover_packages', [
+            'id' => $packageId,
+            'status' => 'draft',
+        ]);
+    }
+
     private function organizationId(string $slug): int
     {
         return (int) DB::table('organizations')->where('slug', $slug)->value('id');

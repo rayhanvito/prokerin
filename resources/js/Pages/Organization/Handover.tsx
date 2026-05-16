@@ -62,6 +62,11 @@ export default function OrganizationHandover({
 }: OrganizationHandoverProps) {
     const { post, processing } = useForm({});
     const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
+    const [updatingPackage, setUpdatingPackage] = useState(false);
+    const canSubmitPackage =
+        handoverPackage?.status === 'draft' &&
+        items.length > 0 &&
+        items.every((item) => item.status === 'done');
 
     const initiateHandover = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -82,6 +87,23 @@ export default function OrganizationHandover({
             {
                 preserveScroll: true,
                 onFinish: () => setUpdatingItemId(null),
+            },
+        );
+    };
+
+    const updatePackageStatus = (status: 'submitted' | 'accepted'): void => {
+        if (handoverPackage === null) {
+            return;
+        }
+
+        setUpdatingPackage(true);
+
+        router.patch(
+            route('organization.handover.packages.status', handoverPackage.id),
+            { status },
+            {
+                preserveScroll: true,
+                onFinish: () => setUpdatingPackage(false),
             },
         );
     };
@@ -124,6 +146,24 @@ export default function OrganizationHandover({
                                         Buat Paket Handover
                                     </PrimaryButton>
                                 </form>
+                            ) : null}
+                            {handoverPackage?.status === 'draft' && canManage ? (
+                                <PrimaryButton
+                                    type="button"
+                                    disabled={!canSubmitPackage || updatingPackage}
+                                    onClick={() => updatePackageStatus('submitted')}
+                                >
+                                    Submit Paket
+                                </PrimaryButton>
+                            ) : null}
+                            {handoverPackage?.status === 'submitted' && canManage ? (
+                                <PrimaryButton
+                                    type="button"
+                                    disabled={updatingPackage}
+                                    onClick={() => updatePackageStatus('accepted')}
+                                >
+                                    Terima Paket
+                                </PrimaryButton>
                             ) : null}
                         </div>
                     </div>

@@ -39,6 +39,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M19 package submit/accept browser smoke passed on `/organization/handover`; owner can complete items, submit draft, and accept package with no console errors.
+- `[x]` 2026-05-16 · After M19 package submit/accept: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **210 passed, 983 assertions**.
+- `[x]` 2026-05-16 · After M19 package submit/accept: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **7 passed, 67 assertions**.
+- `[x]` 2026-05-16 · After M19 package submit/accept: `npm run build` passed.
 - `[x]` 2026-05-16 · M19 item workflow browser smoke passed on `/organization/handover`; owner can mark a generated checklist item done and revert action appears with no console errors.
 - `[x]` 2026-05-16 · After M19 item workflow: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **208 passed, 973 assertions**.
 - `[x]` 2026-05-16 · After M19 item workflow: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **5 passed, 57 assertions**.
@@ -591,11 +595,13 @@ Replace single-approver model with configurable multi-level approval chains for 
 - Tables: `handover_packages`, `handover_items`.
 - Action: `InitiateHandoverPackageAction` — owner/admin creates one draft package for the active period, with generated checklist items.
 - Action: `UpdateHandoverItemStatusAction` — owner/admin or assignee can mark draft checklist items `pending`/`done`.
+- Action: `UpdateHandoverPackageStatusAction` — owner/admin submits completed draft packages and accepts submitted packages.
 - Action: `GetHandoverPayloadAction` — tenant-scoped payload with live metrics, package snapshot, and checklist items.
 - Route: `POST /organization/handover` — creates initial handover package.
 - Route: `PATCH /organization/handover/items/{item}` — updates item status.
-- UI: Handover page now shows database-backed metrics, package status, snapshot, generated checklist, and item status buttons.
-- Tests: payload, package initiation, item status mutation, owner/admin/assignee guard.
+- Route: `PATCH /organization/handover/packages/{package}/status` — submits or accepts package status.
+- UI: Handover page now shows database-backed metrics, package status, snapshot, generated checklist, item status buttons, and submit/accept actions.
+- Tests: payload, package initiation, item status mutation, submit/accept flow, owner/admin/assignee guard.
 
 #### What Still Needs to Be Built
 - [x] `handover_packages` table: `id`, `organization_id`, `from_period_id`, `to_period_id`, `created_by`, `status`, `submitted_at`, `accepted_at`, plus JSON snapshot.
@@ -603,11 +609,15 @@ Replace single-approver model with configurable multi-level approval chains for 
 - [x] Data snapshot: capture project statuses, finance balances, open tasks, and outstanding LPJ at handover freeze time.
 - [x] `InitiateHandoverAction` — creates package, auto-generates items from active data.
 - [x] Handover checklist UI: generated items render and draft item status can be toggled pending/done.
+- [x] Submit/accept flow: draft package can be submitted after all checklist items are done, then accepted.
 - [ ] Archive/export handover package as PDF.
 - [~] Access policy: owner/admin can initiate; incoming-owner handover acceptance role is not modeled yet.
 
 #### Verification
 - `[x]` 2026-05-16 · `npm run build` passed.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **7 passed, 67 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **210 passed, 983 assertions**.
+- `[x]` 2026-05-16 · Browser smoke passed for package submit/accept flow on `/organization/handover`.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **5 passed, 57 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **208 passed, 973 assertions**.
 - `[x]` 2026-05-16 · Browser smoke passed for item status toggle on `/organization/handover`; owner can mark one generated checklist item done.
@@ -718,8 +728,8 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Add M19 package submit/accept flow** — draft → submitted → accepted with timestamps and authorization.
-2. **Add M19 export** — archive/export handover package as PDF via existing export patterns.
+1. **Add M19 export** — archive/export handover package as PDF via existing export patterns.
+2. **Model incoming owner acceptance** — replace temporary owner/admin accept guard with explicit incoming-owner transition when period/member handover data exists.
 3. **Then start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
 4. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
 5. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
