@@ -91,6 +91,82 @@ final class ProposalApprovalTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_approve_submitted_proposal(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $draft = DB::table('proposal_drafts')
+            ->where('title', 'Proposal Seminar Karier Digital')
+            ->first();
+
+        DB::table('proposal_drafts')
+            ->where('id', $draft->id)
+            ->update(['status' => 'submitted']);
+        DB::table('projects')
+            ->where('id', $draft->project_id)
+            ->update(['status' => ProjectStatus::ProposalReview->value]);
+
+        $this->actingAs($owner)
+            ->patch(route('reports.proposal-drafts.decision', ['proposalDraft' => $draft->id]), [
+                'decision' => 'approve',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Proposal disetujui dan proker masuk tahap RAB approval.');
+
+        $this->assertDatabaseHas('proposal_drafts', [
+            'id' => $draft->id,
+            'status' => 'approved',
+        ]);
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $draft->project_id,
+            'status' => ProjectStatus::RabApproval->value,
+        ]);
+    }
+
+    public function test_owner_can_request_proposal_revision(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $draft = DB::table('proposal_drafts')
+            ->where('title', 'Proposal Seminar Karier Digital')
+            ->first();
+
+        DB::table('proposal_drafts')
+            ->where('id', $draft->id)
+            ->update(['status' => 'submitted']);
+        DB::table('projects')
+            ->where('id', $draft->project_id)
+            ->update(['status' => ProjectStatus::ProposalReview->value]);
+
+        $this->actingAs($owner)
+            ->patch(route('reports.proposal-drafts.decision', ['proposalDraft' => $draft->id]), [
+                'decision' => 'request_changes',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Proposal dikembalikan untuk revisi.');
+
+        $this->assertDatabaseHas('proposal_drafts', [
+            'id' => $draft->id,
+            'status' => 'revision_requested',
+        ]);
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $draft->project_id,
+            'status' => ProjectStatus::Draft->value,
+        ]);
+    }
+
+    public function test_secretary_cannot_decide_proposal_approval(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $draftId = (int) DB::table('proposal_drafts')->value('id');
+
+        $this->actingAs($secretary)
+            ->patch(route('reports.proposal-drafts.decision', ['proposalDraft' => $draftId]), [
+                'decision' => 'approve',
+            ])
+            ->assertForbidden();
+    }
+
     public function test_member_cannot_submit_proposal_for_approval(): void
     {
         $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();

@@ -1,4 +1,4 @@
-import { FilePenLine, Send } from 'lucide-react';
+import { CheckCircle2, FilePenLine, RotateCcw, Send } from 'lucide-react';
 
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
@@ -12,16 +12,38 @@ interface ProposalEditorProps {
 }
 
 export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
-    const { post, processing } = useForm();
+    const submitForm = useForm();
+    const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
+        decision: 'approve',
+    });
 
     const submitForApproval = (): void => {
         if (proposalDraft.id === null) {
             return;
         }
 
-        post(route('reports.proposal-drafts.submit', proposalDraft.id), {
-            preserveScroll: true,
-        });
+        submitForm.post(
+            route('reports.proposal-drafts.submit', proposalDraft.id),
+            {
+                preserveScroll: true,
+            },
+        );
+    };
+
+    const decideProposal = (
+        decision: 'approve' | 'request_changes',
+    ): void => {
+        if (proposalDraft.id === null) {
+            return;
+        }
+
+        decisionForm.transform(() => ({ decision }));
+        decisionForm.patch(
+            route('reports.proposal-drafts.decision', proposalDraft.id),
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     return (
@@ -65,7 +87,10 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                     action={
                         <button
                             type="button"
-                            disabled={!proposalDraft.canSubmit || processing}
+                            disabled={
+                                !proposalDraft.canSubmit ||
+                                submitForm.processing
+                            }
                             onClick={submitForApproval}
                             className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
                         >
@@ -93,6 +118,30 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 </p>
                             </div>
                         </div>
+                        {proposalDraft.canDecide && (
+                            <div className="mt-5 flex flex-wrap gap-2 border-b border-[#e6edef] pb-5">
+                                <button
+                                    type="button"
+                                    disabled={decisionForm.processing}
+                                    onClick={() => decideProposal('approve')}
+                                    className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                                >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    Approve
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={decisionForm.processing}
+                                    onClick={() =>
+                                        decideProposal('request_changes')
+                                    }
+                                    className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#ba895d] hover:text-[#ba895d] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                                >
+                                    <RotateCcw className="h-4 w-4" />
+                                    Revisi
+                                </button>
+                            </div>
+                        )}
                         <div className="mt-5 space-y-4 text-sm leading-7 text-[#59667a]">
                             {proposalDraft.sections.slice(0, 2).map((section) => (
                                 <p key={section.heading}>{section.body}</p>

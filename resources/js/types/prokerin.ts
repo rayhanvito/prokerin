@@ -138,10 +138,11 @@ export interface ProposalDraft {
     id: number | null;
     title: string;
     subtitle: string;
-    status: 'draft' | 'submitted' | 'approved' | 'empty';
+    status: 'draft' | 'submitted' | 'approved' | 'revision_requested' | 'empty';
     projectSlug: string | null;
     projectStatus: ProjectStatus | null;
     canSubmit: boolean;
+    canDecide: boolean;
     sections: Array<{
         heading: string;
         body: string;
