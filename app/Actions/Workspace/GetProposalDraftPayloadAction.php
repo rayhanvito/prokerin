@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 final class GetProposalDraftPayloadAction
 {
     /**
-     * @return array{id: int|null, title: string, subtitle: string, sections: array<int, array{heading: string, body: string}>, status: string, projectSlug: string|null, projectStatus: string|null, canSubmit: bool, canDecide: bool}
+     * @return array{id: int|null, title: string, subtitle: string, sections: array<int, array{heading: string, body: string}>, status: string, projectSlug: string|null, projectStatus: string|null, canEdit: bool, canSubmit: bool, canDecide: bool}
      */
     public function execute(int $actorUserId): array
     {
@@ -38,6 +38,7 @@ final class GetProposalDraftPayloadAction
                 'status' => 'empty',
                 'projectSlug' => null,
                 'projectStatus' => null,
+                'canEdit' => false,
                 'canSubmit' => false,
                 'canDecide' => false,
             ];
@@ -60,6 +61,8 @@ final class GetProposalDraftPayloadAction
             'status' => $status,
             'projectSlug' => (string) $draft->project_slug,
             'projectStatus' => $projectStatus,
+            'canEdit' => $status === 'draft' && in_array($projectStatus, ['draft', 'proposal_review'], true)
+                || $status === 'revision_requested' && $projectStatus === 'draft',
             'canSubmit' => $status === 'draft' && in_array($projectStatus, ['draft', 'proposal_review'], true),
             'canDecide' => $status === 'submitted' && $projectStatus === 'proposal_review' && in_array($role, ['organization_owner', 'organization_admin'], true),
         ];

@@ -1,5 +1,12 @@
-import { CheckCircle2, FilePenLine, RotateCcw, Send } from 'lucide-react';
+import {
+    CheckCircle2,
+    FilePenLine,
+    RotateCcw,
+    Save,
+    Send,
+} from 'lucide-react';
 
+import InputError from '@/Components/InputError';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -11,11 +18,40 @@ interface ProposalEditorProps {
     proposalDraft: ProposalDraft;
 }
 
+interface ProposalDraftForm {
+    sections: ProposalDraft['sections'];
+}
+
 export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
+    const draftForm = useForm<ProposalDraftForm>({
+        sections: proposalDraft.sections,
+    });
     const submitForm = useForm();
     const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
         decision: 'approve',
     });
+
+    const updateSectionBody = (index: number, body: string): void => {
+        draftForm.setData(
+            'sections',
+            draftForm.data.sections.map((section, sectionIndex) =>
+                sectionIndex === index ? { ...section, body } : section,
+            ),
+        );
+    };
+
+    const saveDraft = (): void => {
+        if (proposalDraft.id === null) {
+            return;
+        }
+
+        draftForm.patch(
+            route('reports.proposal-drafts.update', proposalDraft.id),
+            {
+                preserveScroll: true,
+            },
+        );
+    };
 
     const submitForApproval = (): void => {
         if (proposalDraft.id === null) {
@@ -85,18 +121,32 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                     title="Draft Proposal"
                     subtitle="Konten auto-fill dari data proker, timeline, dan RAB sebelum dikirim ke approval."
                     action={
-                        <button
-                            type="button"
-                            disabled={
-                                !proposalDraft.canSubmit ||
-                                submitForm.processing
-                            }
-                            onClick={submitForApproval}
-                            className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
-                        >
-                            <Send className="h-4 w-4" />
-                            Kirim Approval
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                disabled={
+                                    !proposalDraft.canEdit ||
+                                    draftForm.processing
+                                }
+                                onClick={saveDraft}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#24695c] hover:text-[#24695c] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                            >
+                                <Save className="h-4 w-4" />
+                                Simpan
+                            </button>
+                            <button
+                                type="button"
+                                disabled={
+                                    !proposalDraft.canSubmit ||
+                                    submitForm.processing
+                                }
+                                onClick={submitForApproval}
+                                className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                            >
+                                <Send className="h-4 w-4" />
+                                Kirim Approval
+                            </button>
+                        </div>
                     }
                 >
                     <div className="rounded-[4px] border border-[#e6edef] bg-[#f5f7fb] p-5">
@@ -142,9 +192,33 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 </button>
                             </div>
                         )}
-                        <div className="mt-5 space-y-4 text-sm leading-7 text-[#59667a]">
-                            {proposalDraft.sections.slice(0, 2).map((section) => (
-                                <p key={section.heading}>{section.body}</p>
+                        <div className="mt-5 space-y-4">
+                            {draftForm.data.sections.map((section, index) => (
+                                <label key={section.heading} className="block">
+                                    <span className="text-sm font-semibold text-[#242934]">
+                                        {section.heading}
+                                    </span>
+                                    <textarea
+                                        value={section.body}
+                                        disabled={!proposalDraft.canEdit}
+                                        rows={index < 2 ? 5 : 3}
+                                        className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm leading-7 text-[#59667a] shadow-none focus:border-[#24695c] focus:ring-[#24695c] disabled:bg-white"
+                                        onChange={(event) =>
+                                            updateSectionBody(
+                                                index,
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError
+                                        message={
+                                            draftForm.errors[
+                                                `sections.${index}.body`
+                                            ]
+                                        }
+                                        className="mt-2"
+                                    />
+                                </label>
                             ))}
                         </div>
                     </div>

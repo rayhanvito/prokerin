@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTemplateGenerationController;
 use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\ProposalApprovalDecisionController;
+use App\Http\Controllers\ProposalDraftController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
@@ -62,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'reportsIndex'])->name('index');
         Route::get('/proposal-editor', [WorkspacePageController::class, 'proposalEditor'])->name('proposal-editor');
+        Route::patch('/proposal-drafts/{proposalDraft}', [ProposalDraftController::class, 'update'])->name('proposal-drafts.update');
         Route::post('/proposal-drafts/{proposalDraft}/submit', [ProposalApprovalController::class, 'store'])->name('proposal-drafts.submit');
         Route::patch('/proposal-drafts/{proposalDraft}/decision', [ProposalApprovalDecisionController::class, 'update'])->name('proposal-drafts.decision');
         Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');

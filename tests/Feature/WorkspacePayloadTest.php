@@ -71,6 +71,7 @@ final class WorkspacePayloadTest extends TestCase
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Reports/ProposalEditor')
             ->where('proposalDraft.status', 'draft')
+            ->where('proposalDraft.canEdit', true)
             ->where('proposalDraft.canSubmit', true)
             ->where('proposalDraft.title', 'Proposal Seminar Karier Digital')
             ->has('proposalDraft.sections', 6));

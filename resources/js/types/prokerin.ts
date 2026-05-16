@@ -141,6 +141,7 @@ export interface ProposalDraft {
     status: 'draft' | 'submitted' | 'approved' | 'revision_requested' | 'empty';
     projectSlug: string | null;
     projectStatus: ProjectStatus | null;
+    canEdit: boolean;
     canSubmit: boolean;
     canDecide: boolean;
     sections: Array<{

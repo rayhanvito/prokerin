@@ -91,6 +91,84 @@ final class ProposalApprovalTest extends TestCase
         ]);
     }
 
+    public function test_secretary_can_update_editable_proposal_sections(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $draft = DB::table('proposal_drafts')
+            ->where('title', 'Proposal Seminar Karier Digital')
+            ->first();
+        $sections = json_decode((string) $draft->sections, true);
+        $sections[0]['body'] = 'Latar belakang hasil revisi sekretaris.';
+
+        $this->actingAs($secretary)
+            ->patch(route('reports.proposal-drafts.update', ['proposalDraft' => $draft->id]), [
+                'sections' => $sections,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Draft proposal berhasil disimpan.');
+
+        $updatedSections = json_decode((string) DB::table('proposal_drafts')
+            ->where('id', $draft->id)
+            ->value('sections'), true);
+
+        $this->assertSame('Latar belakang hasil revisi sekretaris.', $updatedSections[0]['body']);
+        $this->assertDatabaseHas('proposal_drafts', [
+            'id' => $draft->id,
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_revision_requested_proposal_returns_to_draft_when_saved(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $draft = DB::table('proposal_drafts')
+            ->where('title', 'Proposal Seminar Karier Digital')
+            ->first();
+        $sections = json_decode((string) $draft->sections, true);
+        $sections[1]['body'] = 'Tujuan kegiatan setelah revisi.';
+
+        DB::table('proposal_drafts')
+            ->where('id', $draft->id)
+            ->update(['status' => 'revision_requested']);
+        DB::table('projects')
+            ->where('id', $draft->project_id)
+            ->update(['status' => ProjectStatus::Draft->value]);
+
+        $this->actingAs($secretary)
+            ->patch(route('reports.proposal-drafts.update', ['proposalDraft' => $draft->id]), [
+                'sections' => $sections,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Draft proposal berhasil disimpan.');
+
+        $this->assertDatabaseHas('proposal_drafts', [
+            'id' => $draft->id,
+            'status' => 'draft',
+        ]);
+    }
+
+    public function test_submitted_proposal_cannot_be_edited(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $draft = DB::table('proposal_drafts')
+            ->where('title', 'Proposal Seminar Karier Digital')
+            ->first();
+        $sections = json_decode((string) $draft->sections, true);
+
+        DB::table('proposal_drafts')
+            ->where('id', $draft->id)
+            ->update(['status' => 'submitted']);
+        DB::table('projects')
+            ->where('id', $draft->project_id)
+            ->update(['status' => ProjectStatus::ProposalReview->value]);
+
+        $this->actingAs($secretary)
+            ->patch(route('reports.proposal-drafts.update', ['proposalDraft' => $draft->id]), [
+                'sections' => $sections,
+            ])
+            ->assertSessionHasErrors('sections');
+    }
+
     public function test_owner_can_approve_submitted_proposal(): void
     {
         $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
