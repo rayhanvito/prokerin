@@ -11,6 +11,7 @@ use App\Filament\Resources\DocumentExports\Pages\ViewDocumentExport;
 use App\Filament\Resources\DocumentExports\Schemas\DocumentExportForm;
 use App\Filament\Resources\DocumentExports\Schemas\DocumentExportInfolist;
 use App\Filament\Resources\DocumentExports\Tables\DocumentExportsTable;
+use App\Filament\SuperAdminGate;
 use App\Models\DocumentExport;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -23,6 +24,13 @@ class DocumentExportResource extends Resource
     protected static ?string $model = DocumentExport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?int $navigationSort = 50;
+
+    public static function canViewAny(): bool
+    {
+        return SuperAdminGate::canAccess();
+    }
 
     public static function form(Schema $schema): Schema
     {

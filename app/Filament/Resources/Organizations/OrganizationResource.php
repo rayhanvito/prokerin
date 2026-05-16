@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Organizations;
 
-use App\Filament\Resources\Organizations\Pages\CreateOrganization;
 use App\Filament\Resources\Organizations\Pages\EditOrganization;
 use App\Filament\Resources\Organizations\Pages\ListOrganizations;
 use App\Filament\Resources\Organizations\Pages\ViewOrganization;
 use App\Filament\Resources\Organizations\Schemas\OrganizationForm;
 use App\Filament\Resources\Organizations\Schemas\OrganizationInfolist;
 use App\Filament\Resources\Organizations\Tables\OrganizationsTable;
+use App\Filament\SuperAdminGate;
 use App\Models\Organization;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -22,7 +22,21 @@ class OrganizationResource extends Resource
 {
     protected static ?string $model = Organization::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
+
+    protected static ?string $navigationLabel = 'Organizations';
+
+    protected static ?int $navigationSort = 20;
+
+    public static function canViewAny(): bool
+    {
+        return SuperAdminGate::canAccess();
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -41,16 +55,13 @@ class OrganizationResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListOrganizations::route('/'),
-            'create' => CreateOrganization::route('/create'),
             'view' => ViewOrganization::route('/{record}'),
             'edit' => EditOrganization::route('/{record}/edit'),
         ];
