@@ -29,7 +29,7 @@ final class WorkspacePayloadTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Members/Roles')
-            ->has('rolePermissions', 10)
+            ->has('rolePermissions', 12)
             ->where('rolePermissions.0.role', 'organization_owner')
             ->where('rolePermissions.0.isSystemRole', true));
     }

@@ -14,7 +14,7 @@ final class GetRolePermissionMatrixActionTest extends TestCase
     {
         $matrix = (new GetRolePermissionMatrixAction)->execute();
 
-        $this->assertCount(10, $matrix);
+        $this->assertCount(12, $matrix);
         $this->assertSame('organization_owner', $matrix[0]->role);
         $this->assertTrue($matrix[0]->isSystemRole);
         $this->assertTrue($matrix[0]->hasPermission(PermissionKey::ManageOrganization));

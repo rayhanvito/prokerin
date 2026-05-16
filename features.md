@@ -36,7 +36,7 @@
 | Post-MVP Wave 3 | M21 | ✅ Complete |
 | Post-MVP Wave 3 | M22 | ✅ Complete |
 | Post-MVP Wave 3 | M23 | ✅ Complete |
-| Post-MVP Planned | M24 | 🔲 Not started |
+| Post-MVP Planned | M24 | 🟡 Partial |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -47,6 +47,12 @@
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
 - `[x]` 2026-05-17 · M23 completed with `openai` production provider adapter using Responses API Structured Outputs, configurable `AI_BASE_URL`/`AI_TIMEOUT`, sanitized payload contract, usage token logging, and HTTP fake coverage.
+- `[~]` 2026-05-17 · M24 Campus Dashboard foundation shipped: campus tables, campus admin seed, linked organization dashboard payload, read-only Inertia page, campus sidebar, tenant isolation tests, mutation denial test, build, full regression, and browser smoke.
+- `[x]` 2026-05-17 · M24 local migration `2026_05_16_000017_create_campus_dashboard_tables.php` applied and `php artisan db:seed` added `Universitas Nusantara` linked to BEM Fakultas Teknologi + HIMA Informatika.
+- `[x]` 2026-05-17 · M24 browser smoke passed on `/campus/dashboard`; linked BEM/HIMA render, read-only state renders, and unlinked UKM Kreatif does not appear.
+- `[x]` 2026-05-17 · After M24 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/CampusDashboardTest.php tests/Feature/WorkspacePayloadTest.php tests/Unit/GetRolePermissionMatrixActionTest.php` → **17 passed, 208 assertions**.
+- `[x]` 2026-05-17 · After M24 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **283 passed, 1455 assertions**.
+- `[x]` 2026-05-17 · After M24 foundation: `npm run build` passed.
 - `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php` → **5 passed, 28 assertions**.
 - `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **279 passed, 1417 assertions**.
 - `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `npm run build` passed.
@@ -959,25 +965,42 @@ Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal dra
 
 ### M24 · Campus Dashboard B2B
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial.
 
 #### Product Goal
 Give campus administrators (e.g., Dean's office, Student Affairs) a read-only aggregate view across all student organizations on their campus — enabling oversight without operational access.
 
 #### Scope to Build
-- [ ] `campuses` table: `id`, `name`, `domain`, `admin_user_id`.
-- [ ] `campus_organization_links` table: `id`, `campus_id`, `organization_id`.
-- [ ] `super_admin` and `campus_admin` Spatie roles.
-- [ ] `CampusDashboardPayloadAction` — aggregates metrics across linked orgs; strict org data isolation (no cross-campus leakage).
-- [ ] Inertia page: read-only analytics dashboard (project counts, finance totals, LPJ rates, active members).
-- [ ] Tests: campus_admin can see linked orgs only; cannot see unlinked orgs; cannot mutate any data.
+- [x] `campuses` table: `id`, `name`, `domain`, `admin_user_id`.
+- [x] `campus_organization_links` table: `id`, `campus_id`, `organization_id`.
+- [~] `super_admin` and `campus_admin` role entries exist in the local role permission matrix; formal Spatie role persistence is still pending because the current scaffold does not yet include Spatie tables/package wiring.
+- [x] `CampusDashboardPayloadAction` — aggregates metrics across linked orgs; strict org data isolation (no cross-campus leakage).
+- [x] Inertia page: read-only analytics dashboard (project counts, finance totals, LPJ rates, active members).
+- [x] Tests: campus_admin can see linked orgs only; cannot see unlinked orgs; cannot mutate any data.
+
+#### Current Implementation
+- `campuses` and `campus_organization_links` model the B2B read-only campus relationship.
+- Seeded demo: `Universitas Nusantara` (`kampus-nusantara.test`) administered by `campus@prokerin.test`, linked to `BEM Fakultas Teknologi` and `HIMA Informatika`.
+- `/campus/dashboard` renders aggregate metrics, linked organization summaries, project status breakdown, and recent projects.
+- Campus admins receive a dedicated campus sidebar and do not get organization mutation access.
+
+#### Remaining Gap Before `[x]`
+- Install/wire formal Spatie Laravel Permission roles for `super_admin` and `campus_admin`, or explicitly accept the current `role_permission_matrix` abstraction as the project-local role system.
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000017_create_campus_dashboard_tables.php`.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` added campus admin, campus record, and linked organization rows.
+- `[x]` 2026-05-17 · Browser smoke passed on `/campus/dashboard`; BEM/HIMA render, UKM Kreatif is absent, and read-only state renders.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/CampusDashboardTest.php tests/Feature/WorkspacePayloadTest.php tests/Unit/GetRolePermissionMatrixActionTest.php` → **17 passed, 208 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **283 passed, 1455 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
 
 ---
 
 ## Next Action (Ordered Priority)
 
-### After M23
-1. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+### After M24 Foundation
+1. **Decide and implement formal M24 role persistence**: install/wire Spatie Laravel Permission for `super_admin`/`campus_admin`, or confirm the existing `role_permission_matrix` is the accepted local substitute.
 2. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build

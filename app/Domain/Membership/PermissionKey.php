@@ -13,4 +13,5 @@ enum PermissionKey: string
     case ApproveBudget = 'approve_budget';
     case ManageDocuments = 'manage_documents';
     case ViewReports = 'view_reports';
+    case ViewCampusDashboard = 'view_campus_dashboard';
 }

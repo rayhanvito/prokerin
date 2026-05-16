@@ -5,6 +5,7 @@ use App\Http\Controllers\ApprovalWorkflowDelegationController;
 use App\Http\Controllers\AttendanceQrCheckInController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
+use App\Http\Controllers\CampusDashboardController;
 use App\Http\Controllers\CertificateDownloadController;
 use App\Http\Controllers\CertificateIssueController;
 use App\Http\Controllers\CertificateTemplateController;
@@ -160,6 +161,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])->name('notifications.meeting-alerts.store');
     Route::patch('/approval-workflows/{instance}/decision', [ApprovalWorkflowDecisionController::class, 'update'])->name('approval-workflows.decision');
     Route::patch('/approval-workflows/{instance}/delegate', [ApprovalWorkflowDelegationController::class, 'update'])->name('approval-workflows.delegate');
+    Route::get('/campus/dashboard', [CampusDashboardController::class, 'show'])->name('campus.dashboard');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

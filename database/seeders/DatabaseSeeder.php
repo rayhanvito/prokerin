@@ -34,6 +34,7 @@ final class DatabaseSeeder extends Seeder
 
         $this->seedUsers($now);
         $this->seedOrganizations($now);
+        $this->seedCampuses($now);
         $this->seedOrganizationPeriods($now);
         $this->seedOrganizationMembers($now);
         $this->seedOrganizationInvitations($now);
@@ -67,6 +68,8 @@ final class DatabaseSeeder extends Seeder
             ['name' => 'Mira Anggraini', 'email' => 'koordinator@prokerin.test', 'whatsapp_number' => '+628166666666'],
             ['name' => 'Ardi Saputra', 'email' => 'member@prokerin.test', 'whatsapp_number' => '+628177777777'],
             ['name' => 'Tari Lestari', 'email' => 'viewer@prokerin.test', 'whatsapp_number' => '+628188888888'],
+            ['name' => 'Rina Campus Affairs', 'email' => 'campus@prokerin.test', 'whatsapp_number' => null],
+            ['name' => 'Satria Platform Admin', 'email' => 'superadmin@prokerin.test', 'whatsapp_number' => null],
             ['name' => 'Test User', 'email' => 'test@example.com', 'whatsapp_number' => null],
         ] as $user) {
             DB::table('users')->updateOrInsert(
@@ -98,6 +101,36 @@ final class DatabaseSeeder extends Seeder
                     'logo_path' => 'organizations/'.$organization['slug'].'/logo.png',
                     'status' => 'active',
                     'plan_tier' => $organization['plan_tier'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+    }
+
+    private function seedCampuses($now): void
+    {
+        DB::table('campuses')->updateOrInsert(
+            ['domain' => 'kampus-nusantara.test'],
+            [
+                'name' => 'Universitas Nusantara',
+                'admin_user_id' => $this->userId('campus@prokerin.test'),
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
+
+        $campusId = (int) DB::table('campuses')
+            ->where('domain', 'kampus-nusantara.test')
+            ->value('id');
+
+        foreach (['bem-fakultas-teknologi', 'hima-informatika'] as $organizationSlug) {
+            DB::table('campus_organization_links')->updateOrInsert(
+                [
+                    'campus_id' => $campusId,
+                    'organization_id' => $this->organizationId($organizationSlug),
+                ],
+                [
                     'updated_at' => $now,
                     'created_at' => $now,
                 ],

@@ -35,19 +35,20 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $organization = $user === null ? null : $this->activeOrganization((int) $user->id);
+        $campus = $user === null || $organization !== null ? null : $this->activeCampus((int) $user->id);
 
         return [
             ...parent::share($request),
             'app' => [
                 'name' => config('app.name'),
-                'activeOrganization' => $organization === null ? [
-                    'name' => 'Belum ada organisasi',
-                    'period' => '-',
-                    'role' => 'viewer',
-                ] : [
+                'activeOrganization' => $organization !== null ? [
                     'name' => $organization['name'],
                     'period' => $organization['period'],
                     'role' => $organization['role'],
+                ] : [
+                    'name' => $campus['name'] ?? 'Belum ada organisasi',
+                    'period' => $campus['domain'] ?? '-',
+                    'role' => $campus === null ? 'viewer' : 'campus_admin',
                 ],
             ],
             'auth' => [
@@ -55,7 +56,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarMenu' => $user !== null && $organization !== null
                 ? app(SidebarMenuAction::class)->execute($user, (int) $organization['id'])
-                : [],
+                : ($campus === null ? [] : $this->campusSidebarMenu()),
             'flash' => [
                 'success' => fn (): ?string => $this->sessionString($request, 'success'),
                 'error' => fn (): ?string => $this->sessionString($request, 'error'),
@@ -80,6 +81,46 @@ class HandleInertiaRequests extends Middleware
         $value = $request->session()->get($key);
 
         return is_array($value) ? $value : null;
+    }
+
+    /**
+     * @return array{id: int, name: string, domain: string}|null
+     */
+    private function activeCampus(int $userId): ?array
+    {
+        $campus = DB::table('campuses')
+            ->where('admin_user_id', $userId)
+            ->first(['id', 'name', 'domain']);
+
+        if ($campus === null) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $campus->id,
+            'name' => (string) $campus->name,
+            'domain' => (string) $campus->domain,
+        ];
+    }
+
+    /**
+     * @return array<int, array{groupLabel: string, items: array<int, array{label: string, href: string, icon: string, badgeCount: null}>}>
+     */
+    private function campusSidebarMenu(): array
+    {
+        return [
+            [
+                'groupLabel' => 'Kampus',
+                'items' => [
+                    [
+                        'label' => 'Dashboard Kampus',
+                        'href' => route('campus.dashboard', absolute: false),
+                        'icon' => 'Building2',
+                        'badgeCount' => null,
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**

@@ -48,6 +48,13 @@ final class GetRolePermissionMatrixAction
             $this->organizationRole(OrganizationRole::Viewer, [
                 PermissionKey::ViewReports,
             ]),
+            $this->systemRole('super_admin', 'Super Admin', [
+                PermissionKey::ViewCampusDashboard,
+                PermissionKey::ViewReports,
+            ], 'platform', isSystemRole: true),
+            $this->systemRole('campus_admin', 'Campus Admin', [
+                PermissionKey::ViewCampusDashboard,
+            ], 'campus', isSystemRole: true),
             $this->projectRole(ProjectRole::ProjectLead, [
                 PermissionKey::ManageProjects,
                 PermissionKey::ManageDocuments,
@@ -78,6 +85,25 @@ final class GetRolePermissionMatrixAction
             role: $role->value,
             label: $role->label(),
             scope: 'organization',
+            permissions: $permissions,
+            isSystemRole: $isSystemRole,
+        );
+    }
+
+    /**
+     * @param  array<int, PermissionKey>  $permissions
+     */
+    private function systemRole(
+        string $role,
+        string $label,
+        array $permissions,
+        string $scope,
+        bool $isSystemRole = false,
+    ): RolePermissionData {
+        return new RolePermissionData(
+            role: $role,
+            label: $label,
+            scope: $scope,
             permissions: $permissions,
             isSystemRole: $isSystemRole,
         );
