@@ -493,3 +493,4 @@ Target scope yang disarankan:
 - `f2c148a` · `docs: record MVP verification handoff`
 - `4f37fb5` · `docs: mark MVP validation complete`
 - `af3de2a` · `feat: add meeting minutes module`
+- `82044d8` · `feat: add qr attendance module`
