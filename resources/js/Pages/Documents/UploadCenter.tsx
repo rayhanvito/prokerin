@@ -1,8 +1,7 @@
-import { UploadCloud } from 'lucide-react';
+import { DownloadCloud, UploadCloud } from 'lucide-react';
 
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoDataTable from '@/Components/Viho/VihoDataTable';
-import { documents } from '@/Data/workspaceMock';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { humanizeStatus } from '@/lib/format';
 import { Head } from '@inertiajs/react';
@@ -13,11 +12,25 @@ interface UploadValidation {
     requiresSignedUrl: boolean;
 }
 
+interface DocumentUploadRow {
+    id: number;
+    name: string;
+    folder: string;
+    owner: string;
+    visibility: string;
+    status: string;
+    downloadHref: string;
+}
+
 interface UploadCenterProps {
+    documents: DocumentUploadRow[];
     uploadValidation: UploadValidation;
 }
 
-export default function UploadCenter({ uploadValidation }: UploadCenterProps) {
+export default function UploadCenter({
+    documents,
+    uploadValidation,
+}: UploadCenterProps) {
     const rows = documents.map((document) => ({
         file: document.name,
         folder: document.folder,
@@ -63,17 +76,31 @@ export default function UploadCenter({ uploadValidation }: UploadCenterProps) {
                 </VihoCard>
 
                 <VihoCard title="Recent Uploads">
-                    <VihoDataTable
-                        columns={[
-                            { key: 'file', label: 'File' },
-                            { key: 'folder', label: 'Folder' },
-                            { key: 'owner', label: 'Owner' },
-                            { key: 'visibility', label: 'Visibility' },
-                            { key: 'status', label: 'Status' },
-                        ]}
-                        rows={rows}
-                        statusKey="status"
-                    />
+                    <div className="space-y-4">
+                        <VihoDataTable
+                            columns={[
+                                { key: 'file', label: 'File' },
+                                { key: 'folder', label: 'Folder' },
+                                { key: 'owner', label: 'Owner' },
+                                { key: 'visibility', label: 'Visibility' },
+                                { key: 'status', label: 'Status' },
+                            ]}
+                            rows={rows}
+                            statusKey="status"
+                        />
+                        <div className="grid gap-2 md:grid-cols-3">
+                            {documents.map((document) => (
+                                <a
+                                    key={document.id}
+                                    href={document.downloadHref}
+                                    className="inline-flex items-center justify-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-3 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#24695c] hover:text-[#24695c]"
+                                >
+                                    <DownloadCloud className="h-4 w-4" />
+                                    {document.name}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
                 </VihoCard>
             </div>
         </AuthenticatedLayout>

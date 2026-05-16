@@ -534,6 +534,8 @@ chore: configure Supervisor for queue workers
 - [x] Proposal submission flow added for M08 with tenant-scoped draft submit, project status transition to proposal review, queued PDF export dispatch, and feature tests
 - [x] Proposal approval decision flow added for M08 with owner/admin approve or revision request, project status transitions, and Inertia approval controls
 - [x] Proposal draft edit persistence added for M08 with section body editing, revision-to-draft save flow, locked submitted/approved states, and feature tests
+- [x] Document signed download route added for M09 with tenant-scoped access checks, private/restricted signed URLs, committee download handling, and feature tests
+- [x] Upload Center recent documents switched to database-backed payload with download links instead of frontend mock data
 
 # Sedang dikerjakan — jangan diubah tanpa konfirmasi
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
@@ -546,7 +548,7 @@ chore: configure Supervisor for queue workers
 - [x] M06 · Timeline & Task Management (overview, database-backed kanban/calendar, quick status updates, PIC assignment UI scaffold, task board summary Action, and task PIC assignment Action done)
 - [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI scaffolds, server-side budget summary Action, approval decision Action, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
 - [x] M08 · Proposal Generator (overview, proposal editor, export queue UI, proposal draft auto-fill Action, draft edit persistence, submit/revision/approval flow, queued export job placeholder, draft/export tables, seed data, database-backed proposal/export payloads, and feature tests done)
-- [~] M09 · Document Management (overview, folder structure, upload center UI scaffolds, upload validation Action, signed download planner, document table, and seed data done; storage permissions pending)
+- [x] M09 · Document Management (overview, folder structure, upload center UI, upload validation Action, signed download planner, document table, seed data, DB-backed recent documents, tenant-scoped signed download route, and storage permission feature tests done)
 - [~] M10 · LPJ Generator (overview, checklist UI scaffolds, LPJ readiness Action, export queue planner, checklist table, seed data, and database-backed checklist payload done; approval pending)
 - [~] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, and database-backed overview metrics done; tenant-scoped production queries pending)
 - [~] M12 · Notification Basic (notification rules/channel UI scaffold, default rule Action, notification rule table, seed data, and database-backed rule payload done; Laravel notifications, queue delivery, and email backend pending)

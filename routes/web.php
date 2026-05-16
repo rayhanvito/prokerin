@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BudgetReceiptRealizationController;
+use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
@@ -74,6 +75,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'documentsIndex'])->name('index');
         Route::get('/folders', [WorkspacePageController::class, 'documentFolders'])->name('folders');
         Route::get('/upload-center', [WorkspacePageController::class, 'uploadCenter'])->name('upload-center');
+        Route::get('/{document}/download', [DocumentDownloadController::class, 'show'])->name('download');
     });
 
     Route::prefix('members')->name('members.')->group(function () {

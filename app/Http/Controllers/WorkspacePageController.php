@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\Dashboard\GetDashboardOverviewAction;
 use App\Actions\Document\ValidateDocumentUploadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
+use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
 use App\Actions\Workspace\GetLpjChecklistPayloadAction;
@@ -163,8 +164,11 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Documents/Folders');
     }
 
-    public function uploadCenter(ValidateDocumentUploadAction $validateUpload): Response
-    {
+    public function uploadCenter(
+        Request $request,
+        ValidateDocumentUploadAction $validateUpload,
+        GetDocumentUploadCenterPayloadAction $documents,
+    ): Response {
         $validation = $validateUpload->execute(
             new DocumentUploadCandidateData(
                 originalName: 'proposal-v2.pdf',
@@ -175,6 +179,7 @@ final class WorkspacePageController extends Controller
         );
 
         return Inertia::render('Documents/UploadCenter', [
+            'documents' => $documents->execute((int) $request->user()->id),
             'uploadValidation' => [
                 'isValid' => $validation->isValid,
                 'errors' => $validation->errors,

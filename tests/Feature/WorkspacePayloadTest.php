@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -107,12 +108,17 @@ final class WorkspacePayloadTest extends TestCase
 
     public function test_upload_center_receives_upload_validation_payload(): void
     {
-        $response = $this->actingAs(User::factory()->create())
+        $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $documentId = (int) DB::table('documents')->where('name', 'documentation-day-1.zip')->value('id');
+
+        $response = $this->actingAs($user)
             ->get(route('documents.upload-center'));
 
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Documents/UploadCenter')
+            ->has('documents', 3)
+            ->where('documents.0.downloadHref', route('documents.download', ['document' => $documentId]))
             ->where('uploadValidation.isValid', true)
             ->where('uploadValidation.requiresSignedUrl', true));
     }
