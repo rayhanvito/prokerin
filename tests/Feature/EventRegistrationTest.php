@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Jobs\GenerateDocumentExportJob;
 use App\Models\User;
 use App\Notifications\EventRegistrationConfirmedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -149,6 +152,45 @@ final class EventRegistrationTest extends TestCase
                 ->where('registrations.0.participantName', 'Peserta HMIF'));
     }
 
+    public function test_owner_can_update_event_registration_settings(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $projectId = $this->projectId('seminar-karier-digital');
+
+        $this->actingAs($owner)
+            ->patch(route('events.registrations.settings.update', ['project' => $projectId]), [
+                'is_open' => false,
+                'capacity' => 80,
+                'opens_at' => '2026-05-20 08:00:00',
+                'closes_at' => '2026-06-08 22:00:00',
+                'require_payment' => true,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Pengaturan registrasi event berhasil diperbarui.');
+
+        $this->assertDatabaseHas('event_registration_settings', [
+            'project_id' => $projectId,
+            'is_open' => false,
+            'capacity' => 80,
+            'require_payment' => true,
+        ]);
+    }
+
+    public function test_member_cannot_update_event_registration_settings(): void
+    {
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->actingAs($member)
+            ->patch(route('events.registrations.settings.update', ['project' => $this->projectId('seminar-karier-digital')]), [
+                'is_open' => false,
+                'capacity' => 80,
+                'opens_at' => null,
+                'closes_at' => null,
+                'require_payment' => false,
+            ])
+            ->assertForbidden();
+    }
+
     public function test_internal_registration_export_is_tenant_scoped_csv(): void
     {
         $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
@@ -162,6 +204,69 @@ final class EventRegistrationTest extends TestCase
 
         $this->assertStringContainsString('Seminar Karier Digital', $content);
         $this->assertStringContainsString('Alya Rahma', $content);
+    }
+
+    public function test_owner_can_queue_event_registration_pdf_export(): void
+    {
+        Queue::fake();
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)
+            ->post(route('events.registrations.export-pdf', ['project' => $this->projectId('seminar-karier-digital')]))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Export PDF peserta event masuk antrean.');
+
+        $exportId = (int) DB::table('document_exports')
+            ->where('document_type', 'event_registration')
+            ->where('format', 'pdf')
+            ->value('id');
+
+        $this->assertGreaterThan(0, $exportId);
+        $this->assertDatabaseHas('document_exports', [
+            'id' => $exportId,
+            'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+            'project_id' => $this->projectId('seminar-karier-digital'),
+            'requested_by_user_id' => $owner->id,
+            'document_type' => 'event_registration',
+            'format' => 'pdf',
+            'status' => 'queued',
+        ]);
+
+        Queue::assertPushed(
+            GenerateDocumentExportJob::class,
+            fn (GenerateDocumentExportJob $job): bool => $job->documentExportId === $exportId,
+        );
+    }
+
+    public function test_event_registration_export_job_generates_pdf(): void
+    {
+        Queue::fake();
+        Storage::fake('s3');
+
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)
+            ->post(route('events.registrations.export-pdf', ['project' => $this->projectId('seminar-karier-digital')]))
+            ->assertRedirect();
+
+        $export = DB::table('document_exports')
+            ->where('document_type', 'event_registration')
+            ->first();
+
+        $this->assertNotNull($export);
+
+        (new GenerateDocumentExportJob((int) $export->id))->handle();
+
+        Storage::disk('s3')->assertExists((string) $export->output_path);
+
+        $pdf = Storage::disk('s3')->get((string) $export->output_path);
+
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertDatabaseHas('document_exports', [
+            'id' => $export->id,
+            'status' => 'completed',
+        ]);
     }
 
     private function projectId(string $slug): int

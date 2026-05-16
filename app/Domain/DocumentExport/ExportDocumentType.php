@@ -9,6 +9,7 @@ enum ExportDocumentType: string
     case Proposal = 'proposal';
     case Lpj = 'lpj';
     case Handover = 'handover';
+    case EventRegistration = 'event_registration';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum ExportDocumentType: string
             self::Proposal => 'Proposal',
             self::Lpj => 'LPJ',
             self::Handover => 'Handover',
+            self::EventRegistration => 'Registrasi Event',
         };
     }
 }

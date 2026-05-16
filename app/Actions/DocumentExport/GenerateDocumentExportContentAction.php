@@ -45,6 +45,10 @@ final class GenerateDocumentExportContentAction
             return $this->handoverDocument($export);
         }
 
+        if ((string) $export->document_type === 'event_registration') {
+            return $this->eventRegistrationDocument($export, $project);
+        }
+
         return [
             'title' => (string) $export->document_title,
             'subtitle' => $project === null ? 'Prokerin export' : (string) $project->name,
@@ -52,6 +56,53 @@ final class GenerateDocumentExportContentAction
                 [
                     'title' => 'Ringkasan',
                     'body' => 'Dokumen export dibuat dari antrean Prokerin.',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}
+     */
+    private function eventRegistrationDocument(object $export, ?object $project): array
+    {
+        $registrations = DB::table('event_registrations')
+            ->where('project_id', $export->project_id)
+            ->orderBy('participant_name')
+            ->get([
+                'participant_name',
+                'participant_email',
+                'phone',
+                'institution',
+                'status',
+                'registered_at',
+            ])
+            ->map(static function (object $registration): string {
+                return sprintf(
+                    '%s | %s | %s | %s | %s | %s',
+                    (string) $registration->participant_name,
+                    (string) $registration->participant_email,
+                    (string) ($registration->phone ?? '-'),
+                    (string) ($registration->institution ?? '-'),
+                    (string) $registration->status,
+                    (string) $registration->registered_at,
+                );
+            })
+            ->all();
+
+        return [
+            'title' => (string) $export->document_title,
+            'subtitle' => $project === null ? 'Daftar peserta event' : (string) $project->name,
+            'sections' => [
+                [
+                    'title' => 'Informasi Event',
+                    'body' => $this->projectSummary($project),
+                ],
+                [
+                    'title' => 'Daftar Peserta',
+                    'body' => $registrations === []
+                        ? 'Belum ada peserta terdaftar.'
+                        : implode(PHP_EOL, $registrations),
                 ],
             ],
         ];

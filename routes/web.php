@@ -13,6 +13,8 @@ use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventRegistrationExportController;
+use App\Http\Controllers\EventRegistrationPdfExportController;
+use App\Http\Controllers\EventRegistrationSettingsController;
 use App\Http\Controllers\HandoverItemStatusController;
 use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\HandoverPackageExportController;
@@ -129,6 +131,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('events')->name('events.')->group(function () {
         Route::get('/registrations', [WorkspacePageController::class, 'eventRegistrations'])->name('registrations.index');
         Route::get('/registrations/export', [EventRegistrationExportController::class, 'show'])->name('registrations.export');
+        Route::post('/registrations/{project}/export-pdf', [EventRegistrationPdfExportController::class, 'store'])->name('registrations.export-pdf');
+        Route::patch('/registrations/{project}/settings', [EventRegistrationSettingsController::class, 'update'])->name('registrations.settings.update');
     });
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');

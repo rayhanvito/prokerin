@@ -33,7 +33,7 @@
 | Post-MVP Wave 2 | M18 | ✅ Complete |
 | Post-MVP Wave 2 | M20 | ✅ Complete |
 | Cross-module UX | M28.5 | ✅ Complete |
-| Post-MVP Wave 3 | M21 | 🟡 Partial |
+| Post-MVP Wave 3 | M21 | ✅ Complete |
 | Post-MVP Planned | M22–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -44,6 +44,11 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · M21 completed with internal settings management, queued PDF export through `document_exports`, event registration PDF content generation, browser smoke, build, targeted tests, and full regression.
+- `[x]` 2026-05-17 · M21 browser smoke passed on `/events/registrations`; settings form, seeded participant list, and `Export PDF` queue flash render as owner.
+- `[x]` 2026-05-17 · After M21 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **267 passed, 1351 assertions**.
+- `[x]` 2026-05-17 · After M21 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/EventRegistrationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Unit/PlanDocumentExportActionTest.php` → **15 passed, 111 assertions**.
+- `[x]` 2026-05-17 · After M21 completion: `npm run build` passed.
 - `[~]` 2026-05-17 · M21 event registration foundation shipped: public registration form, settings/registration tables, guard checks, queued confirmation email notification, internal participant list, CSV export, sidebar link, and seeded demo event.
 - `[x]` 2026-05-17 · M21 local migration `2026_05_16_000014_create_event_registration_tables.php` applied and `php artisan db:seed` added public registration settings plus demo participants.
 - `[x]` 2026-05-17 · M21 browser smoke passed on public `/events/seminar-karier-digital/register` and internal `/events/registrations`; form, quota, participant list, and CSV action render.
@@ -821,7 +826,7 @@ Make the first workspace screen and navigation adapt to the user's resolved orga
 
 ### M21 · Event Registration (Public)
 
-**Status:** `[~]` Partial.
+**Status:** `[x]` Complete.
 
 #### Product Goal
 Allow non-members of an organization to register for public events/projects — enabling BEM/UKM to run ticketed or open events.
@@ -832,7 +837,7 @@ Allow non-members of an organization to register for public events/projects — 
 - [x] Public route: `GET /events/{project_slug}/register` — unauthenticated form.
 - [x] Guards: capacity check, duplicate email per event, registration window check.
 - [x] Confirmation email queued on successful registration.
-- [~] Internal UI: registration list and CSV export are wired; PDF export and settings management UI are still pending.
+- [x] Internal UI: registration list, CSV export, queued PDF export, and settings management are wired.
 - [x] Tests: capacity enforcement, duplicate email rejection, tenant/project scope isolation.
 
 #### Verification
@@ -842,10 +847,12 @@ Allow non-members of an organization to register for public events/projects — 
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/EventRegistrationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php` → **14 passed, 107 assertions**.
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **263 passed, 1337 assertions**.
 - `[x]` 2026-05-17 · `npm run build` passed.
-
-#### Remaining Before `[x]`
-- [ ] Add internal settings management UI/actions for opening/closing registration, capacity, dates, and payment requirement.
-- [ ] Add PDF export or explicitly defer PDF export if CSV is accepted for M21 MVP.
+- `[x]` 2026-05-17 · Settings management UI/action added for open/closed state, capacity, registration window, and payment requirement.
+- `[x]` 2026-05-17 · PDF export added through `document_exports` queue and `GenerateDocumentExportContentAction`.
+- `[x]` 2026-05-17 · Browser smoke passed for owner on `/events/registrations`; settings form, participant list, and PDF queue flash render.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/EventRegistrationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Unit/PlanDocumentExportActionTest.php` → **15 passed, 111 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **267 passed, 1351 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
 
 ---
 
@@ -915,11 +922,10 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M28.5
-1. **Continue M21 (Event Registration)**: add internal settings management and finish/decide PDF export before marking stable.
-2. **M22 (Payment)** only after M21 is stable.
-3. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-4. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
-5. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+1. **Start M22 (Payment & Ticketing)** now that M21 is stable.
+2. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+3. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+4. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
