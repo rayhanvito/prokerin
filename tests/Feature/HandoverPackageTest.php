@@ -86,6 +86,59 @@ final class HandoverPackageTest extends TestCase
         $this->assertDatabaseCount('handover_packages', 0);
     }
 
+    public function test_owner_can_update_handover_item_status(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $itemId = (int) DB::table('handover_items')->value('id');
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.items.update', ['item' => $itemId]), [
+                'status' => 'done',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Status item handover berhasil diperbarui.');
+
+        $this->assertDatabaseHas('handover_items', [
+            'id' => $itemId,
+            'status' => 'done',
+        ]);
+
+        $this->actingAs($owner)
+            ->patch(route('organization.handover.items.update', ['item' => $itemId]), [
+                'status' => 'pending',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('handover_items', [
+            'id' => $itemId,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_member_cannot_update_unassigned_handover_item_status(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->actingAs($owner)->post(route('organization.handover.store'));
+
+        $itemId = (int) DB::table('handover_items')->value('id');
+
+        $this->actingAs($member)
+            ->patch(route('organization.handover.items.update', ['item' => $itemId]), [
+                'status' => 'done',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('handover_items', [
+            'id' => $itemId,
+            'status' => 'pending',
+        ]);
+    }
+
     private function organizationId(string $slug): int
     {
         return (int) DB::table('organizations')->where('slug', $slug)->value('id');

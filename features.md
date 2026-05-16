@@ -39,6 +39,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M19 item workflow browser smoke passed on `/organization/handover`; owner can mark a generated checklist item done and revert action appears with no console errors.
+- `[x]` 2026-05-16 · After M19 item workflow: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **208 passed, 973 assertions**.
+- `[x]` 2026-05-16 · After M19 item workflow: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **5 passed, 57 assertions**.
+- `[x]` 2026-05-16 · After M19 item workflow: `npm run build` passed.
 - `[x]` 2026-05-16 · M19 initial browser smoke passed for `/organization/handover`; owner can create a draft handover package and generated checklist renders with no console errors.
 - `[x]` 2026-05-16 · M19 local migration `2026_05_16_000009_create_handover_tables.php` applied cleanly.
 - `[x]` 2026-05-16 · After M19 initial implementation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **206 passed, 966 assertions**.
@@ -586,22 +590,27 @@ Replace single-approver model with configurable multi-level approval chains for 
 - Migration: `2026_05_16_000009_create_handover_tables.php`.
 - Tables: `handover_packages`, `handover_items`.
 - Action: `InitiateHandoverPackageAction` — owner/admin creates one draft package for the active period, with generated checklist items.
+- Action: `UpdateHandoverItemStatusAction` — owner/admin or assignee can mark draft checklist items `pending`/`done`.
 - Action: `GetHandoverPayloadAction` — tenant-scoped payload with live metrics, package snapshot, and checklist items.
 - Route: `POST /organization/handover` — creates initial handover package.
-- UI: Handover page now shows database-backed metrics, package status, snapshot, and generated checklist.
-- Tests: payload, package initiation, owner/admin guard.
+- Route: `PATCH /organization/handover/items/{item}` — updates item status.
+- UI: Handover page now shows database-backed metrics, package status, snapshot, generated checklist, and item status buttons.
+- Tests: payload, package initiation, item status mutation, owner/admin/assignee guard.
 
 #### What Still Needs to Be Built
 - [x] `handover_packages` table: `id`, `organization_id`, `from_period_id`, `to_period_id`, `created_by`, `status`, `submitted_at`, `accepted_at`, plus JSON snapshot.
 - [x] `handover_items` table: `id`, `package_id`, `category` (asset/document/role/finance), `label`, `description`, `status`, `assignee_id`.
 - [x] Data snapshot: capture project statuses, finance balances, open tasks, and outstanding LPJ at handover freeze time.
 - [x] `InitiateHandoverAction` — creates package, auto-generates items from active data.
-- [~] Handover checklist UI: generated items render; item-by-item completion mutation still pending.
+- [x] Handover checklist UI: generated items render and draft item status can be toggled pending/done.
 - [ ] Archive/export handover package as PDF.
 - [~] Access policy: owner/admin can initiate; incoming-owner handover acceptance role is not modeled yet.
 
 #### Verification
 - `[x]` 2026-05-16 · `npm run build` passed.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **5 passed, 57 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **208 passed, 973 assertions**.
+- `[x]` 2026-05-16 · Browser smoke passed for item status toggle on `/organization/handover`; owner can mark one generated checklist item done.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/HandoverPackageTest.php` → **3 passed, 50 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **206 passed, 966 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000009_create_handover_tables.php`.
@@ -709,16 +718,15 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Continue M19 item workflow** — add item status mutation (`pending` → `done`) with assignee/owner guard and feature tests.
-2. **Add M19 package submit/accept flow** — draft → submitted → accepted with timestamps and authorization.
-3. **Add M19 export** — archive/export handover package as PDF via existing export patterns.
-4. **Then start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
-5. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
-6. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
-7. **M22 (Payment)** only after M21 is stable.
-8. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-9. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
-10. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+1. **Add M19 package submit/accept flow** — draft → submitted → accepted with timestamps and authorization.
+2. **Add M19 export** — archive/export handover package as PDF via existing export patterns.
+3. **Then start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+4. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+5. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+6. **M22 (Payment)** only after M21 is stable.
+7. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+8. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+9. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test

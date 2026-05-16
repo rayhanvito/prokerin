@@ -1,6 +1,7 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Archive, CheckCircle2, ClipboardList, FileText, Landmark, Users } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 
 import PrimaryButton from '@/Components/PrimaryButton';
 import VihoCard from '@/Components/Viho/VihoCard';
@@ -60,6 +61,7 @@ export default function OrganizationHandover({
     canManage,
 }: OrganizationHandoverProps) {
     const { post, processing } = useForm({});
+    const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
 
     const initiateHandover = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -67,6 +69,21 @@ export default function OrganizationHandover({
         post(route('organization.handover.store'), {
             preserveScroll: true,
         });
+    };
+
+    const updateItemStatus = (item: HandoverItem): void => {
+        setUpdatingItemId(item.id);
+
+        router.patch(
+            route('organization.handover.items.update', item.id),
+            {
+                status: item.status === 'done' ? 'pending' : 'done',
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => setUpdatingItemId(null),
+            },
+        );
     };
 
     return (
@@ -151,7 +168,7 @@ export default function OrganizationHandover({
                                                         <p className="font-semibold text-[#242934]">
                                                             {item.label}
                                                         </p>
-                                                        <VihoStatusBadge tone="muted">
+                                                        <VihoStatusBadge tone={item.status === 'done' ? 'success' : 'muted'}>
                                                             {item.status}
                                                         </VihoStatusBadge>
                                                     </div>
@@ -161,6 +178,19 @@ export default function OrganizationHandover({
                                                     <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#717171]">
                                                         {item.assignee ?? 'Belum ada assignee'}
                                                     </p>
+                                                    {canManage && handoverPackage?.status === 'draft' ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateItemStatus(item)}
+                                                            disabled={updatingItemId === item.id}
+                                                            className="mt-4 inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] px-3 py-2 text-xs font-semibold text-[#242934] transition hover:border-[#24695c] hover:text-[#24695c] disabled:cursor-not-allowed disabled:opacity-50"
+                                                        >
+                                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                                            {item.status === 'done'
+                                                                ? 'Kembalikan pending'
+                                                                : 'Tandai selesai'}
+                                                        </button>
+                                                    ) : null}
                                                 </div>
                                             </div>
                                         </div>

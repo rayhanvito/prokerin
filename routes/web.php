@@ -9,6 +9,7 @@ use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
+use App\Http\Controllers\HandoverItemStatusController;
 use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjApprovalDecisionController;
@@ -59,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
+        Route::patch('/handover/items/{item}', [HandoverItemStatusController::class, 'update'])->name('handover.items.update');
     });
 
     Route::prefix('tasks')->name('tasks.')->group(function () {
