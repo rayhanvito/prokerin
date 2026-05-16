@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Actions\Dashboard\GetDashboardOverviewAction;
+use App\Actions\Dashboard\DashboardPayloadAction;
+use App\Actions\Dashboard\DashboardRoleResolverAction;
 use App\Actions\Document\ValidateDocumentUploadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
@@ -34,9 +35,34 @@ use Inertia\Response;
 
 final class WorkspacePageController extends Controller
 {
-    public function dashboard(Request $request, GetDashboardOverviewAction $overview): Response
+    public function dashboard(
+        Request $request,
+        DashboardRoleResolverAction $roleResolver,
+        DashboardPayloadAction $dashboardPayload,
+    ): Response
     {
-        return Inertia::render('Dashboard', $overview->execute((int) $request->user()->id));
+        $user = $request->user();
+        $organizationId = (int) DB::table('organization_members')
+            ->where('user_id', $user?->id)
+            ->orderBy('id')
+            ->value('organization_id');
+
+        if ($organizationId === 0) {
+            $organizationId = (int) DB::table('project_members')
+                ->join('projects', 'projects.id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', $user?->id)
+                ->orderBy('project_members.id')
+                ->value('projects.organization_id');
+        }
+
+        abort_if($organizationId === 0, 403);
+
+        $variant = $roleResolver->execute($user, $organizationId);
+
+        return Inertia::render('Dashboard/Index', [
+            'dashboardVariant' => $variant->value,
+            'payload' => $dashboardPayload->execute($user, $organizationId, $variant),
+        ]);
     }
 
     public function prokerIndex(): Response
