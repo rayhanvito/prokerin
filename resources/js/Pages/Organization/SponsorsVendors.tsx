@@ -5,7 +5,7 @@ import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatRupiah, humanizeStatus } from '@/lib/format';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 
 interface SponsorVendorContact {
     id: number;
@@ -184,9 +184,15 @@ function ContactRow({
                             <Handshake className="h-4 w-4" />
                         </span>
                         <div>
-                            <p className="font-semibold text-[#242934]">
+                            <Link
+                                href={route(
+                                    'organization.sponsors-vendors.show',
+                                    contact.id,
+                                )}
+                                className="font-semibold text-[#242934] transition hover:text-[#24695c]"
+                            >
                                 {contact.name}
-                            </p>
+                            </Link>
                             <p className="text-sm text-[#717171]">
                                 {humanizeStatus(contact.type)} ·{' '}
                                 {contact.category}

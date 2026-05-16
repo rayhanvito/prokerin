@@ -22,6 +22,7 @@ use App\Actions\Workspace\GetProposalDraftPayloadAction;
 use App\Actions\Workspace\GetQrAttendancePayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorPayloadAction;
+use App\Actions\Workspace\GetSponsorVendorDetailPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
 use App\Domain\Document\DocumentVisibility;
@@ -103,6 +104,17 @@ final class WorkspacePageController extends Controller
             actorUserId: (int) $request->user()->id,
             search: $request->string('search')->toString(),
             type: $request->string('type')->toString(),
+        ));
+    }
+
+    public function organizationSponsorVendorDetail(
+        Request $request,
+        int $sponsorVendor,
+        GetSponsorVendorDetailPayloadAction $sponsorVendorDetail,
+    ): Response {
+        return Inertia::render('Organization/SponsorVendorDetail', $sponsorVendorDetail->execute(
+            actorUserId: (int) $request->user()->id,
+            sponsorVendorId: $sponsorVendor,
         ));
     }
 

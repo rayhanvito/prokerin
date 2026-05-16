@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 final class SponsorVendorTest extends TestCase
@@ -96,6 +97,43 @@ final class SponsorVendorTest extends TestCase
                 'status' => 'active',
             ])
             ->assertForbidden();
+    }
+
+    public function test_member_can_view_tenant_scoped_sponsor_vendor_detail_history(): void
+    {
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+        $contactId = $this->contactId('Bank Jatim Youth Program');
+
+        $this->actingAs($member)
+            ->get(route('organization.sponsors-vendors.show', ['sponsorVendor' => $contactId]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Organization/SponsorVendorDetail')
+                ->where('contact.name', 'Bank Jatim Youth Program')
+                ->has('projects', 1)
+                ->where('projects.0.roleDescription', 'Gold sponsor seminar')
+                ->has('documents', 1)
+                ->where('documents.0.name', 'proposal-v2.pdf'));
+    }
+
+    public function test_sponsor_vendor_detail_does_not_leak_across_organizations(): void
+    {
+        $outsider = User::factory()->create();
+        $organizationId = (int) DB::table('organizations')->where('slug', 'hima-informatika')->value('id');
+        $contactId = $this->contactId('Bank Jatim Youth Program');
+
+        DB::table('organization_members')->insert([
+            'organization_id' => $organizationId,
+            'user_id' => $outsider->id,
+            'role' => 'viewer',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($outsider)
+            ->get(route('organization.sponsors-vendors.show', ['sponsorVendor' => $contactId]))
+            ->assertNotFound();
     }
 
     private function contactId(string $name): int

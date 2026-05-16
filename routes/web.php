@@ -67,6 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
         Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
         Route::get('/sponsors-vendors', [WorkspacePageController::class, 'organizationSponsorsVendors'])->name('sponsors-vendors');
+        Route::get('/sponsors-vendors/{sponsorVendor}', [WorkspacePageController::class, 'organizationSponsorVendorDetail'])->name('sponsors-vendors.show');
         Route::post('/sponsors-vendors', [SponsorVendorController::class, 'store'])->name('sponsors-vendors.store');
         Route::patch('/sponsors-vendors/{sponsorVendor}', [SponsorVendorController::class, 'update'])->name('sponsors-vendors.update');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
