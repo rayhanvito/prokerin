@@ -20,11 +20,14 @@ use App\Domain\Project\ProjectTemplateType;
 use App\Domain\Task\TaskStatus;
 use App\DTOs\DocumentExport\ExportRequestData;
 use App\DTOs\Proposal\ProposalProjectData;
+use App\Models\User;
 use DateTimeImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class DatabaseSeeder extends Seeder
 {
@@ -39,6 +42,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedOrganizationMembers($now);
         $this->seedOrganizationInvitations($now);
         $this->seedRolePermissionMatrix($now);
+        $this->seedSpatieRoles();
         $this->seedProjectTemplates($now);
         $this->seedProjects($now);
         $this->seedProjectMembers($now);
@@ -232,6 +236,36 @@ final class DatabaseSeeder extends Seeder
                     'created_at' => $now,
                 ],
             );
+        }
+    }
+
+    private function seedSpatieRoles(): void
+    {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        foreach (['super_admin', 'campus_admin'] as $roleName) {
+            Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
+        }
+
+        if (app()->environment(['local', 'staging', 'testing'])) {
+            $superAdmin = User::query()
+                ->where('email', 'superadmin@prokerin.test')
+                ->first();
+
+            if ($superAdmin instanceof User && ! $superAdmin->hasRole('super_admin')) {
+                $superAdmin->assignRole('super_admin');
+            }
+
+            $campusAdmin = User::query()
+                ->where('email', 'campus@prokerin.test')
+                ->first();
+
+            if ($campusAdmin instanceof User && ! $campusAdmin->hasRole('campus_admin')) {
+                $campusAdmin->assignRole('campus_admin');
+            }
         }
     }
 
