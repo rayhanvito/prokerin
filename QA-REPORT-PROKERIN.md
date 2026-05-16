@@ -17,6 +17,7 @@ Status automated regression terakhir:
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
+| Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
 | Pint targeted | Pass | Tidak ada formatting violation |
 | npm lint | Pass | `tsc --noEmit` baseline |
 | npm build | Pass | Production build sukses |
@@ -51,7 +52,26 @@ Tidak ada bug baru berstatus `Open` dari pass terakhir. Yang masih banyak adalah
 
 ---
 
-## 3. Fitur Belum Terverifikasi
+## 3. Open Findings Untuk Dev
+
+Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-to-end. Halaman render, tetapi beberapa data masih static atau action belum tersambung ke route mutasi.
+
+| ID | Severity | Area | Temuan | Bukti Teknis | Dampak |
+|---|---|---|---|---|---|
+| QA-OPEN-001 | High | Organization Switcher | Tombol `Buat Organisasi` hanya button biasa dan belum ada form/route create organization. | `resources/js/Pages/Organization/Switcher.tsx:49`, `routes/web.php` hanya punya GET `/organization` dan GET `/organization/switcher`. | User tidak bisa membuat organisasi dari UI ini. |
+| QA-OPEN-002 | High | Organization Switcher | Daftar organisasi masih static array, bukan payload dari membership user aktif. Klik organisasi juga belum punya action switch. | `resources/js/Pages/Organization/Switcher.tsx:8`, `app/Http/Controllers/WorkspacePageController.php:120`. | Multi-org user belum bisa benar-benar pindah workspace. |
+| QA-OPEN-003 | High | Organization Periods | Tombol `Tambah Periode` belum membuka form atau submit backend; data periode masih static rows. | `resources/js/Pages/Organization/Periods.tsx:8`, `resources/js/Pages/Organization/Periods.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:125`. | User belum bisa membuat periode kepengurusan dari halaman ini. |
+| QA-OPEN-004 | High | Member Invites | Tombol `Invite` belum punya form/submit route; invitation queue masih static sample. | `resources/js/Pages/Members/Invites.tsx:8`, `resources/js/Pages/Members/Invites.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:263`. | Invite member, duplicate invite, accept/decline belum dapat diuji end-to-end. |
+| QA-OPEN-005 | Medium | Organization Calendar | Calendar masih overview/static navigation, belum calendar data-backed. | `resources/js/Pages/Organization/Calendar.tsx`, `app/Http/Controllers/WorkspacePageController.php:130`. | QA belum bisa validasi event/proker muncul di kalender organisasi. |
+
+Catatan verifikasi tambahan:
+
+- `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/OrganizationLogoUploadTest.php tests/Feature/OrganizationMemberRoleUpdateTest.php tests/Feature/ProjectTemplateGenerationTest.php` -> `20 passed, 226 assertions`.
+- Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
+
+---
+
+## 4. Fitur Belum Terverifikasi
 
 Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untuk rilis beta walaupun full test suite hijau.
 
@@ -59,21 +79,21 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 
 | ID QA | Area | Yang Belum Terverifikasi |
 |---|---|---|
-| 5.1 | Create organization | Form create organization end-to-end. |
-| 5.2 | Duplicate slug | Validation duplicate slug organization. |
-| 5.5 | Active period | Create active organization period. |
-| 5.6 | Org switcher | Switch org dan reload data dashboard sesuai org baru. |
-| 5.7 | Calendar | Organization calendar menampilkan event/proker. |
+| 5.1 | Create organization | Belum ada route/form create organization end-to-end. Lihat QA-OPEN-001. |
+| 5.2 | Duplicate slug | Belum ada route create organization, jadi validation duplicate slug belum bisa diuji. |
+| 5.5 | Active period | Belum ada form/route create active organization period. Lihat QA-OPEN-003. |
+| 5.6 | Org switcher | Data masih static dan belum ada action switch. Lihat QA-OPEN-002. |
+| 5.7 | Calendar | Organization calendar belum data-backed. Lihat QA-OPEN-005. |
 | 5.8 | Edit organization | Edit nama organisasi dan tampil di sidebar/pages. |
 
 ### Member & Role Management
 
 | ID QA | Area | Yang Belum Terverifikasi |
 |---|---|---|
-| 6.1 | Invite member | Invite member queued dan muncul di list. |
-| 6.2 | Duplicate invite | Duplicate invite blocked. |
-| 6.3 | Accept invitation | User menerima invitation dan masuk org dengan role benar. |
-| 6.4 | Decline invitation | Invitation decline membersihkan invite queue. |
+| 6.1 | Invite member | Belum ada form/submit route invite member. Lihat QA-OPEN-004. |
+| 6.2 | Duplicate invite | Belum ada submit route invite, jadi duplicate guard belum bisa diuji. |
+| 6.3 | Accept invitation | Accept token/route belum terlihat dari QA pass ini. |
+| 6.4 | Decline invitation | Decline token/route belum terlihat dari QA pass ini. |
 | 6.5 | Role promotion | Promote member ke treasurer lalu akses finance muncul. |
 | 6.6 | Role demotion | Demote admin ke member lalu approval access hilang. |
 | 6.8 | Remove member | Member dihapus dan kehilangan akses org. |
@@ -100,15 +120,16 @@ Area ini masih butuh QA lanjutan paling banyak:
 
 ---
 
-## 4. Tombol Dan Action Yang Perlu Dicek Manual
+## 5. Tombol Dan Action Yang Perlu Dicek Manual
 
 Tombol/action ini perlu dicek di browser karena automated tests belum cukup membuktikan interaksi UI, state loading, disabled state, toast, dan redirect-nya.
 
 | Page | Button/Action | Risiko |
 |---|---|---|
-| `/organization` atau setup org | Create organization | Form bisa saja submit tapi UI redirect/toast belum sesuai. |
-| `/organization` | Switch organization | Data sidebar/dashboard harus reload sesuai org aktif. |
-| `/members` | Invite member | Perlu cek modal/form, validation, duplicate invite, toast. |
+| `/organization/switcher` | Buat Organisasi | Saat ini tombol dummy; perlu form + route create organization. |
+| `/organization/switcher` | Pilih organisasi | Saat ini list static; perlu action switch org aktif. |
+| `/organization/periods` | Tambah Periode | Saat ini tombol dummy; perlu form + route create period. |
+| `/members/invites` | Invite | Saat ini tombol dummy; perlu modal/form, validation, duplicate invite, toast. |
 | `/members` | Promote/demote role | Perlu cek control role tidak muncul untuk role yang tidak berhak. |
 | `/members` | Remove member | Perlu typed/confirm flow dan akses member setelah dihapus. |
 | `/proker` | Status transition | Tombol ubah status harus konsisten dengan policy dan progress. |
@@ -127,7 +148,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 
 ---
 
-## 5. Security Dan Multi-Tenancy Yang Belum Aman Untuk Dianggap Selesai
+## 6. Security Dan Multi-Tenancy Yang Belum Aman Untuk Dianggap Selesai
 
 | Area | Status QA | Catatan |
 |---|---|---|
@@ -141,7 +162,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 
 ---
 
-## 6. Design Dan UX Yang Perlu Improve
+## 7. Design Dan UX Yang Perlu Improve
 
 Prioritas tinggi:
 
@@ -162,7 +183,7 @@ Prioritas medium:
 
 ---
 
-## 7. Technical Risk Untuk Dev
+## 8. Technical Risk Untuk Dev
 
 | Risk | Dampak | Rekomendasi |
 |---|---|---|
@@ -177,7 +198,7 @@ Prioritas medium:
 
 ---
 
-## 8. Rekomendasi QA Berikutnya
+## 9. Rekomendasi QA Berikutnya
 
 Urutan QA yang paling enak untuk dev:
 
