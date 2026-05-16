@@ -13,6 +13,7 @@ use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\ProposalApprovalDecisionController;
 use App\Http\Controllers\ProposalDraftController;
 use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\TaskDeadlineReminderController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
 use Illuminate\Support\Facades\Route;
@@ -90,6 +91,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -6,7 +6,7 @@ import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { humanizeStatus } from '@/lib/format';
 import type { NotificationChannel, NotificationEvent } from '@/types/prokerin';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 const channels = [
     {
@@ -45,6 +45,7 @@ interface NotificationsIndexProps {
 export default function NotificationsIndex({
     notificationRules,
 }: NotificationsIndexProps) {
+    const { post, processing } = useForm();
     const rows = notificationRules.map((rule) => ({
         audience: rule.audience,
         channel: rule.channels.map((channel) => humanizeStatus(channel)).join(' + '),
@@ -52,6 +53,12 @@ export default function NotificationsIndex({
         status: humanizeStatus(rule.status),
         trigger: rule.trigger,
     }));
+
+    const simulateDeadlineReminders = (): void => {
+        post(route('notifications.task-deadline-reminders.store'), {
+            preserveScroll: true,
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -100,6 +107,8 @@ export default function NotificationsIndex({
                     action={
                         <button
                             type="button"
+                            disabled={processing}
+                            onClick={simulateDeadlineReminders}
                             className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
                         >
                             <Send className="h-4 w-4" />

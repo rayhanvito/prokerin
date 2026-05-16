@@ -538,6 +538,7 @@ chore: configure Supervisor for queue workers
 - [x] Upload Center recent documents switched to database-backed payload with download links instead of frontend mock data
 - [x] LPJ review submission and approval flow added for M10 with tenant-scoped checklist payload, readiness guard, project status transitions, Inertia controls, and feature tests
 - [x] Dashboard monitoring queries scoped for M11 to authenticated user's organizations with anti-leak unit coverage for metrics, priority projects, tasks, budget, LPJ, and member summary
+- [x] Notification Basic backend added for M12 with notifications table, queued task deadline reminder notification, tenant-scoped reminder dispatch Action, simulate route/button, and feature tests
 
 # Sedang dikerjakan — jangan diubah tanpa konfirmasi
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
@@ -553,7 +554,7 @@ chore: configure Supervisor for queue workers
 - [x] M09 · Document Management (overview, folder structure, upload center UI, upload validation Action, signed download planner, document table, seed data, DB-backed recent documents, tenant-scoped signed download route, and storage permission feature tests done)
 - [x] M10 · LPJ Generator (overview, checklist UI, LPJ readiness Action, export queue planner, checklist table, seed data, database-backed tenant-scoped checklist payload, review submission, owner/admin approval or revision flow, project status transitions, and feature tests done)
 - [x] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, database-backed tenant-scoped overview metrics, priority projects, weekly focus, member summary, and anti-leak tests done)
-- [~] M12 · Notification Basic (notification rules/channel UI scaffold, default rule Action, notification rule table, seed data, and database-backed rule payload done; Laravel notifications, queue delivery, and email backend pending)
+- [x] M12 · Notification Basic (notification rules/channel UI, default rule Action, notification rule table, seed data, database-backed rule payload, Laravel notification table, queued task deadline reminder delivery, email/database channels, simulate route, and feature tests done)
 - [~] M13 · Admin Panel Internal (planning UI scaffold done; Filament package/resources pending)
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
