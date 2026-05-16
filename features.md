@@ -47,6 +47,7 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[~]` 2026-05-17 · QA-MASTER-PROKERIN automated gate executed after local `migrate:fresh --seed`: PHP 8.4.10 verified, `php artisan test` → **335 passed, 1654 assertions**, Section 3 spot-check suite → **84 passed, 656 assertions**, `npm run build` passed, `./vendor/bin/pint --test` passed, `npm run lint` failed because no lint script exists. Browser smoke: 39 desktop routes and 11 mobile routes loaded without horizontal overflow; findings logged in `QA-MASTER-PROKERIN.md` BUG-001 through BUG-004.
 - `[x]` 2026-05-17 · M15 QR operator tooling shipped: `IssueAttendanceQrTokenAction`, `RevokeAttendanceQrTokenAction`, `RenderAttendanceQrSvgAction` (bacon-qr-code), QR image controller, CSV export controller, attendance UI extended with regenerate/revoke/export buttons, "Issued QR" panel via session flash. `bacon/bacon-qr-code` added.
 - `[x]` 2026-05-17 · After M15 operator tooling: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AttendanceQrManagementTest.php` → **8 passed, 32 assertions**.
 - `[x]` 2026-05-17 · After M15 operator tooling: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **327 passed, 1601 assertions**.
