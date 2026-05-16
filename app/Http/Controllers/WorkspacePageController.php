@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Actions\Dashboard\DashboardPayloadAction;
 use App\Actions\Dashboard\DashboardRoleResolverAction;
 use App\Actions\Document\ValidateDocumentUploadAction;
+use App\Actions\EventRegistration\GetEventRegistrationManagementPayloadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
 use App\Actions\Workspace\GetCertificatePayloadAction;
@@ -22,8 +23,8 @@ use App\Actions\Workspace\GetProjectTemplatePayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
 use App\Actions\Workspace\GetQrAttendancePayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
-use App\Actions\Workspace\GetSponsorVendorPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorDetailPayloadAction;
+use App\Actions\Workspace\GetSponsorVendorPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
 use App\Domain\Document\DocumentVisibility;
@@ -39,8 +40,7 @@ final class WorkspacePageController extends Controller
         Request $request,
         DashboardRoleResolverAction $roleResolver,
         DashboardPayloadAction $dashboardPayload,
-    ): Response
-    {
+    ): Response {
         $user = $request->user();
         $organizationId = (int) DB::table('organization_members')
             ->where('user_id', $user?->id)
@@ -262,6 +262,11 @@ final class WorkspacePageController extends Controller
     public function meetingsIndex(Request $request, GetMeetingMinutePayloadAction $meetings): Response
     {
         return Inertia::render('Meetings/Index', $meetings->execute((int) $request->user()->id));
+    }
+
+    public function eventRegistrations(Request $request, GetEventRegistrationManagementPayloadAction $eventRegistrations): Response
+    {
+        return Inertia::render('Events/Registrations', $eventRegistrations->execute((int) $request->user()->id));
     }
 
     public function attendanceIndex(Request $request, GetQrAttendancePayloadAction $attendance): Response

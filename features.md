@@ -33,7 +33,8 @@
 | Post-MVP Wave 2 | M18 | ✅ Complete |
 | Post-MVP Wave 2 | M20 | ✅ Complete |
 | Cross-module UX | M28.5 | ✅ Complete |
-| Post-MVP Planned | M21–M24 | 🔲 Not started |
+| Post-MVP Wave 3 | M21 | 🟡 Partial |
+| Post-MVP Planned | M22–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -43,6 +44,12 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[~]` 2026-05-17 · M21 event registration foundation shipped: public registration form, settings/registration tables, guard checks, queued confirmation email notification, internal participant list, CSV export, sidebar link, and seeded demo event.
+- `[x]` 2026-05-17 · M21 local migration `2026_05_16_000014_create_event_registration_tables.php` applied and `php artisan db:seed` added public registration settings plus demo participants.
+- `[x]` 2026-05-17 · M21 browser smoke passed on public `/events/seminar-karier-digital/register` and internal `/events/registrations`; form, quota, participant list, and CSV action render.
+- `[x]` 2026-05-17 · After M21 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **263 passed, 1337 assertions**.
+- `[x]` 2026-05-17 · After M21 foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/EventRegistrationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php` → **14 passed, 107 assertions**.
+- `[x]` 2026-05-17 · After M21 foundation: `npm run build` passed.
 - `[x]` 2026-05-16 · M28.5 role-aware sidebar menu wired through Inertia shared props, using server-resolved active organization and role-specific menu badges.
 - `[x]` 2026-05-16 · M28.5 browser smoke passed on `/dashboard` as `owner@prokerin.test`; `Dashboard Pimpinan`, leadership sidebar groups, finance/handover links render with no console errors.
 - `[x]` 2026-05-16 · After M28.5 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **256 passed, 1287 assertions**.
@@ -814,19 +821,31 @@ Make the first workspace screen and navigation adapt to the user's resolved orga
 
 ### M21 · Event Registration (Public)
 
-**Status:** `[ ]` Not started.
+**Status:** `[~]` Partial.
 
 #### Product Goal
 Allow non-members of an organization to register for public events/projects — enabling BEM/UKM to run ticketed or open events.
 
 #### Scope to Build
-- [ ] `event_registrations` tables: `id`, `project_id`, `participant_name`, `participant_email`, `phone`, `institution`, `status` (pending/confirmed/cancelled), `registered_at`.
-- [ ] `event_registration_settings` table: `id`, `project_id`, `is_open`, `capacity`, `opens_at`, `closes_at`, `require_payment`.
-- [ ] Public route: `GET /events/{project_slug}/register` — unauthenticated form.
-- [ ] Guards: capacity check, duplicate email per event, registration window check.
-- [ ] Confirmation email sent on successful registration.
-- [ ] Internal UI: registration list, export to CSV/PDF.
-- [ ] Tests: capacity enforcement, duplicate email rejection, tenant/project scope isolation.
+- [x] `event_registrations` table: `id`, `project_id`, `participant_name`, `participant_email`, `phone`, `institution`, `status` (pending/confirmed/cancelled), `registered_at`.
+- [x] `event_registration_settings` table: `id`, `project_id`, `is_open`, `capacity`, `opens_at`, `closes_at`, `require_payment`.
+- [x] Public route: `GET /events/{project_slug}/register` — unauthenticated form.
+- [x] Guards: capacity check, duplicate email per event, registration window check.
+- [x] Confirmation email queued on successful registration.
+- [~] Internal UI: registration list and CSV export are wired; PDF export and settings management UI are still pending.
+- [x] Tests: capacity enforcement, duplicate email rejection, tenant/project scope isolation.
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000014_create_event_registration_tables.php`.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` added demo event registration settings and participants.
+- `[x]` 2026-05-17 · Browser smoke passed for public `/events/seminar-karier-digital/register` and internal `/events/registrations`.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/EventRegistrationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php` → **14 passed, 107 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **263 passed, 1337 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
+
+#### Remaining Before `[x]`
+- [ ] Add internal settings management UI/actions for opening/closing registration, capacity, dates, and payment requirement.
+- [ ] Add PDF export or explicitly defer PDF export if CSV is accepted for M21 MVP.
 
 ---
 
@@ -896,7 +915,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M28.5
-1. **Start M21 (Event Registration)** as the next product module.
+1. **Continue M21 (Event Registration)**: add internal settings management and finish/decide PDF export before marking stable.
 2. **M22 (Payment)** only after M21 is stable.
 3. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
 4. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
@@ -953,4 +972,4 @@ The following context is provided to help AI agents and contributors understand 
 
 ---
 
-_Last updated: 2026-05-16. Update this file immediately after every module status change, migration addition, test result, or Next Action change._
+_Last updated: 2026-05-17. Update this file immediately after every module status change, migration addition, test result, or Next Action change._

@@ -11,6 +11,8 @@ use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
+use App\Http\Controllers\EventRegistrationController;
+use App\Http\Controllers\EventRegistrationExportController;
 use App\Http\Controllers\HandoverItemStatusController;
 use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\HandoverPackageExportController;
@@ -39,6 +41,8 @@ Route::get('/', [LandingController::class, 'home'])->name('landing.home');
 Route::get('/features', [LandingController::class, 'features'])->name('landing.features');
 Route::get('/pricing', [LandingController::class, 'pricing'])->name('landing.pricing');
 Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
+Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
+Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
 
 Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
@@ -122,6 +126,10 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/meetings', [WorkspacePageController::class, 'meetingsIndex'])->name('meetings.index');
+    Route::prefix('events')->name('events.')->group(function () {
+        Route::get('/registrations', [WorkspacePageController::class, 'eventRegistrations'])->name('registrations.index');
+        Route::get('/registrations/export', [EventRegistrationExportController::class, 'show'])->name('registrations.export');
+    });
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');
         Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])->name('check-in.store');

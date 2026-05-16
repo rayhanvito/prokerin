@@ -117,6 +117,7 @@ final readonly class SidebarMenuAction
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck', 'approval_count'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
+                $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
                 $this->item('Sertifikat', route('certificates.index', absolute: false), 'Award'),
             ]),
@@ -142,6 +143,7 @@ final readonly class SidebarMenuAction
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
+                $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
             ]),
             $this->group('Proker', [
@@ -190,6 +192,7 @@ final readonly class SidebarMenuAction
             ]),
             $this->group('Tim', [
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
+                $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
             ]),
         ];

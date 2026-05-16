@@ -50,6 +50,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedMeetings($now);
         $this->seedAttendance($now);
         $this->seedCertificates($now);
+        $this->seedEventRegistrations($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
     }
@@ -777,6 +778,55 @@ final class DatabaseSeeder extends Seeder
                     'issued_by' => $this->userId('owner@prokerin.test'),
                     'verification_token' => $certificate['token'],
                     'pdf_path' => $certificate['pdf_path'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+    }
+
+    private function seedEventRegistrations($now): void
+    {
+        DB::table('event_registration_settings')->updateOrInsert(
+            ['project_id' => $this->projectId('seminar-karier-digital')],
+            [
+                'is_open' => true,
+                'capacity' => 120,
+                'opens_at' => '2026-05-01 08:00:00',
+                'closes_at' => '2026-06-10 23:59:00',
+                'require_payment' => false,
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
+
+        foreach ([
+            [
+                'name' => 'Alya Rahma',
+                'email' => 'alya.rahma@student.example',
+                'phone' => '+6282112340001',
+                'institution' => 'Universitas Negeri Surabaya',
+                'status' => 'confirmed',
+            ],
+            [
+                'name' => 'Bima Prakoso',
+                'email' => 'bima.prakoso@student.example',
+                'phone' => '+6282112340002',
+                'institution' => 'Institut Teknologi Sepuluh Nopember',
+                'status' => 'confirmed',
+            ],
+        ] as $registration) {
+            DB::table('event_registrations')->updateOrInsert(
+                [
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                    'participant_email' => $registration['email'],
+                ],
+                [
+                    'participant_name' => $registration['name'],
+                    'phone' => $registration['phone'],
+                    'institution' => $registration['institution'],
+                    'status' => $registration['status'],
+                    'registered_at' => $now->copy()->subDays(2),
                     'updated_at' => $now,
                     'created_at' => $now,
                 ],
