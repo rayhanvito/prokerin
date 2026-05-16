@@ -73,8 +73,57 @@ final class DocumentDownloadTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_workspace_member_gets_signed_url_for_completed_document_export(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $exportId = $this->completedExportId();
+
+        $response = $this->actingAs($secretary)
+            ->get(route('reports.exports.download', ['documentExport' => $exportId]));
+
+        $response->assertRedirect();
+        $location = (string) $response->headers->get('Location');
+
+        $this->assertStringContainsString('proposal-seminar-karier.pdf', $location);
+        $this->assertStringContainsString('expiration=', $location);
+    }
+
+    public function test_document_export_download_waits_until_export_is_completed(): void
+    {
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+        $exportId = (int) DB::table('document_exports')->where('status', 'queued')->value('id');
+
+        $this->actingAs($secretary)
+            ->get(route('reports.exports.download', ['documentExport' => $exportId]))
+            ->assertConflict();
+    }
+
+    public function test_non_workspace_user_cannot_download_document_export(): void
+    {
+        $outsider = User::factory()->create([
+            'email' => 'outsider@prokerin.test',
+        ]);
+
+        $this->actingAs($outsider)
+            ->get(route('reports.exports.download', ['documentExport' => $this->completedExportId()]))
+            ->assertNotFound();
+    }
+
     private function documentId(string $name): int
     {
         return (int) DB::table('documents')->where('name', $name)->value('id');
+    }
+
+    private function completedExportId(): int
+    {
+        $exportId = (int) DB::table('document_exports')
+            ->where('document_title', 'Proposal Seminar Karier')
+            ->value('id');
+
+        DB::table('document_exports')
+            ->where('id', $exportId)
+            ->update(['status' => 'completed']);
+
+        return $exportId;
     }
 }

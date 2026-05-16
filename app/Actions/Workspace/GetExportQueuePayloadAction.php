@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 final class GetExportQueuePayloadAction
 {
     /**
-     * @return array<int, array{document: string, type: string, requested: string, queue: string, status: string, plan: array<string, mixed>}>
+     * @return array<int, array{document: string, type: string, requested: string, queue: string, status: string, downloadUrl: string|null, plan: array<string, mixed>}>
      */
     public function execute(int $actorUserId): array
     {
@@ -26,6 +26,9 @@ final class GetExportQueuePayloadAction
                 'requested' => (string) ($export->requested_by_name ?? 'System'),
                 'queue' => (string) $export->queue_name,
                 'status' => (string) $export->status,
+                'downloadUrl' => (string) $export->status === 'completed'
+                    ? route('reports.exports.download', ['documentExport' => $export->id])
+                    : null,
                 'plan' => [
                     'queueName' => (string) $export->queue_name,
                     'engine' => (string) $export->engine,

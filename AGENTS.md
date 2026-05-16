@@ -462,6 +462,7 @@ Feature completion tracker is maintained in `features.md` so this operating guid
 
 - [x] MVP M01-M13 completed and validated by automated tests.
 - [x] M08 export queue now generates PDF/DOCX files from proposal and LPJ database content.
+- [x] Export Queue exposes tenant-scoped signed downloads for completed exports.
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
 - [ ] M14 · Rapat & Notulen

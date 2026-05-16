@@ -80,6 +80,7 @@
 - [x] Notification Basic backend added for M12 with notifications table, queued task deadline reminder notification, tenant-scoped reminder dispatch Action, simulate route/button, and feature tests
 - [x] Internal Admin readiness payload added for M13 with backend-driven resource plan, queue/export/notification health counters, Filament install detection, and feature tests
 - [x] Filament admin package and internal panel scaffold added for M13 at `/internal-admin` with Organization, User, and DocumentExport resources
+- [x] Export queue download route added with tenant-scoped signed URL access for completed PDF/DOCX exports
 
 # Sudah dikerjakan 
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)

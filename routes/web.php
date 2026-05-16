@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\DocumentDownloadController;
+use App\Http\Controllers\DocumentExportDownloadController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\OrganizationLogoController;
@@ -73,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');
         Route::post('/lpj/{project}/review', [LpjReviewController::class, 'store'])->name('lpj.review');
         Route::patch('/lpj/{project}/decision', [LpjApprovalDecisionController::class, 'update'])->name('lpj.decision');
+        Route::get('/exports/{documentExport}/download', [DocumentExportDownloadController::class, 'show'])->name('exports.download');
         Route::get('/export-queue', [WorkspacePageController::class, 'exportQueue'])->name('export-queue');
     });
 
