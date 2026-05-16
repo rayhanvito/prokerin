@@ -35,7 +35,7 @@
 | Cross-module UX | M28.5 | ✅ Complete |
 | Post-MVP Wave 3 | M21 | ✅ Complete |
 | Post-MVP Wave 3 | M22 | ✅ Complete |
-| Post-MVP Wave 3 | M23 | 🟡 Partial |
+| Post-MVP Wave 3 | M23 | ✅ Complete |
 | Post-MVP Planned | M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -46,6 +46,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · M23 completed with `openai` production provider adapter using Responses API Structured Outputs, configurable `AI_BASE_URL`/`AI_TIMEOUT`, sanitized payload contract, usage token logging, and HTTP fake coverage.
+- `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php` → **5 passed, 28 assertions**.
+- `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **279 passed, 1417 assertions**.
+- `[x]` 2026-05-17 · After M23 OpenAI provider adapter: `npm run build` passed.
 - `[~]` 2026-05-17 · M23 AI Assistant foundation shipped: scoped use cases, env/config, plan-tier guard, fake swappable provider, AI usage logs, Proposal Editor suggestions, LPJ Checklist summary, data minimization tests, and browser smoke on port `8002`.
 - `[x]` 2026-05-17 · M23 local migration `2026_05_16_000016_create_ai_usage_logs_table.php` applied and `php artisan db:seed` set BEM demo organization to `pro` for AI access.
 - `[x]` 2026-05-17 · M23 browser smoke passed on `/reports/proposal-editor` and `/reports/lpj-checklist`; `Buat Saran AI` and `Ringkas AI` render generated suggestion panels.
@@ -902,7 +906,7 @@ Enable paid event registration via Midtrans (or compatible provider). Free and p
 
 ### M23 · AI Assistant
 
-**Status:** `[~]` Partial.
+**Status:** `[x]` Complete.
 
 #### Product Goal
 Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal drafting from project data, LPJ summary generation, task priority suggestions, dashboard insight summaries.
@@ -930,11 +934,9 @@ Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal dra
 
 #### Current Implementation
 - `AI_PROVIDER=fake` is the default local/test provider and returns deterministic suggestions so tests and local demos do not need secrets or external calls.
+- `AI_PROVIDER=openai` calls the OpenAI Responses API with Structured Outputs, using the same sanitized payload and typed response contract.
 - `organizations.plan_tier` gates AI access; `pro` and `campus` are allowed, `free` is blocked.
 - `ai_usage_logs` logs provider/model/action/prompt hash/token estimates for audit.
-
-#### Remaining Gap Before `[x]`
-- Add at least one real production provider adapter behind `AI_PROVIDER` and keep the same data minimization contract.
 
 #### Rules
 - Never send member personal data (phone, email, KTP) to AI provider.
@@ -947,6 +949,10 @@ Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal dra
 - `[x]` 2026-05-17 · Browser smoke passed on `/reports/proposal-editor` and `/reports/lpj-checklist`; AI buttons generate visible suggestion panels.
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php` → **23 passed, 84 assertions**.
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **278 passed, 1413 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed.
+- `[x]` 2026-05-17 · OpenAI provider adapter added behind `AI_PROVIDER=openai`; HTTP fake test verifies Responses request, JSON schema output format, sanitized request payload, and token usage logging.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AiAssistantTest.php` → **5 passed, 28 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **279 passed, 1417 assertions**.
 - `[x]` 2026-05-17 · `npm run build` passed.
 
 ---
@@ -970,10 +976,9 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ## Next Action (Ordered Priority)
 
-### After M23 Foundation
-1. **Add a production AI provider adapter for M23** behind `AI_PROVIDER`, preserving the current data minimization and usage-log contract.
-2. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer after M23 provider readiness is decided.
-3. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+### After M23
+1. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+2. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test

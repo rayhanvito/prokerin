@@ -51,6 +51,8 @@ return [
         'provider' => env('AI_PROVIDER', 'fake'),
         'api_key' => env('AI_API_KEY'),
         'model' => env('AI_MODEL', 'prokerin-local'),
+        'base_url' => env('AI_BASE_URL', 'https://api.openai.com/v1'),
+        'timeout' => env('AI_TIMEOUT', 30),
     ],
 
     'slack' => [

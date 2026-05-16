@@ -7,6 +7,7 @@ namespace App\Actions\Ai;
 use App\DTOs\Ai\AiPromptResult;
 use App\Support\Ai\AiProvider;
 use App\Support\Ai\FakeAiProvider;
+use App\Support\Ai\OpenAiProvider;
 use App\Support\Ai\UnsupportedAiProvider;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +64,11 @@ final readonly class AiPromptAction
     {
         return match ($providerName) {
             'fake' => new FakeAiProvider,
+            'openai' => new OpenAiProvider(
+                apiKey: (string) config('services.ai.api_key', ''),
+                baseUrl: (string) config('services.ai.base_url', 'https://api.openai.com/v1'),
+                timeout: (int) config('services.ai.timeout', 30),
+            ),
             default => new UnsupportedAiProvider($providerName),
         };
     }
