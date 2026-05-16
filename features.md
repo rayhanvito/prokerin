@@ -81,6 +81,7 @@
 - [x] Internal Admin readiness payload added for M13 with backend-driven resource plan, queue/export/notification health counters, Filament install detection, and feature tests
 - [x] Filament admin package and internal panel scaffold added for M13 at `/internal-admin` with Organization, User, and DocumentExport resources
 - [x] Export queue download route added with tenant-scoped signed URL access for completed PDF/DOCX exports
+- [x] Filament MVP resources hardened by removing destructive row and bulk delete actions from internal admin tables
 
 # Sudah dikerjakan 
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
