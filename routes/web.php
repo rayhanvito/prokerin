@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\ApprovalWorkflowDecisionController;
 use App\Http\Controllers\ApprovalWorkflowDelegationController;
+use App\Http\Controllers\AttendanceExportController;
 use App\Http\Controllers\AttendanceQrCheckInController;
+use App\Http\Controllers\AttendanceQrImageController;
+use App\Http\Controllers\AttendanceQrTokenController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\CampusDashboardController;
@@ -26,6 +29,10 @@ use App\Http\Controllers\LpjAiSummaryController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\ManualAttendanceController;
+use App\Http\Controllers\MeetingAttendanceController;
+use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MeetingMinutesController;
+use App\Http\Controllers\MeetingMinutesExportController;
 use App\Http\Controllers\MeetingWhatsAppAlertController;
 use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\OrganizationLogoController;
@@ -38,6 +45,7 @@ use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\ProposalApprovalDecisionController;
 use App\Http\Controllers\ProposalDraftController;
 use App\Http\Controllers\SponsorVendorController;
+use App\Http\Controllers\StopImpersonationController;
 use App\Http\Controllers\TaskDeadlineReminderController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
@@ -135,6 +143,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/meetings', [WorkspacePageController::class, 'meetingsIndex'])->name('meetings.index');
+    Route::post('/meetings', [MeetingController::class, 'store'])->name('meetings.store');
+    Route::patch('/meetings/{meeting}', [MeetingController::class, 'update'])->name('meetings.update');
+    Route::patch('/meetings/{meeting}/minutes', [MeetingMinutesController::class, 'update'])->name('meetings.minutes.update');
+    Route::post('/meetings/{meeting}/exports', [MeetingMinutesExportController::class, 'store'])->name('meetings.exports.store');
+    Route::patch('/meetings/attendees/{attendee}', [MeetingAttendanceController::class, 'update'])->name('meetings.attendees.update');
     Route::prefix('events')->name('events.')->group(function () {
         Route::get('/registrations', [WorkspacePageController::class, 'eventRegistrations'])->name('registrations.index');
         Route::get('/registrations/export', [EventRegistrationExportController::class, 'show'])->name('registrations.export');
@@ -145,6 +158,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');
         Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])->name('check-in.store');
         Route::post('/sessions/{session}/manual-check-in', [ManualAttendanceController::class, 'store'])->name('manual.store');
+        Route::post('/sessions/{session}/qr-tokens', [AttendanceQrTokenController::class, 'store'])->name('qr-tokens.store');
+        Route::delete('/qr-tokens/{token}', [AttendanceQrTokenController::class, 'destroy'])->name('qr-tokens.destroy');
+        Route::get('/qr-image', [AttendanceQrImageController::class, 'show'])->name('qr-image.show');
+        Route::get('/sessions/{session}/export.csv', [AttendanceExportController::class, 'show'])->name('export.csv');
     });
     Route::prefix('certificates')->name('certificates.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'certificatesIndex'])->name('index');
@@ -171,7 +188,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::impersonate();
-    Route::post('/impersonate/stop-from-banner', [\App\Http\Controllers\StopImpersonationController::class, 'store'])
+    Route::post('/impersonate/stop-from-banner', [StopImpersonationController::class, 'store'])
         ->name('impersonate.stop');
 });
 
