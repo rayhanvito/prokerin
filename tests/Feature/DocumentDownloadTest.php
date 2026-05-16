@@ -73,6 +73,15 @@ final class DocumentDownloadTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_other_organization_owner_cannot_download_workspace_document(): void
+    {
+        $otherOwner = User::query()->where('email', 'owner2@prokerin.test')->firstOrFail();
+
+        $this->actingAs($otherOwner)
+            ->get(route('documents.download', ['document' => $this->documentId('proposal-v2.pdf')]))
+            ->assertNotFound();
+    }
+
     public function test_workspace_member_gets_signed_url_for_completed_document_export(): void
     {
         $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();

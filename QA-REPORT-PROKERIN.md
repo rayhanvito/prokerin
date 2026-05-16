@@ -13,14 +13,18 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `354 passed, 1880 assertions` |
+| PHP feature/unit test | Pass | `359 passed, 1888 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
 | Targeted workspace payload | Pass | `9 passed, 158 assertions` |
 | Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
+| Targeted proker/template/task | Pass | `22 passed, 140 assertions` |
 | Targeted task/finance/proposal/lpj/document | Pass | `49 passed, 322 assertions` |
+| Targeted finance/proposal/lpj/document refresh | Pass | `45 passed, 279 assertions` |
+| Targeted proposal/document guard | Pass | `21 passed, 57 assertions` |
+| Targeted security input probes | Pass | `3 passed, 6 assertions` |
 | Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |
 | Targeted handover/sponsor/approval | Pass | `26 passed, 146 assertions` |
 | Targeted landing/campus/admin payload | Pass | `7 passed, 88 assertions` |
@@ -102,7 +106,7 @@ Catatan verifikasi tambahan:
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
-- Latest full regression after certificate invalid-token coverage `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `354 passed, 1880 assertions`.
+- Latest full regression after proposal/document/security probe coverage `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `359 passed, 1888 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.

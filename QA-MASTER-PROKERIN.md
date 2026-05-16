@@ -231,10 +231,10 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 8.1 | View template library | Navigate to /templates | All seeded templates visible | `[ ]` |
+| 8.1 | View template library | Navigate to /templates | All seeded templates visible | `[P]` |
 | 8.2 | One-click template generate | Select template → Generate | Creates proker + tasks + RAB lines + proposal outline + LPJ checklist atomically | `[P]` |
 | 8.3 | Template fields prefill | After generate, check proker | Name, description, timeline prefilled from template | `[P]` |
-| 8.4 | Customize after generate | Edit generated proker | All fields editable | `[ ]` |
+| 8.4 | Customize after generate | Edit generated proker | All fields editable | `[P]` |
 | 8.5 | Generate twice from same template | Use same template again | Two separate prokers created, no conflict | `[ ]` |
 
 ---
@@ -243,14 +243,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 9.1 | Kanban board loads | Navigate to proker → Tasks | Board displays with columns: Belum Dimulai, Sedang Dikerjakan, Selesai | `[ ]` |
-| 9.2 | Task status advance | Click task to advance status | Status changes, progress updated | `[ ]` |
+| 9.1 | Kanban board loads | Navigate to proker → Tasks | Board displays with columns: Belum Dimulai, Sedang Dikerjakan, Selesai | `[P]` |
+| 9.2 | Task status advance | Click task to advance status | Status changes, progress updated | `[P]` |
 | 9.3 | Assign PIC | Assign member as PIC | Assignee sees task in their dashboard | `[ ]` |
 | 9.4 | Assign non-member as PIC | Try to assign user not in org | Blocked — membership guard | `[ ]` |
-| 9.5 | Calendar view | Switch to calendar view | Tasks appear on correct dates | `[ ]` |
+| 9.5 | Calendar view | Switch to calendar view | Tasks appear on correct dates | `[P]` |
 | 9.6 | Overdue task display | Task past deadline, not complete | Overdue state visible (red badge or label) | `[ ]` |
 | 9.7 | Task quick-add | Quick-add task from board | Task created in correct column | `[ ]` |
-| 9.8 | Member sees only assigned tasks | Log in as member → dashboard | Only own assigned tasks visible, not all org tasks | `[ ]` |
+| 9.8 | Member sees only assigned tasks | Log in as member → dashboard | Only own assigned tasks visible, not all org tasks | `[P]` |
 
 ---
 
@@ -261,12 +261,12 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 10.1 | Create budget line | Add line item with amount | Line appears in RAB table with correct total | `[ ]` |
 | 10.2 | Edit budget line | Change amount | Total recalculates | `[ ]` |
 | 10.3 | Delete budget line | Remove a line | Removed, total updates | `[ ]` |
-| 10.4 | Upload receipt | Upload receipt image for realization | Receipt stored, download link generated | `[ ]` |
-| 10.5 | Receipt signed URL | Click download receipt | Signed URL generated, file downloaded | `[ ]` |
-| 10.6 | Upload non-image receipt | Upload .exe file | MIME validation blocks | `[ ]` |
-| 10.7 | Submit realization for approval | Submit transaction | Status → Pending Approval | `[ ]` |
-| 10.8 | Treasurer approves | Log in as treasurer → approve | Status → Approved, budget updated | `[ ]` |
-| 10.9 | Treasurer rejects | Reject with note | Status → Rejected, submitter notified | `[ ]` |
+| 10.4 | Upload receipt | Upload receipt image for realization | Receipt stored, download link generated | `[P]` |
+| 10.5 | Receipt signed URL | Click download receipt | Signed URL generated, file downloaded | `[P]` |
+| 10.6 | Upload non-image receipt | Upload .exe file | MIME validation blocks | `[P]` |
+| 10.7 | Submit realization for approval | Submit transaction | Status → Pending Approval | `[P]` |
+| 10.8 | Treasurer approves | Log in as treasurer → approve | Status → Approved, budget updated | `[P]` |
+| 10.9 | Treasurer rejects | Reject with note | Status → Rejected, submitter notified | `[P]` |
 | 10.10 | RAB vs Realization summary | View finance overview | Bar chart shows RAB total vs approved realization | `[ ]` |
 | 10.11 | Member cannot access finance | Log in as member → /finance | 403 or redirect | `[ ]` |
 | 10.12 | Remaining budget calculation | After approvals | Remaining = RAB total − approved realization (correct math) | `[ ]` |
@@ -277,15 +277,15 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 11.1 | Auto-fill from project data | Open proposal for proker with data | Sections pre-filled with project name, dates, objectives | `[ ]` |
-| 11.2 | Edit section body | Click on section, type content | Content saved on blur/save | `[ ]` |
-| 11.3 | Submit proposal | Change status to Submitted | Status locked, editing disabled | `[ ]` |
-| 11.4 | Owner approves proposal | Log in as owner → Approve | Status → Approved | `[ ]` |
-| 11.5 | Owner requests revision | Log in as owner → Request Revision | Status → Revision Requested, editor re-enabled | `[ ]` |
-| 11.6 | Export proposal to PDF | Trigger export | Job queued, file generated, download link appears | `[ ]` |
-| 11.7 | Export proposal to DOCX | Trigger DOCX export | File generated and downloadable | `[ ]` |
-| 11.8 | Cannot edit submitted proposal | Submit → try to edit | Fields are locked/read-only | `[ ]` |
-| 11.9 | Member cannot approve | Log in as member → try to approve | No approve button visible | `[ ]` |
+| 11.1 | Auto-fill from project data | Open proposal for proker with data | Sections pre-filled with project name, dates, objectives | `[P]` |
+| 11.2 | Edit section body | Click on section, type content | Content saved on blur/save | `[P]` |
+| 11.3 | Submit proposal | Change status to Submitted | Status locked, editing disabled | `[P]` |
+| 11.4 | Owner approves proposal | Log in as owner → Approve | Status → Approved | `[P]` |
+| 11.5 | Owner requests revision | Log in as owner → Request Revision | Status → Revision Requested, editor re-enabled | `[P]` |
+| 11.6 | Export proposal to PDF | Trigger export | Job queued, file generated, download link appears | `[P]` |
+| 11.7 | Export proposal to DOCX | Trigger DOCX export | File generated and downloadable | `[P]` |
+| 11.8 | Cannot edit submitted proposal | Submit → try to edit | Fields are locked/read-only | `[P]` |
+| 11.9 | Member cannot approve | Log in as member → try to approve | No approve button visible | `[P]` |
 
 ---
 
@@ -295,14 +295,14 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 |---|-----------|-------|----------|--------|
 | 12.1 | Upload document | Upload PDF ≤ allowed size | Stored in S3, appears in documents list | `[ ]` |
 | 12.2 | Upload oversized file | Upload > max size | Size validation error | `[ ]` |
-| 12.3 | Download private document | As authorized member | Signed URL generated, file downloads | `[ ]` |
-| 12.4 | Download restricted document | As member without access | 403 | `[ ]` |
+| 12.3 | Download private document | As authorized member | Signed URL generated, file downloads | `[P]` |
+| 12.4 | Download restricted document | As member without access | 403 | `[P]` |
 | 12.5 | Visibility rules | Upload as 'private' | Only uploader and owner can see | `[ ]` |
-| 12.6 | Committee document | Upload as 'committee' | Committee members can see, regular members cannot | `[ ]` |
+| 12.6 | Committee document | Upload as 'committee' | Committee members can see, regular members cannot | `[P]` |
 | 12.7 | Public document | Upload as 'public' | All authenticated org members can see | `[ ]` |
 | 12.8 | Folder structure | Navigate folders | Correct hierarchy shown | `[ ]` |
-| 12.9 | Recent documents | Upload center | Shows 5 most recently uploaded | `[ ]` |
-| 12.10 | Cross-tenant document | org2 member tries to download org1 document | 403 | `[ ]` |
+| 12.9 | Recent documents | Upload center | Shows 5 most recently uploaded | `[P]` |
+| 12.10 | Cross-tenant document | org2 member tries to download org1 document | 403 | `[P]` |
 
 ---
 
@@ -310,12 +310,12 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 13.1 | LPJ checklist loads | Navigate to proker → LPJ | Checklist items shown | `[ ]` |
+| 13.1 | LPJ checklist loads | Navigate to proker → LPJ | Checklist items shown | `[P]` |
 | 13.2 | Mark checklist item done | Check an item | Saved, progress bar updates | `[ ]` |
-| 13.3 | Readiness guard | Submit with incomplete items | Blocked, shows which items missing | `[ ]` |
-| 13.4 | Submit complete LPJ | Complete all items → Submit | Status → Review Submitted | `[ ]` |
-| 13.5 | Owner approves LPJ | Log in as owner → Approve | Status → Approved | `[ ]` |
-| 13.6 | Request revision | Owner requests revision | Status back to Draft, re-editable | `[ ]` |
+| 13.3 | Readiness guard | Submit with incomplete items | Blocked, shows which items missing | `[P]` |
+| 13.4 | Submit complete LPJ | Complete all items → Submit | Status → Review Submitted | `[P]` |
+| 13.5 | Owner approves LPJ | Log in as owner → Approve | Status → Approved | `[P]` |
+| 13.6 | Request revision | Owner requests revision | Status back to Draft, re-editable | `[P]` |
 | 13.7 | LPJ export PDF | Trigger PDF export | Job queued, file generated | `[ ]` |
 | 13.8 | LPJ data from execution | Completed tasks appear in LPJ context | Task completion data referenced in checklist | `[ ]` |
 
@@ -650,20 +650,20 @@ All data checks below must pass simultaneously
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S2.1 | Member POSTs to /proposals/{id}/approve | 403 | `[ ]` |
-| S2.2 | Member POSTs to /finance/approve | 403 | `[ ]` |
+| S2.1 | Member POSTs to /proposals/{id}/approve | 403 | `[P]` |
+| S2.2 | Member POSTs to /finance/approve | 403 | `[P]` |
 | S2.3 | Member tries to invite new members | 403 | `[ ]` |
-| S2.4 | Member tries to create proker | 403 | `[ ]` |
+| S2.4 | Member tries to create proker | 403 | `[P]` |
 | S2.5 | Viewer tries any mutation | 403 on all POST/PUT/PATCH/DELETE | `[ ]` |
 
 ### 25.3 Insecure Direct Object Reference (IDOR)
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S3.1 | org2_member accesses /proker/{org1_slug} | 404 or 403 | `[ ]` |
-| S3.2 | org2_member accesses /documents/{org1_doc_id}/download | 403 | `[ ]` |
+| S3.1 | org2_member accesses /proker/{org1_slug} | 404 or 403 | `[P]` |
+| S3.2 | org2_member accesses /documents/{org1_doc_id}/download | 403 | `[P]` |
 | S3.3 | org2_member submits POST with org1's organization_id in body | Ignored — server derives org from session | `[ ]` |
-| S3.4 | org2_member accesses /certificates/{org1_cert_id}/download | 403 | `[ ]` |
+| S3.4 | org2_member accesses /certificates/{org1_cert_id}/download | 403 | `[P]` |
 | S3.5 | org2_member accesses /organization/handover (org1 route) | Scoped to own org, org1 data not visible | `[ ]` |
 
 ### 25.4 File Upload Security
@@ -671,7 +671,7 @@ All data checks below must pass simultaneously
 | # | Test | Expected | Status |
 |---|------|----------|--------|
 | S4.1 | Upload PHP file as document | MIME validation blocks | `[ ]` |
-| S4.2 | Upload .exe as receipt | MIME validation blocks | `[ ]` |
+| S4.2 | Upload .exe as receipt | MIME validation blocks | `[P]` |
 | S4.3 | Upload SVG with XSS payload | Blocked or sanitized | `[ ]` |
 | S4.4 | Direct S3 URL access | Unsigned URL returns 403 from S3 | `[ ]` |
 | S4.5 | Signed URL expiry | Use signed URL after expiry | Access denied | `[ ]` |
@@ -688,9 +688,9 @@ All data checks below must pass simultaneously
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S6.1 | Search input: `'; DROP TABLE organizations; --` | No DB error, result empty or normal | `[ ]` |
-| S6.2 | Slug in URL: `/proker/' OR '1'='1` | 404, no SQL error exposed | `[ ]` |
-| S6.3 | Budget amount field: `1; DELETE FROM budget_lines` | Validation error (not a number) | `[ ]` |
+| S6.1 | Search input: `'; DROP TABLE organizations; --` | No DB error, result empty or normal | `[P]` |
+| S6.2 | Slug in URL: `/proker/' OR '1'='1` | 404, no SQL error exposed | `[P]` |
+| S6.3 | Budget amount field: `1; DELETE FROM budget_lines` | Validation error (not a number) | `[P]` |
 
 ---
 
