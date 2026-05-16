@@ -13,6 +13,7 @@ use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceApprovalPayloadAction;
 use App\Actions\Workspace\GetFinanceRealizationPayloadAction;
 use App\Actions\Workspace\GetLpjChecklistPayloadAction;
+use App\Actions\Workspace\GetMeetingMinutePayloadAction;
 use App\Actions\Workspace\GetNotificationRulePayloadAction;
 use App\Actions\Workspace\GetProjectTemplatePayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
@@ -205,6 +206,11 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Members/Roles', [
             'rolePermissions' => $rolePermissionMatrix->execute(),
         ]);
+    }
+
+    public function meetingsIndex(Request $request, GetMeetingMinutePayloadAction $meetings): Response
+    {
+        return Inertia::render('Meetings/Index', $meetings->execute((int) $request->user()->id));
     }
 
     public function notificationsIndex(GetNotificationRulePayloadAction $notificationRules): Response

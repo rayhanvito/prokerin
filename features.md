@@ -104,12 +104,13 @@
 - [x] 2026-05-16 · Frontend production build passed with `npm run build` (`tsc && vite build`).
 - [x] 2026-05-16 · Platform check passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`.
 - [x] 2026-05-16 · Full PHP test suite passed with PHP 8.4.10 using `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`181 passed`, `712 assertions`).
+- [x] 2026-05-16 · M14 Rapat & Notulen validation passed after implementation: `npm run build` and `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` (`183 passed`, `755 assertions`).
 
 # Belum dilanjutkan
 - [ ] Default shell PHP still points to `/opt/homebrew/opt/php@8.3/bin/php`; use the PHP 8.4 PATH prefix for Composer/Artisan or relink Homebrew PHP before future validation.
 
 # Post-MVP
-- [ ] M14 · Rapat & Notulen
+- [x] M14 · Rapat & Notulen (database-backed meeting schedule, attendee status, published minutes payload, Viho-style Inertia page, seeded demo data, route smoke coverage, tenant-scope payload tests, and frontend build validation done)
 - [ ] M15 · Absensi QR
 - [ ] M16 · Sertifikat Digital
 - [ ] M17 · WhatsApp Reminder

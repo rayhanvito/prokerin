@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{member}/role', [OrganizationMemberRoleController::class, 'update'])->name('role.update');
     });
 
+    Route::get('/meetings', [WorkspacePageController::class, 'meetingsIndex'])->name('meetings.index');
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');

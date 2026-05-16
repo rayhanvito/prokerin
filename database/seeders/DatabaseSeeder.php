@@ -46,6 +46,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedBudgetLinesAndTransactions($now);
         $this->seedProposalDrafts($now);
         $this->seedLpjChecklist($now);
+        $this->seedMeetings($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
     }
@@ -451,6 +452,92 @@ final class DatabaseSeeder extends Seeder
         }
     }
 
+    private function seedMeetings($now): void
+    {
+        foreach ([
+            [
+                'title' => 'Technical Meeting Seminar Karier',
+                'agenda' => 'Final check rundown, PIC venue, alur registrasi, dan kebutuhan narasumber.',
+                'location' => 'Ruang BEM FT',
+                'starts_at' => '2026-05-26 15:30:00',
+                'ends_at' => '2026-05-26 17:00:00',
+                'status' => 'planned',
+                'creator' => 'sekretaris@prokerin.test',
+            ],
+            [
+                'title' => 'Evaluasi Proposal dan RAB',
+                'agenda' => 'Review revisi proposal, catatan RAB konsumsi, dan timeline approval.',
+                'location' => 'Google Meet',
+                'starts_at' => '2026-05-14 19:00:00',
+                'ends_at' => '2026-05-14 20:15:00',
+                'status' => 'completed',
+                'creator' => 'admin@prokerin.test',
+            ],
+        ] as $meeting) {
+            DB::table('meetings')->updateOrInsert(
+                [
+                    'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+                    'title' => $meeting['title'],
+                ],
+                [
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                    'created_by_user_id' => $this->userId($meeting['creator']),
+                    'agenda' => $meeting['agenda'],
+                    'location' => $meeting['location'],
+                    'starts_at' => $meeting['starts_at'],
+                    'ends_at' => $meeting['ends_at'],
+                    'status' => $meeting['status'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+
+        foreach ([
+            ['meeting' => 'Technical Meeting Seminar Karier', 'email' => 'sekretaris@prokerin.test', 'role' => 'Notulis', 'status' => 'invited'],
+            ['meeting' => 'Technical Meeting Seminar Karier', 'email' => 'lead@prokerin.test', 'role' => 'Ketua Pelaksana', 'status' => 'invited'],
+            ['meeting' => 'Technical Meeting Seminar Karier', 'email' => 'bendahara@prokerin.test', 'role' => 'Bendahara', 'status' => 'invited'],
+            ['meeting' => 'Evaluasi Proposal dan RAB', 'email' => 'admin@prokerin.test', 'role' => 'Reviewer', 'status' => 'present'],
+            ['meeting' => 'Evaluasi Proposal dan RAB', 'email' => 'sekretaris@prokerin.test', 'role' => 'Notulis', 'status' => 'present'],
+            ['meeting' => 'Evaluasi Proposal dan RAB', 'email' => 'bendahara@prokerin.test', 'role' => 'Bendahara', 'status' => 'present'],
+        ] as $attendee) {
+            $user = DB::table('users')->where('email', $attendee['email'])->first();
+
+            DB::table('meeting_attendees')->updateOrInsert(
+                [
+                    'meeting_id' => $this->meetingId($attendee['meeting']),
+                    'user_id' => $user->id,
+                ],
+                [
+                    'name' => $user->name,
+                    'role' => $attendee['role'],
+                    'attendance_status' => $attendee['status'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+
+        DB::table('meeting_minutes')->updateOrInsert(
+            ['meeting_id' => $this->meetingId('Evaluasi Proposal dan RAB')],
+            [
+                'created_by_user_id' => $this->userId('sekretaris@prokerin.test'),
+                'summary' => 'Proposal sudah siap diajukan setelah revisi narasi target peserta dan penyesuaian konsumsi.',
+                'decisions' => json_encode([
+                    'RAB konsumsi dikunci di angka Rp6.500.000 sebelum submit approval.',
+                    'Proposal final dikirim ke pembina maksimal 16 Mei 2026.',
+                ]),
+                'action_items' => json_encode([
+                    ['task' => 'Upload proposal revisi final', 'owner' => 'Salsa Kirana', 'due' => '2026-05-16', 'status' => 'open'],
+                    ['task' => 'Lengkapi bukti vendor konsumsi', 'owner' => 'Raka Pratama', 'due' => '2026-05-17', 'status' => 'open'],
+                ]),
+                'published_at' => '2026-05-14 21:00:00',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
+    }
+
     private function seedNotificationRules($now): void
     {
         foreach ((new GetDefaultNotificationRulesAction)->execute() as $rule) {
@@ -540,5 +627,10 @@ final class DatabaseSeeder extends Seeder
     private function documentId(string $name): int
     {
         return (int) DB::table('documents')->where('name', $name)->value('id');
+    }
+
+    private function meetingId(string $title): int
+    {
+        return (int) DB::table('meetings')->where('title', $title)->value('id');
     }
 }
