@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Proposal;
 
 use App\Actions\DocumentExport\PlanDocumentExportAction;
+use App\Actions\Notification\QueueWhatsAppNotificationAction;
 use App\Actions\Project\TransitionProjectStatusAction;
 use App\Domain\DocumentExport\ExportDocumentType;
 use App\Domain\DocumentExport\ExportFormat;
+use App\Domain\Notification\NotificationEvent;
 use App\Domain\Project\ProjectRole;
 use App\Domain\Project\ProjectStatus;
 use App\DTOs\DocumentExport\ExportRequestData;
@@ -22,6 +24,7 @@ final readonly class SubmitProposalDraftForApprovalAction
     public function __construct(
         private PlanDocumentExportAction $planDocumentExport,
         private TransitionProjectStatusAction $transitionProjectStatus,
+        private QueueWhatsAppNotificationAction $queueWhatsAppNotification,
     ) {}
 
     /**
@@ -130,10 +133,32 @@ final readonly class SubmitProposalDraftForApprovalAction
                 ->onQueue($plan->queueName)
                 ->afterCommit();
 
+            $this->queueWhatsAppNotification->execute(
+                organizationId: (int) $draft->organization_id,
+                event: NotificationEvent::ProposalReviewRequested,
+                userIds: $this->reviewerUserIds((int) $draft->organization_id, ['organization_owner', 'organization_admin', 'secretary']),
+                messageType: NotificationEvent::ProposalReviewRequested->value,
+                message: sprintf('Review proposal Prokerin: %s menunggu pengecekan.', (string) $draft->title),
+            );
+
             return [
                 'id' => $proposalDraftId,
                 'project_slug' => (string) $draft->project_slug,
             ];
         });
+    }
+
+    /**
+     * @param  array<int, string>  $roles
+     * @return array<int, int>
+     */
+    private function reviewerUserIds(int $organizationId, array $roles): array
+    {
+        return DB::table('organization_members')
+            ->where('organization_id', $organizationId)
+            ->whereIn('role', $roles)
+            ->pluck('user_id')
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->all();
     }
 }

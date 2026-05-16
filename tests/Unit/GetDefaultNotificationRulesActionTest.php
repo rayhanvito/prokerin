@@ -15,7 +15,7 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
     {
         $rules = (new GetDefaultNotificationRulesAction)->execute();
 
-        $this->assertCount(5, $rules);
+        $this->assertCount(6, $rules);
         $this->assertSame(NotificationEvent::TaskDeadlineReminder, $rules[0]->event);
         $this->assertContains(NotificationChannel::Email, $rules[0]->channels);
         $this->assertContains(NotificationChannel::WhatsApp, $rules[0]->channels);
@@ -28,7 +28,7 @@ final class GetDefaultNotificationRulesActionTest extends TestCase
 
         $this->assertNotNull($rule);
         $this->assertSame('Treasurer', $rule->audience);
-        $this->assertSame([NotificationChannel::InApp], $rule->channels);
+        $this->assertSame([NotificationChannel::InApp, NotificationChannel::WhatsApp], $rule->channels);
     }
 
     public function test_rule_serializes_for_inertia_payloads(): void

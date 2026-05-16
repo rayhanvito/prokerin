@@ -8,6 +8,8 @@ use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use App\Notifications\Channels\WhatsAppNotificationChannel;
 use App\Notifications\TaskDeadlineReminderNotification;
+use App\Support\WhatsApp\FakeWhatsAppProvider;
+use App\Support\WhatsApp\WhatsAppProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\DB;
@@ -96,17 +98,32 @@ final class TaskDeadlineReminderNotificationTest extends TestCase
         Queue::assertNotPushed(SendWhatsAppReminderJob::class);
     }
 
+    public function test_secretary_can_queue_meeting_whatsapp_alerts_for_attendees(): void
+    {
+        Queue::fake();
+
+        $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
+
+        DB::table('meetings')
+            ->where('title', 'Technical Meeting Seminar Karier')
+            ->update(['starts_at' => now()->addDay()->format('Y-m-d H:i:s')]);
+
+        $this->actingAs($secretary)
+            ->post(route('notifications.meeting-alerts.store'))
+            ->assertRedirect()
+            ->assertSessionHas('success', '3 reminder rapat WhatsApp masuk antrean.');
+
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->messageType === 'meeting_alert'
+                && str_contains($job->message, 'Technical Meeting Seminar Karier'),
+        );
+    }
+
     public function test_whatsapp_reminder_job_logs_successful_provider_delivery(): void
     {
-        Http::fake([
-            'https://wa.example.test/*' => Http::response(['id' => 'wa_123'], 200),
-        ]);
-
-        config([
-            'services.whatsapp.url' => 'https://wa.example.test/messages',
-            'services.whatsapp.token' => 'fake-token',
-            'services.whatsapp.from_number' => '+628100000000',
-        ]);
+        $this->app->instance(WhatsAppProvider::class, new FakeWhatsAppProvider);
+        config(['services.whatsapp.from_number' => '+628100000000']);
 
         $lead = User::query()->where('email', 'lead@prokerin.test')->firstOrFail();
 

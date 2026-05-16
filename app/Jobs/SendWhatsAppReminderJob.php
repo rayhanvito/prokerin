@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Support\WhatsApp\WhatsAppMessageData;
+use App\Support\WhatsApp\WhatsAppProvider;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Throwable;
 
 final class SendWhatsAppReminderJob implements ShouldQueue
@@ -49,22 +50,18 @@ final class SendWhatsAppReminderJob implements ShouldQueue
         ]);
 
         try {
-            $response = Http::withToken((string) config('services.whatsapp.token'))
-                ->timeout((int) config('services.whatsapp.timeout', 10))
-                ->post((string) config('services.whatsapp.url'), [
-                    'from' => config('services.whatsapp.from_number'),
-                    'to' => $this->recipientNumber,
-                    'message' => $this->message,
-                    'type' => $this->messageType,
-                ]);
-
-            $response->throw();
+            $response = app(WhatsAppProvider::class)->send(new WhatsAppMessageData(
+                from: (string) config('services.whatsapp.from_number'),
+                to: $this->recipientNumber,
+                message: $this->message,
+                type: $this->messageType,
+            ));
 
             DB::table('whatsapp_delivery_logs')
                 ->where('id', $logId)
                 ->update([
                     'status' => 'sent',
-                    'provider_response' => json_encode($response->json() ?? ['status' => $response->status()]),
+                    'provider_response' => json_encode($response),
                     'sent_at' => now(),
                     'updated_at' => now(),
                 ]);

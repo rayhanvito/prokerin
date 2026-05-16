@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Notification;
 
+use App\Domain\Notification\NotificationEvent;
 use App\Domain\Organization\OrganizationRole;
 use App\Domain\Task\TaskStatus;
-use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use App\Notifications\TaskDeadlineReminderNotification;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 
-final class SendTaskDeadlineRemindersAction
+final readonly class SendTaskDeadlineRemindersAction
 {
+    public function __construct(
+        private QueueWhatsAppNotificationAction $queueWhatsAppNotification,
+    ) {}
+
     public function execute(int $actorUserId, DateTimeImmutable $dueBefore): int
     {
         $organizationIds = DB::table('organization_members')
@@ -30,8 +34,6 @@ final class SendTaskDeadlineRemindersAction
         if ($organizationIds === []) {
             return 0;
         }
-
-        $whatsAppEnabledOrganizationIds = $this->whatsAppEnabledOrganizationIds($organizationIds);
 
         $tasks = DB::table('project_tasks')
             ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
@@ -57,45 +59,21 @@ final class SendTaskDeadlineRemindersAction
                 dueAt: (string) $task->due_at,
             ));
 
-            if (
-                $user !== null
-                && filled($user->whatsapp_number)
-                && in_array((int) $task->organization_id, $whatsAppEnabledOrganizationIds, true)
-            ) {
-                SendWhatsAppReminderJob::dispatch(
+            if ($user !== null) {
+                $this->queueWhatsAppNotification->execute(
                     organizationId: (int) $task->organization_id,
-                    userId: (int) $user->id,
-                    recipientNumber: (string) $user->whatsapp_number,
-                    messageType: 'task_deadline_reminder',
+                    event: NotificationEvent::TaskDeadlineReminder,
+                    userIds: [(int) $user->id],
+                    messageType: NotificationEvent::TaskDeadlineReminder->value,
                     message: (new TaskDeadlineReminderNotification(
                         taskTitle: (string) $task->title,
                         projectName: (string) $task->project_name,
                         dueAt: (string) $task->due_at,
                     ))->toWhatsApp($user),
-                )->onQueue('notifications');
+                );
             }
         }
 
         return $tasks->count();
-    }
-
-    /**
-     * @param  array<int, int>  $organizationIds
-     * @return array<int, int>
-     */
-    private function whatsAppEnabledOrganizationIds(array $organizationIds): array
-    {
-        return DB::table('notification_rules')
-            ->whereIn('organization_id', $organizationIds)
-            ->where('event', 'task_deadline_reminder')
-            ->get(['organization_id', 'channels'])
-            ->filter(static function (object $rule): bool {
-                $channels = json_decode((string) $rule->channels, true) ?: [];
-
-                return in_array('whatsapp', $channels, true);
-            })
-            ->map(static fn (object $rule): int => (int) $rule->organization_id)
-            ->values()
-            ->all();
     }
 }

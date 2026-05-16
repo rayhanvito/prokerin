@@ -29,8 +29,9 @@
 | MVP Core | M01–M13 | ✅ All complete and verified |
 | Post-MVP Wave 1 | M14–M16 | ✅ Complete |
 | Post-MVP Wave 2 | M19 | ✅ Complete |
-| Post-MVP Active | M17 | 〜 WhatsApp reminder foundation started |
-| Post-MVP Planned | M18, M20–M24 | 🔲 Not started |
+| Post-MVP Wave 2 | M17, M19 | ✅ Complete |
+| Post-MVP Active | M18 | 🔲 Next target |
+| Post-MVP Planned | M20–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -40,6 +41,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M17 meeting alert browser smoke passed on `/notifications`; `Meeting Alert` queues WhatsApp alerts and shows success flash.
+- `[x]` 2026-05-16 · After M17 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **221 passed, 1024 assertions**.
+- `[x]` 2026-05-16 · After M17 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskDeadlineReminderNotificationTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/WorkspacePayloadTest.php` → **36 passed, 208 assertions**.
+- `[x]` 2026-05-16 · After M17 completion: `npm run build` passed.
 - `[x]` 2026-05-16 · M17 notifications browser smoke passed on `/notifications`; WhatsApp card, WhatsApp rule channel, and delivery log table render.
 - `[x]` 2026-05-16 · M17 local migration `2026_05_16_000011_create_whatsapp_delivery_logs_table.php` applied cleanly; `php artisan db:seed` refreshed WhatsApp notification defaults.
 - `[x]` 2026-05-16 · After M17 WhatsApp foundation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **220 passed, 1018 assertions**.
@@ -547,7 +552,7 @@ certificate_recipients
 
 ### M17 · WhatsApp Reminder
 
-**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
+**Status:** `[x]` Complete and verified.
 
 #### Product Goal
 Send proker deadline reminders, approval notifications, and meeting alerts directly to members' WhatsApp — increasing response speed vs email alone.
@@ -560,8 +565,8 @@ Send proker deadline reminders, approval notifications, and meeting alerts direc
 - [x] Retry logic: 3 attempts with exponential backoff; mark `failed` after exhaustion.
 - [x] Tenant/user opt-in guard: only send if user has WhatsApp delivery enabled in `notification_rules`.
 - [x] Admin UI: WhatsApp delivery log per organization.
-- [ ] Extend WhatsApp delivery beyond task deadline reminders to approval notifications and meeting alerts.
-- [ ] Replace direct HTTP facade use with a swappable fake/real provider class if provider-specific behavior grows.
+- [x] Extend WhatsApp delivery beyond task deadline reminders to approval notifications and meeting alerts.
+- [x] Replace direct HTTP facade use with a swappable fake/real provider class.
 
 #### Rules
 - Never hardcode provider token, URL, or phone number in code.
@@ -573,8 +578,13 @@ Send proker deadline reminders, approval notifications, and meeting alerts direc
 - [x] Feature: job dispatched when task deadline < 24h.
 - [x] Feature: delivery log written on success and failure.
 - [x] Feature: opt-out rule does not queue WhatsApp message.
+- [x] Feature: proposal, LPJ, finance approval, and meeting alert workflows queue WhatsApp jobs when opted in.
 
 #### Verification
+- `[x]` 2026-05-16 · Browser smoke passed for `/notifications`; `Meeting Alert` button queues meeting WhatsApp alerts and shows success flash.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskDeadlineReminderNotificationTest.php tests/Unit/GetDefaultNotificationRulesActionTest.php tests/Feature/ProposalApprovalTest.php tests/Feature/LpjApprovalTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/WorkspacePayloadTest.php` → **36 passed, 208 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **221 passed, 1024 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · Browser smoke passed for `/notifications`; WhatsApp card, WhatsApp channel rule, and delivery log table render.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000011_create_whatsapp_delivery_logs_table.php`.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` refreshed WhatsApp default channel and seeded dev WhatsApp numbers.
@@ -765,13 +775,12 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 ## Next Action (Ordered Priority)
 
 ### After M16
-1. **Continue M17** — add WhatsApp delivery for approval notifications and meeting alerts, then decide whether a provider interface is needed before marking complete.
-2. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
-3. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
-4. **M22 (Payment)** only after M21 is stable.
-5. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-6. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
-7. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+1. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+2. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+3. **M22 (Payment)** only after M21 is stable.
+4. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+5. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+6. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test

@@ -11,6 +11,7 @@ enum NotificationEvent: string
     case MemberInviteSent = 'member_invite_sent';
     case ProposalReviewRequested = 'proposal_review_requested';
     case LpjReviewRequested = 'lpj_review_requested';
+    case MeetingAlert = 'meeting_alert';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum NotificationEvent: string
             self::MemberInviteSent => 'Member invite sent',
             self::ProposalReviewRequested => 'Proposal review requested',
             self::LpjReviewRequested => 'LPJ review requested',
+            self::MeetingAlert => 'Meeting alert',
         };
     }
 }

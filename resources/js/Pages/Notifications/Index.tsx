@@ -77,6 +77,12 @@ export default function NotificationsIndex({
         });
     };
 
+    const simulateMeetingAlerts = (): void => {
+        post(route('notifications.meeting-alerts.store'), {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -122,15 +128,26 @@ export default function NotificationsIndex({
                     title="Notification Rules"
                     subtitle="Rule UI awal. Delivery backend nanti memakai Laravel notifications dan queue."
                     action={
-                        <button
-                            type="button"
-                            disabled={processing}
-                            onClick={simulateDeadlineReminders}
-                            className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
-                        >
-                            <Send className="h-4 w-4" />
-                            Simulate
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                disabled={processing}
+                                onClick={simulateDeadlineReminders}
+                                className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
+                            >
+                                <Send className="h-4 w-4" />
+                                Task Reminder
+                            </button>
+                            <button
+                                type="button"
+                                disabled={processing}
+                                onClick={simulateMeetingAlerts}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] px-4 py-2 text-sm font-semibold text-[#242934] transition hover:border-[#24695c] hover:text-[#24695c]"
+                            >
+                                <Smartphone className="h-4 w-4" />
+                                Meeting Alert
+                            </button>
+                        </div>
                     }
                 >
                     <VihoDataTable

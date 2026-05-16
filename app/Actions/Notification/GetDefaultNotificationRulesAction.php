@@ -25,7 +25,7 @@ final class GetDefaultNotificationRulesAction
             new NotificationRuleData(
                 event: NotificationEvent::FinanceApprovalRequested,
                 audience: 'Treasurer',
-                channels: [NotificationChannel::InApp],
+                channels: [NotificationChannel::InApp, NotificationChannel::WhatsApp],
                 trigger: 'RAB submitted',
             ),
             new NotificationRuleData(
@@ -37,14 +37,20 @@ final class GetDefaultNotificationRulesAction
             new NotificationRuleData(
                 event: NotificationEvent::ProposalReviewRequested,
                 audience: 'Secretary and organization admin',
-                channels: [NotificationChannel::InApp],
+                channels: [NotificationChannel::InApp, NotificationChannel::WhatsApp],
                 trigger: 'Proposal moved to review',
             ),
             new NotificationRuleData(
                 event: NotificationEvent::LpjReviewRequested,
                 audience: 'Secretary and project lead',
-                channels: [NotificationChannel::InApp],
+                channels: [NotificationChannel::InApp, NotificationChannel::WhatsApp],
                 trigger: 'LPJ checklist completed',
+            ),
+            new NotificationRuleData(
+                event: NotificationEvent::MeetingAlert,
+                audience: 'Meeting attendees',
+                channels: [NotificationChannel::WhatsApp],
+                trigger: 'H-7 meeting',
             ),
         ];
     }

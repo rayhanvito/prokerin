@@ -69,7 +69,8 @@ export type NotificationEvent =
     | 'finance_approval_requested'
     | 'member_invite_sent'
     | 'proposal_review_requested'
-    | 'lpj_review_requested';
+    | 'lpj_review_requested'
+    | 'meeting_alert';
 
 export type DashboardMetricTone =
     | 'primary'

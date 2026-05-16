@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Domain\Project\ProjectStatus;
 use App\Jobs\GenerateDocumentExportJob;
+use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +68,11 @@ final class ProposalApprovalTest extends TestCase
         Queue::assertPushed(
             GenerateDocumentExportJob::class,
             fn (GenerateDocumentExportJob $job): bool => $job->documentExportId === $documentExportId,
+        );
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->messageType === 'proposal_review_requested'
+                && str_contains($job->message, 'Proposal Seminar Karier Digital'),
         );
     }
 

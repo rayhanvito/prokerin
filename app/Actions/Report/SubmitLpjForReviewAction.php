@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Report;
 
+use App\Actions\Notification\QueueWhatsAppNotificationAction;
 use App\Actions\Project\TransitionProjectStatusAction;
+use App\Domain\Notification\NotificationEvent;
 use App\Domain\Organization\OrganizationRole;
 use App\Domain\Project\ProjectStatus;
 use App\DTOs\Report\LpjChecklistItemData;
@@ -18,6 +20,7 @@ final readonly class SubmitLpjForReviewAction
     public function __construct(
         private CalculateLpjReadinessAction $calculateReadiness,
         private TransitionProjectStatusAction $transitionProjectStatus,
+        private QueueWhatsAppNotificationAction $queueWhatsAppNotification,
     ) {}
 
     /**
@@ -35,7 +38,7 @@ final readonly class SubmitLpjForReviewAction
                     OrganizationRole::Admin->value,
                     OrganizationRole::Secretary->value,
                 ])
-                ->select(['projects.id', 'projects.status'])
+                ->select(['projects.id', 'projects.name', 'projects.organization_id', 'projects.status'])
                 ->lockForUpdate()
                 ->first();
 
@@ -68,7 +71,32 @@ final readonly class SubmitLpjForReviewAction
                     'status' => $targetStatus->value,
                     'updated_at' => now(),
                 ]);
+
+            $this->queueWhatsAppNotification->execute(
+                organizationId: (int) $project->organization_id,
+                event: NotificationEvent::LpjReviewRequested,
+                userIds: $this->reviewerUserIds((int) $project->organization_id),
+                messageType: NotificationEvent::LpjReviewRequested->value,
+                message: sprintf('Review LPJ Prokerin: %s sudah siap direview.', (string) $project->name),
+            );
         });
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function reviewerUserIds(int $organizationId): array
+    {
+        return DB::table('organization_members')
+            ->where('organization_id', $organizationId)
+            ->whereIn('role', [
+                OrganizationRole::Owner->value,
+                OrganizationRole::Admin->value,
+                OrganizationRole::Secretary->value,
+            ])
+            ->pluck('user_id')
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->all();
     }
 
     /**

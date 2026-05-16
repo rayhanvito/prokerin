@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -24,6 +26,7 @@ final class BudgetReceiptRealizationTest extends TestCase
 
     public function test_treasurer_can_upload_receipt_backed_budget_realization(): void
     {
+        Queue::fake();
         Storage::fake('s3');
 
         $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
@@ -59,6 +62,11 @@ final class BudgetReceiptRealizationTest extends TestCase
             'realized_amount' => 900000,
             'status' => 'realized',
         ]);
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->messageType === 'finance_approval_requested'
+                && str_contains($job->message, 'Cetak poster tambahan'),
+        );
     }
 
     public function test_member_cannot_upload_budget_realization_receipt(): void

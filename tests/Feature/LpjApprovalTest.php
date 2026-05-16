@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Domain\Project\ProjectStatus;
+use App\Jobs\SendWhatsAppReminderJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 final class LpjApprovalTest extends TestCase
@@ -23,6 +25,8 @@ final class LpjApprovalTest extends TestCase
 
     public function test_secretary_can_submit_complete_lpj_for_review(): void
     {
+        Queue::fake();
+
         $secretary = User::query()->where('email', 'sekretaris@prokerin.test')->firstOrFail();
         $projectId = $this->projectId();
         $this->completeChecklist($projectId);
@@ -38,6 +42,10 @@ final class LpjApprovalTest extends TestCase
             'id' => $projectId,
             'status' => ProjectStatus::LpjReview->value,
         ]);
+        Queue::assertPushed(
+            SendWhatsAppReminderJob::class,
+            fn (SendWhatsAppReminderJob $job): bool => $job->messageType === 'lpj_review_requested',
+        );
     }
 
     public function test_incomplete_lpj_cannot_be_submitted_for_review(): void

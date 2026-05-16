@@ -18,6 +18,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\ManualAttendanceController;
+use App\Http\Controllers\MeetingWhatsAppAlertController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
@@ -131,6 +132,7 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
+    Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])->name('notifications.meeting-alerts.store');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

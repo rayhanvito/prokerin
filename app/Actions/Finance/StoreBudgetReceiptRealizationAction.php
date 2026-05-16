@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Finance;
 
 use App\Actions\Document\ValidateDocumentUploadAction;
+use App\Actions\Notification\QueueWhatsAppNotificationAction;
 use App\Domain\Document\DocumentVisibility;
 use App\Domain\Finance\BudgetStatus;
+use App\Domain\Notification\NotificationEvent;
 use App\DTOs\Document\DocumentUploadCandidateData;
 use App\DTOs\Finance\BudgetLineData;
 use App\DTOs\Finance\BudgetRealizationData;
@@ -24,6 +26,7 @@ final class StoreBudgetReceiptRealizationAction
     public function __construct(
         private readonly RecordBudgetRealizationAction $recordBudgetRealization,
         private readonly ValidateDocumentUploadAction $validateDocumentUpload,
+        private readonly QueueWhatsAppNotificationAction $queueWhatsAppNotification,
     ) {}
 
     /**
@@ -54,6 +57,7 @@ final class StoreBudgetReceiptRealizationAction
                     'budget_lines.realized_amount',
                     'budget_lines.status',
                     'projects.organization_id',
+                    'projects.name as project_name',
                     'projects.slug as project_slug',
                 ])
                 ->lockForUpdate()
@@ -135,12 +139,37 @@ final class StoreBudgetReceiptRealizationAction
                     'updated_at' => $now,
                 ]);
 
+            $this->queueWhatsAppNotification->execute(
+                organizationId: (int) $line->organization_id,
+                event: NotificationEvent::FinanceApprovalRequested,
+                userIds: $this->financeReviewerUserIds((int) $line->organization_id),
+                messageType: NotificationEvent::FinanceApprovalRequested->value,
+                message: sprintf(
+                    'Review finance Prokerin: bukti %s untuk %s menunggu approval.',
+                    $transactionName,
+                    (string) $line->project_name,
+                ),
+            );
+
             return [
                 'transaction_id' => $transactionId,
                 'document_id' => $documentId,
                 'realized_amount' => $updatedLine->realizedAmount->amount,
             ];
         });
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function financeReviewerUserIds(int $organizationId): array
+    {
+        return DB::table('organization_members')
+            ->where('organization_id', $organizationId)
+            ->whereIn('role', ['organization_owner', 'organization_admin', 'treasurer'])
+            ->pluck('user_id')
+            ->map(static fn (int|string $id): int => (int) $id)
+            ->all();
     }
 
     private function storeReceipt(UploadedFile $receipt, string $projectSlug, string $timestamp): string
