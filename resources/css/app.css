@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --viho-primary: #24695c;
+    --viho-secondary: #ba895d;
+    --viho-success: #1b4c43;
+    --viho-danger: #d22d3d;
+    --viho-body: #242934;
+    --viho-muted: #59667a;
+    --viho-light-muted: #717171;
+    --viho-border: #e6edef;
+    --viho-page: #f5f7fb;
+}
+
+body {
+    background: var(--viho-page);
+    color: var(--viho-body);
+}

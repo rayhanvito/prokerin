@@ -1,0 +1,88 @@
+<?php
+
+use App\Http\Controllers\BudgetReceiptRealizationController;
+use App\Http\Controllers\OrganizationLogoController;
+use App\Http\Controllers\OrganizationMemberRoleController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectTemplateGenerationController;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\TaskStatusController;
+use App\Http\Controllers\WorkspacePageController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', [PublicPageController::class, 'welcome']);
+
+Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::prefix('proker')->name('proker.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'prokerIndex'])->name('index');
+        Route::post('/', [ProjectController::class, 'store'])->name('store');
+        Route::get('/create', [WorkspacePageController::class, 'prokerCreate'])->name('create');
+        Route::get('/sample', [WorkspacePageController::class, 'prokerShow'])->name('show');
+        Route::get('/templates', [WorkspacePageController::class, 'prokerTemplates'])->name('templates');
+        Route::post('/templates/{template}/generate', [ProjectTemplateGenerationController::class, 'store'])->name('templates.generate');
+        Route::get('/status-flow', [WorkspacePageController::class, 'prokerStatusFlow'])->name('status-flow');
+        Route::get('/{project}/edit', [WorkspacePageController::class, 'prokerEdit'])->name('edit');
+        Route::patch('/{project}', [ProjectController::class, 'update'])->name('update');
+        Route::delete('/{project}', [ProjectController::class, 'destroy'])->name('destroy');
+        Route::get('/{project}', [WorkspacePageController::class, 'prokerShow'])->name('detail');
+    });
+
+    Route::prefix('organization')->name('organization.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'organizationSetup'])->name('setup');
+        Route::post('/logo', [OrganizationLogoController::class, 'store'])->name('logo.store');
+        Route::get('/switcher', [WorkspacePageController::class, 'organizationSwitcher'])->name('switcher');
+        Route::get('/periods', [WorkspacePageController::class, 'organizationPeriods'])->name('periods');
+        Route::get('/calendar', [WorkspacePageController::class, 'organizationCalendar'])->name('calendar');
+        Route::get('/handover', [WorkspacePageController::class, 'organizationHandover'])->name('handover');
+    });
+
+    Route::prefix('tasks')->name('tasks.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'taskIndex'])->name('index');
+        Route::get('/kanban', [WorkspacePageController::class, 'taskKanban'])->name('kanban');
+        Route::get('/calendar', [WorkspacePageController::class, 'taskCalendar'])->name('calendar');
+        Route::get('/assignments', [WorkspacePageController::class, 'taskAssignments'])->name('assignments');
+        Route::patch('/{task}/status', [TaskStatusController::class, 'update'])->name('status.update');
+    });
+
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'financeIndex'])->name('index');
+        Route::get('/budget-draft', [WorkspacePageController::class, 'financeBudgetDraft'])->name('budget-draft');
+        Route::get('/realization', [WorkspacePageController::class, 'financeRealization'])->name('realization');
+        Route::post('/budget-lines/{budgetLine}/realizations', [BudgetReceiptRealizationController::class, 'store'])->name('realizations.store');
+        Route::get('/approval', [WorkspacePageController::class, 'financeApproval'])->name('approval');
+    });
+
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'reportsIndex'])->name('index');
+        Route::get('/proposal-editor', [WorkspacePageController::class, 'proposalEditor'])->name('proposal-editor');
+        Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');
+        Route::get('/export-queue', [WorkspacePageController::class, 'exportQueue'])->name('export-queue');
+    });
+
+    Route::prefix('documents')->name('documents.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'documentsIndex'])->name('index');
+        Route::get('/folders', [WorkspacePageController::class, 'documentFolders'])->name('folders');
+        Route::get('/upload-center', [WorkspacePageController::class, 'uploadCenter'])->name('upload-center');
+    });
+
+    Route::prefix('members')->name('members.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'membersIndex'])->name('index');
+        Route::get('/invites', [WorkspacePageController::class, 'memberInvites'])->name('invites');
+        Route::get('/roles', [WorkspacePageController::class, 'memberRoles'])->name('roles');
+        Route::patch('/{member}/role', [OrganizationMemberRoleController::class, 'update'])->name('role.update');
+    });
+
+    Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
