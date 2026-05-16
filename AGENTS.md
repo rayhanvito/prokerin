@@ -531,6 +531,9 @@ chore: configure Supervisor for queue workers
 - [x] Template generation flow added for M05 with one-click template generation, project/task/RAB/proposal/LPJ scaffold persistence, and feature tests
 - [x] Task kanban and calendar payloads wired for M06 with tenant-scoped database tasks, quick status updates, completion timestamps, and feature tests
 - [x] Finance receipt upload backend and UI wiring added for M07 with treasurer/admin/owner scope, private receipt document storage, budget transaction persistence, DB-backed realization payloads, and feature tests
+- [x] Proposal submission flow added for M08 with tenant-scoped draft submit, project status transition to proposal review, queued PDF export dispatch, and feature tests
+- [x] Proposal approval decision flow added for M08 with owner/admin approve or revision request, project status transitions, and Inertia approval controls
+- [x] Proposal draft edit persistence added for M08 with section body editing, revision-to-draft save flow, locked submitted/approved states, and feature tests
 
 # Sedang dikerjakan — jangan diubah tanpa konfirmasi
 - [x] M01 · Auth & Account (Breeze register/login/profile UI polish, Google OAuth config/readiness, email verification prompt Action, and Google OAuth web login/register flow done)
@@ -542,7 +545,7 @@ chore: configure Supervisor for queue workers
 - [x] M05 · Template Proker (UI scaffold, default template plan generator, template persistence table, seed data, database-backed template payload, and project/task/RAB/proposal/LPJ generation flow done)
 - [x] M06 · Timeline & Task Management (overview, database-backed kanban/calendar, quick status updates, PIC assignment UI scaffold, task board summary Action, and task PIC assignment Action done)
 - [x] M07 · RAB & Finance (overview, budget draft, DB-backed realization, approval UI scaffolds, server-side budget summary Action, approval decision Action, receipt-backed realization Action, receipt upload backend, transaction persistence, migration tables, and seed data done)
-- [~] M08 · Proposal Generator (overview, proposal editor, export queue UI scaffolds, proposal draft auto-fill Action, export queue planner, draft/export tables, seed data, and database-backed proposal/export payloads done; approval jobs pending)
+- [x] M08 · Proposal Generator (overview, proposal editor, export queue UI, proposal draft auto-fill Action, draft edit persistence, submit/revision/approval flow, queued export job placeholder, draft/export tables, seed data, database-backed proposal/export payloads, and feature tests done)
 - [~] M09 · Document Management (overview, folder structure, upload center UI scaffolds, upload validation Action, signed download planner, document table, and seed data done; storage permissions pending)
 - [~] M10 · LPJ Generator (overview, checklist UI scaffolds, LPJ readiness Action, export queue planner, checklist table, seed data, and database-backed checklist payload done; approval pending)
 - [~] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, and database-backed overview metrics done; tenant-scoped production queries pending)
