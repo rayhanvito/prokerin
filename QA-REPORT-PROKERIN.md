@@ -13,7 +13,7 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `435 passed, 2453 assertions` |
+| PHP feature/unit test | Pass | `452 passed, 2541 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
@@ -113,6 +113,12 @@ Area yang sudah cukup aman dari automated QA:
 | QA-OPEN-010 | High | Document Upload | Upload Center kini punya form upload nyata ke `documents.store`, validasi file/ukuran, penyimpanan S3, project tenant guard, dan progress upload. | Fixed |
 | QA-OPEN-011 | Medium | Document Folders | `/documents/folders` kini memakai folder tree dari tabel `documents`, dengan daftar file dan link download per folder. | Fixed |
 | S4.1 / S4.3 | High | File Upload Security | Upload `.php`/executable dan SVG payload ditolak oleh validasi Form Request/MIME sebelum dokumen disimpan. | Fixed |
+| TECH-03 | High | Rate Limiting | Login (5/min/IP+email), forgot password (3/15min/IP), invitation dispatch (20/jam/org), WhatsApp (100/jam/org), filament-login (5/min/IP+email), certificate verify (20/min/IP) kini punya throttle named limiter. | Fixed |
+| TECH-05 | High | Soft Deletes | `organizations`, `projects`, `documents`, `meetings`, `attendance_sessions`, `sponsors_vendors`, `certificate_recipients` punya `deleted_at` + indeks. Models `Organization` dan `Project` pakai `SoftDeletes` trait, default scope exclude trashed, restore tersedia. | Fixed |
+| TECH-08 | Medium | Query Indexes | Indexes baru: `notifications(notifiable_id, read_at)`, `attendance_qr_tokens(token_hash, expires_at)`, `projects(organization_id, starts_at)`, `budget_lines(status, updated_at)`, `documents(organization_id, visibility)`. Migration idempotent (cek `indexExists`). | Fixed |
+| Impersonation Expiry | High | Super Admin | Middleware `EnsureImpersonationFresh` di-mount di web stack; sesi impersonate yang lebih lama dari `IMPERSONATE_MAX_DURATION_HOURS` (default 2 jam) auto-leave + redirect ke `/internal-admin/users` + audit log `impersonate.expired`. | Fixed |
+| QA-OPEN-015 | Medium | Reports Overview | `/reports` kini data-backed dengan metrics proposal/LPJ/export queue, status breakdown, export queue terbaru, dan proker terkait dokumen dari organisasi aktif. | Fixed |
+| QA-OPEN-020 | High | LPJ Checklist & Export | LPJ checklist kini bisa toggle item via PATCH, menampilkan data eksekusi task/budget/attendance, dan memiliki trigger export LPJ PDF yang queue job setelah project completed. | Fixed |
 
 Masih ada open findings untuk modul lain. Organization Phase 1, Member Phase 2, dan Proker Phase 3 sudah dipindahkan ke fixed dan regression terbaru hijau.
 
@@ -124,8 +130,6 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 
 | ID | Severity | Area | Temuan | Bukti Teknis | Dampak |
 |---|---|---|---|---|---|
-| QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
-| QA-OPEN-020 | High | LPJ Checklist & Export | LPJ checklist bisa submit/review/approve, tetapi belum ada toggle item persistence, trigger export PDF khusus LPJ dari UI, dan checklist belum jelas mengambil completed task execution data. | `resources/js/Pages/Reports/LpjChecklist.tsx:63`, `resources/js/Pages/Reports/LpjChecklist.tsx:73`, `resources/js/Pages/Reports/LpjChecklist.tsx:84`. | Full proker lifecycle berhenti sebelum LPJ operasional benar-benar selesai. |
 
 Catatan verifikasi tambahan:
 
@@ -158,6 +162,8 @@ Catatan verifikasi tambahan:
 - Phase 5 finance overview targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/FinanceOverviewPayloadTest.php tests/Feature/Security/MultiTenantFinanceAccessTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/BudgetReceiptRealizationTest.php --stop-on-failure` -> `17 passed, 130 assertions`.
 - Phase 5 budget line CRUD targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/BudgetLineCrudTest.php` -> `9 passed, 39 assertions`.
 - Latest full regression after Phase 5 completion `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `435 passed, 2453 assertions`.
+- Phase 11 targeted security suite (rate limit + soft delete + impersonation freshness) `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/ImpersonationFreshnessTest.php tests/Feature/Security/SoftDeleteWorkspaceTest.php tests/Feature/Security/RateLimitTest.php` -> `10 passed, 23 assertions`.
+- Latest full regression after Phase 11 hardening `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `452 passed, 2541 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - PHP formatter gate `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> pass.
@@ -194,9 +200,9 @@ Area ini masih butuh QA lanjutan paling banyak:
 - Task board: Kanban load, status advance, member status guard, calendar data, progress recompute 100%, overview real, assign PIC, quick-add, dan overdue state sudah automated pass. Browser/manual state loading tetap perlu dicek.
 - Finance: Receipt upload, receipt MIME rejection, approval approve/reject, member mutation guard, GET finance page guard, finance overview data-backed, budget line CRUD (create/edit/delete dengan role guard `FINANCE_MANAGERS` + cross-tenant block + transaction-protected delete), serta RAB vs Realisasi chart sudah automated pass. Browser/manual state loading tetap perlu dicek.
 - Proposal: Edit section, submit, approve, request revision, lock submitted proposal, export PDF/DOCX job coverage, dan member guard sudah automated pass. Browser/manual state loading tetap perlu dicek.
-- Reports overview masih hardcoded walaupun proposal/LPJ detail action sudah punya coverage. Lihat QA-OPEN-015.
-- Document: Signed private download, restricted finance receipt guard, committee URL, export download guard sudah automated pass. Upload dokumen umum, oversized rejection dari UI, folder tree, recent documents, dan cross-tenant document download masih perlu lanjut.
-- LPJ: Submit review, approve/request changes, readiness guard, AI summary, dan export path punya coverage. Toggle checklist item dari UI masih belum ada/ belum terverifikasi.
+- Reports overview kini data-backed untuk status proposal/LPJ, export queue, dan proker terkait dokumen; browser/manual state loading tetap perlu dicek lintas role.
+- Document: Signed private download, restricted finance receipt guard, committee URL, export download guard, upload dokumen umum, oversized rejection, folder tree, recent documents, dan cross-tenant document download sudah automated pass.
+- LPJ: Submit review, approve/request changes, readiness guard, AI summary, checklist toggle, execution summary, dan export PDF queue sudah automated pass.
 
 ### Event, Meeting, Attendance, Certificate, Notification
 

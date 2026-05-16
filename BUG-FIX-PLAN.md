@@ -783,14 +783,21 @@ Cakupan: QA-OPEN-015, QA-OPEN-020, 13.2, 13.7, 13.8.
 - `GetLpjChecklistPayloadAction` menampilkan summary task done count, total budget realized, attendance count agar user bisa lihat data eksekusi yang akan masuk LPJ.
 
 ### Phase 7 Checklist
-- [ ] QA-OPEN-015: Reports overview data-backed.
-- [ ] QA-OPEN-020 / 13.2: Checklist toggle.
-- [ ] QA-OPEN-020 / 13.7: LPJ export trigger.
-- [ ] 13.8: Execution data summary di payload.
-- [ ] Update `QA-REPORT-PROKERIN.md`.
+- [x] QA-OPEN-015: Reports overview data-backed.
+- [x] QA-OPEN-020 / 13.2: Checklist toggle.
+- [x] QA-OPEN-020 / 13.7: LPJ export trigger.
+- [x] 13.8: Execution data summary di payload.
+- [x] Update `QA-REPORT-PROKERIN.md`.
 
 ### Verification (Phase 7)
-- Targeted reports/LPJ test pass.
+- 2026-05-17: `/reports` diganti dari `ModuleOverview` hardcoded menjadi payload database via `GetReportsOverviewPayloadAction` untuk proposal statuses, LPJ statuses, export queue, dan proker terkait dokumen.
+- 2026-05-17: LPJ checklist item kini punya ID dan checkbox PATCH `reports.lpj-checklist.items.update`; payload menampilkan summary eksekusi task, realisasi budget, dan attendance.
+- 2026-05-17: Export LPJ PDF aktif via `QueueLpjExportAction` dan `reports.lpj-checklist.export`; job `GenerateDocumentExportJob` di-queue setelah project completed.
+- Targeted reports/LPJ suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ReportsPhase7Test.php tests/Feature/LpjApprovalTest.php tests/Feature/WorkspacePayloadTest.php --stop-on-failure` -> **22 passed, 227 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Browser smoke: `http://127.0.0.1:8004/reports` renders data-backed overview sections; `http://127.0.0.1:8004/reports/lpj-checklist` renders checklist, export button, and execution summary after login as `owner@prokerin.test`.
+- Formatter gate: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test app/Actions/Workspace/GetReportsOverviewPayloadAction.php app/Actions/Workspace/GetLpjChecklistPayloadAction.php app/Actions/Report/ToggleLpjChecklistItemAction.php app/Actions/Report/QueueLpjExportAction.php app/Actions/DocumentExport/GenerateDocumentExportContentAction.php app/Http/Controllers/LpjChecklistItemController.php app/Http/Controllers/LpjExportController.php app/Http/Controllers/WorkspacePageController.php app/Http/Requests/UpdateLpjChecklistItemRequest.php routes/web.php tests/Feature/ReportsPhase7Test.php` pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **442 passed, 2518 assertions**.
 
 ---
 
@@ -892,16 +899,22 @@ Cakupan: TECH-03, TECH-05, TECH-08, S4.1, S4.3, plus impersonation expiry.
 - Validasi: tolak `mimes:php,phtml,exe,svg`. Kalau SVG perlu, sanitize via `enshrined/svg-sanitize` (install) sebelum simpan.
 
 ### Phase 11 Checklist
-- [ ] Rate limit named limiters terdaftar.
-- [ ] Soft deletes + Filament TrashedFilter.
-- [ ] Indexes added.
-- [ ] Impersonation inactivity middleware.
-- [ ] SVG/PHP upload reject.
+- [x] Rate limit named limiters terdaftar.
+- [x] Soft deletes + Filament TrashedFilter.
+- [x] Indexes added.
+- [x] Impersonation inactivity middleware.
+- [x] SVG/PHP upload reject.
 
 ### Verification (Phase 11)
-- Tests untuk rate limit (`assertStatus(429)` setelah threshold).
-- Tests soft delete + restore.
-- Tests upload SVG payload XSS reject.
+- Tests untuk rate limit (`assertStatus(429)` setelah threshold) di `tests/Feature/Security/RateLimitTest.php` (4 case: login, forgot password, certificate verify, invitation dispatch).
+- Tests soft delete + restore di `tests/Feature/Security/SoftDeleteWorkspaceTest.php` (3 case: organization, project, default-scope filter).
+- Tests impersonation freshness di `tests/Feature/Security/ImpersonationFreshnessTest.php` (3 case: fresh session kept, expired session leaves & redirect, missing marker leaves).
+- SVG/PHP upload guard sudah covered di Phase 6 oleh `StoreDocumentRequest::mimes:pdf,doc,docx,...` (no SVG/PHP allowed) — automated test sudah ada di `tests/Feature/DocumentUploadTest.php`.
+- Indexes ditambahkan via migration `2026_05_17_000007_add_query_performance_indexes.php` (notifications, attendance_qr_tokens, projects, budget_lines, documents) — guarded dengan `indexExists()` agar idempotent.
+- Targeted Phase 11 suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/ImpersonationFreshnessTest.php tests/Feature/Security/SoftDeleteWorkspaceTest.php tests/Feature/Security/RateLimitTest.php` -> **10 passed, 23 assertions**.
+- Pint targeted (14 files): pass.
+- npm build: pass.
+- Full regression after Phase 11: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **452 passed, 2541 assertions**.
 
 ---
 
@@ -965,7 +978,7 @@ Centang sesuai progress:
 - [x] **QA-OPEN-017** F6.2 cross-tenant proker (Phase 3)
 - [x] **QA-OPEN-018** Status transition + progress 100% (Phase 3)
 - [x] **QA-OPEN-019** Quick-add task + overdue (Phase 4)
-- [ ] **QA-OPEN-020** LPJ checklist toggle + export (Phase 7)
+- [x] **QA-OPEN-020** LPJ checklist toggle + export (Phase 7)
 
 ### Medium Severity
 - [ ] **QA-OPEN-005** Calendar data-backed (Phase 1)
@@ -973,7 +986,7 @@ Centang sesuai progress:
 - [x] **QA-OPEN-008** Finance overview data-backed (Phase 5)
 - [x] **QA-OPEN-011** Folders data-backed (Phase 6)
 - [ ] **QA-OPEN-014** Members overview data-backed (Phase 2)
-- [ ] **QA-OPEN-015** Reports overview data-backed (Phase 7)
+- [x] **QA-OPEN-015** Reports overview data-backed (Phase 7)
 
 ### Low / Polish
 - [ ] **QA-OPEN-012** Certificate visual preview (Phase 8)
@@ -986,10 +999,10 @@ Centang sesuai progress:
 
 ### Tech Hardening
 - [ ] **TECH-02** Sentry (Phase 12)
-- [ ] **TECH-03** Rate limits (Phase 11)
-- [ ] **TECH-05** Soft deletes (Phase 11)
+- [x] **TECH-03** Rate limits (Phase 11)
+- [x] **TECH-05** Soft deletes (Phase 11)
 - [ ] **TECH-07** Failed job handling + retry UI (Phase 12)
-- [ ] **TECH-08** DB indexes (Phase 11)
+- [x] **TECH-08** DB indexes (Phase 11)
 - [x] **S4.1 / S4.3** SVG/PHP upload reject (Phase 11)
 
 ---
