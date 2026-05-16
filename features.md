@@ -47,6 +47,7 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · QA-MASTER Auth/Dashboard/Security follow-up: added automated coverage for duplicate/weak/mismatched registration, unregistered login, expired password reset token, guest redirects for `/dashboard`, `/proker/create`, `/finance`, and `/internal-admin`; updated `QA-MASTER-PROKERIN.md` checklist statuses. Targeted Auth/Security suite → **35 passed, 99 assertions**; targeted Auth/Dashboard/Workspace suite → **48 passed, 415 assertions**; targeted Pint check passed; full regression `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **351 passed, 1738 assertions**.
 - `[x]` 2026-05-17 · SA01 Filament asset fix: published Filament CSS/JS/font assets to `public/css`, `public/js`, and `public/fonts`; `/internal-admin/login` now loads `css/filament/filament/app.css` successfully and the broken oversized-icon layout is resolved. Added `FilamentAssetTest`; BUG-008 recorded in `QA-MASTER-PROKERIN.md`.
 - `[x]` 2026-05-17 · QA-MASTER follow-up: fixed BUG-001 (`npm run lint` baseline), BUG-003 (`/pricing` duplicate React keys), and BUG-004 (workspace mobile menu accessible label). Updated QA checklist statuses in `QA-MASTER-PROKERIN.md`.
 - `[x]` 2026-05-17 · After QA-MASTER follow-up: `npm run lint` passed; `npm run build` passed; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` passed; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **343 passed, 1714 assertions**.

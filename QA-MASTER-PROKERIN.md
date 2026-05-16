@@ -150,32 +150,32 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 4.1.1 | Register with valid data | Fill name, email, password, confirm password → Submit | Account created, redirect to email verification or dashboard | `[ ]` |
-| 4.1.2 | Register with duplicate email | Use existing email | Validation error "email sudah digunakan" | `[ ]` |
-| 4.1.3 | Register with weak password | Password < 8 chars | Validation error | `[ ]` |
-| 4.1.4 | Register with mismatched confirm | Different confirm password | Validation error | `[ ]` |
-| 4.1.5 | Google OAuth register | Click "Masuk dengan Google" | OAuth flow completes, account created/linked, redirect to dashboard | `[ ]` |
-| 4.1.6 | Email verification prompt | Register without verifying | Prompt to verify shown, restricted access | `[ ]` |
+| 4.1.1 | Register with valid data | Fill name, email, password, confirm password → Submit | Account created, redirect to email verification or dashboard | `[P]` |
+| 4.1.2 | Register with duplicate email | Use existing email | Validation error "email sudah digunakan" | `[P]` |
+| 4.1.3 | Register with weak password | Password < 8 chars | Validation error | `[P]` |
+| 4.1.4 | Register with mismatched confirm | Different confirm password | Validation error | `[P]` |
+| 4.1.5 | Google OAuth register | Click "Masuk dengan Google" | OAuth flow completes, account created/linked, redirect to dashboard | `[P]` |
+| 4.1.6 | Email verification prompt | Register without verifying | Prompt to verify shown, restricted access | `[P]` |
 
 ### 4.2 Login Flow
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 4.2.1 | Login with valid credentials | Email + password | Redirect to /dashboard | `[ ]` |
-| 4.2.2 | Login with wrong password | Wrong password | Error, NOT revealing if email exists | `[ ]` |
-| 4.2.3 | Login with unregistered email | Random email | Error shown | `[ ]` |
+| 4.2.1 | Login with valid credentials | Email + password | Redirect to /dashboard | `[P]` |
+| 4.2.2 | Login with wrong password | Wrong password | Error, NOT revealing if email exists | `[P]` |
+| 4.2.3 | Login with unregistered email | Random email | Error shown | `[P]` |
 | 4.2.4 | "Remember me" functionality | Check remember me, close browser, reopen | Still logged in | `[ ]` |
-| 4.2.5 | Logout | Click logout | Session cleared, redirect to login | `[ ]` |
-| 4.2.6 | Access protected route as guest | Visit /dashboard directly | Redirect to /login | `[ ]` |
+| 4.2.5 | Logout | Click logout | Session cleared, redirect to login | `[P]` |
+| 4.2.6 | Access protected route as guest | Visit /dashboard directly | Redirect to /login | `[P]` |
 
 ### 4.3 Password Reset
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 4.3.1 | Request reset with valid email | Submit forgot password form | Success message (no email enumeration leak) | `[ ]` |
-| 4.3.2 | Reset with valid token | Click email link, enter new password | Password updated, redirect to login | `[ ]` |
-| 4.3.3 | Reset with expired token | Use old/expired link | Error: token expired | `[ ]` |
-| 4.3.4 | Profile update | Edit name, email | Changes saved, reflected in header | `[ ]` |
+| 4.3.1 | Request reset with valid email | Submit forgot password form | Success message (no email enumeration leak) | `[P]` |
+| 4.3.2 | Reset with valid token | Click email link, enter new password | Password updated, redirect to login | `[P]` |
+| 4.3.3 | Reset with expired token | Use old/expired link | Error: token expired | `[P]` |
+| 4.3.4 | Profile update | Edit name, email | Changes saved, reflected in header | `[P]` |
 
 ---
 
@@ -327,25 +327,25 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | User | Expected Dashboard | Status |
 |---|-----------|------|-------------------|--------|
-| 14.1.1 | Owner gets Pimpinan | Login as owner | KPI cards + Approval Queue + Priority Projects + Finance Summary | `[ ]` |
-| 14.1.2 | Admin gets Pimpinan | Login as admin | Same as owner variant | `[ ]` |
-| 14.1.3 | Secretary gets Sekretaris | Login as secretary | Proposal Status + LPJ Checklist + Rapat Pending (NO finance widget) | `[ ]` |
-| 14.1.4 | Treasurer gets Bendahara | Login as treasurer | Finance KPIs + Budget vs Realization (NO task kanban) | `[ ]` |
-| 14.1.5 | Project Lead gets Operasional | Login as lead | Own proker tasks + progress (ONLY own proker data) | `[ ]` |
-| 14.1.6 | Member gets Member | Login as member | Only own assigned tasks | `[ ]` |
-| 14.1.7 | Viewer gets restricted view | Login as viewer | Read-only view, no action buttons | `[ ]` |
-| 14.1.8 | Multi-role resolution | User with owner + member | Owner dashboard shown (highest role wins) | `[ ]` |
+| 14.1.1 | Owner gets Pimpinan | Login as owner | KPI cards + Approval Queue + Priority Projects + Finance Summary | `[P]` |
+| 14.1.2 | Admin gets Pimpinan | Login as admin | Same as owner variant | `[P]` |
+| 14.1.3 | Secretary gets Sekretaris | Login as secretary | Proposal Status + LPJ Checklist + Rapat Pending (NO finance widget) | `[P]` |
+| 14.1.4 | Treasurer gets Bendahara | Login as treasurer | Finance KPIs + Budget vs Realization (NO task kanban) | `[P]` |
+| 14.1.5 | Project Lead gets Operasional | Login as lead | Own proker tasks + progress (ONLY own proker data) | `[P]` |
+| 14.1.6 | Member gets Member | Login as member | Only own assigned tasks | `[P]` |
+| 14.1.7 | Viewer gets restricted view | Login as viewer | Read-only view, no action buttons | `[P]` |
+| 14.1.8 | Multi-role resolution | User with owner + member | Owner dashboard shown (highest role wins) | `[P]` |
 
 ### 14.2 Sidebar Role Filtering
 
 | # | Test Case | User | Expected | Status |
 |---|-----------|------|----------|--------|
-| 14.2.1 | Member sidebar | Login as member | RAB & Keuangan NOT visible | `[ ]` |
-| 14.2.2 | Treasurer sidebar | Login as treasurer | Anggota (role management) NOT visible | `[ ]` |
-| 14.2.3 | Secretary sidebar | Login as secretary | Serah Terima NOT visible | `[ ]` |
-| 14.2.4 | Owner sidebar | Login as owner | All menu items visible including Serah Terima | `[ ]` |
-| 14.2.5 | Approval badge | Pending approval items exist | Badge count correct in sidebar | `[ ]` |
-| 14.2.6 | Task badge | Member has pending tasks | Badge count correct | `[ ]` |
+| 14.2.1 | Member sidebar | Login as member | RAB & Keuangan NOT visible | `[P]` |
+| 14.2.2 | Treasurer sidebar | Login as treasurer | Anggota (role management) NOT visible | `[P]` |
+| 14.2.3 | Secretary sidebar | Login as secretary | Serah Terima NOT visible | `[P]` |
+| 14.2.4 | Owner sidebar | Login as owner | All menu items visible including Serah Terima | `[P]` |
+| 14.2.5 | Approval badge | Pending approval items exist | Badge count correct in sidebar | `[P]` |
+| 14.2.6 | Task badge | Member has pending tasks | Badge count correct | `[P]` |
 | 14.2.7 | Org switch clears sidebar | Switch org | Sidebar menu reloads for new org context | `[ ]` |
 
 ### 14.3 Dashboard KPI Accuracy
@@ -355,7 +355,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 14.3.1 | Proker count | Create 3 active proker | KPI shows 3 | `[ ]` |
 | 14.3.2 | Member count | 5 members in org | KPI shows 5 | `[ ]` |
 | 14.3.3 | Budget remaining | RAB 10M, approved realization 3M | KPI shows Rp7.000.000 | `[ ]` |
-| 14.3.4 | Cross-org isolation | Owner of org A | Sees ONLY org A data on dashboard | `[ ]` |
+| 14.3.4 | Cross-org isolation | Owner of org A | Sees ONLY org A data on dashboard | `[P]` |
 
 ---
 
@@ -623,7 +623,7 @@ All data checks below must pass simultaneously
 
 | Step | What to Verify | Status |
 |------|---------------|--------|
-| F6.1 | org2_owner visits /dashboard — sees ZERO org1 data | `[ ]` |
+| F6.1 | org2_owner visits /dashboard — sees ZERO org1 data | `[P]` |
 | F6.2 | org2_owner visits /proker — sees ZERO org1 projects | `[ ]` |
 | F6.3 | org2_owner visits /finance — sees ZERO org1 budget lines | `[ ]` |
 | F6.4 | org2_owner tries GET /proker/{org1_proker_slug} — 404 or 403 | `[ ]` |
@@ -640,10 +640,10 @@ All data checks below must pass simultaneously
 
 | # | Test | Expected | Status |
 |---|------|----------|--------|
-| S1.1 | Access /dashboard without session | Redirect to /login | `[ ]` |
-| S1.2 | Access /proker/create without session | Redirect to /login | `[ ]` |
-| S1.3 | Access /finance without session | Redirect to /login | `[ ]` |
-| S1.4 | Access /internal-admin without session | Redirect to login | `[ ]` |
+| S1.1 | Access /dashboard without session | Redirect to /login | `[P]` |
+| S1.2 | Access /proker/create without session | Redirect to /login | `[P]` |
+| S1.3 | Access /finance without session | Redirect to /login | `[P]` |
+| S1.4 | Access /internal-admin without session | Redirect to login | `[P]` |
 | S1.5 | Manually craft session cookie from another user | No access — session validation | `[ ]` |
 
 ### 25.2 Role Escalation Attempts
@@ -1185,6 +1185,13 @@ Notes: [Any additional context]
 
 ### QA Execution Notes
 
+- 2026-05-17 · Auth, dashboard, and security checklist follow-up:
+  - Added automated coverage for duplicate/weak/mismatched registration, unregistered login, expired password reset token, and unauthenticated access to `/dashboard`, `/proker/create`, `/finance`, and `/internal-admin`.
+  - OAuth item 4.1.5 is marked `[P]` from mocked Socialite redirect/callback tests, not a live Google browser flow.
+  - Targeted auth/security suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Auth tests/Feature/ProfileTest.php tests/Feature/Security/AuthenticationBypassTest.php` → **35 passed, 99 assertions**.
+  - Targeted dashboard/workspace suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Auth tests/Feature/ProfileTest.php tests/Feature/Dashboard/DashboardVariantRoutingTest.php tests/Feature/Dashboard/SidebarMenuActionTest.php tests/Feature/Dashboard/DashboardRedirectsForPlatformAdminsTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/WorkspacePayloadTest.php` → **48 passed, 415 assertions**.
+  - Targeted Pint check for changed auth/security tests → passed.
+  - Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **351 passed, 1738 assertions**.
 - 2026-05-17 · Automated gate rerun after BUG-001/003/004 fixes:
   - `npm run lint` → passed (`tsc --noEmit` baseline).
   - `npm run build` → passed.

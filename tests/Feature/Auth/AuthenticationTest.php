@@ -42,6 +42,16 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_users_can_not_authenticate_with_unregistered_email(): void
+    {
+        $this->post('/login', [
+            'email' => 'missing-user@example.com',
+            'password' => 'password',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
@@ -50,5 +60,10 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_guest_is_redirected_from_dashboard_to_login(): void
+    {
+        $this->get('/dashboard')->assertRedirect('/login');
     }
 }
