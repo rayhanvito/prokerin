@@ -29,6 +29,8 @@ use App\Http\Controllers\HandoverPackageTransitionController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LpjAiSummaryController;
 use App\Http\Controllers\LpjApprovalDecisionController;
+use App\Http\Controllers\LpjChecklistItemController;
+use App\Http\Controllers\LpjExportController;
 use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\ManualAttendanceController;
 use App\Http\Controllers\MeetingAttendanceController;
@@ -64,7 +66,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'home'])->name('landing.home');
 Route::get('/features', [LandingController::class, 'features'])->name('landing.features');
 Route::get('/pricing', [LandingController::class, 'pricing'])->name('landing.pricing');
-Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
+Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])
+    ->middleware('throttle:certificate-verify')
+    ->name('certificates.verify');
 Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
 Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
 Route::post('/payments/midtrans/webhook', [MidtransWebhookController::class, 'store'])->name('payments.midtrans.webhook');
@@ -108,7 +112,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/sponsors-vendors/{sponsorVendor}', [WorkspacePageController::class, 'organizationSponsorVendorDetail'])->name('sponsors-vendors.show');
         Route::post('/sponsors-vendors', [SponsorVendorController::class, 'store'])->name('sponsors-vendors.store');
         Route::patch('/sponsors-vendors/{sponsorVendor}', [SponsorVendorController::class, 'update'])->name('sponsors-vendors.update');
-        Route::post('/invitations', [OrganizationInvitationController::class, 'store'])->name('invitations.store');
+        Route::post('/invitations', [OrganizationInvitationController::class, 'store'])
+            ->middleware('throttle:organization-invitations')
+            ->name('invitations.store');
         Route::delete('/members/{member}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
         Route::post('/handover', [HandoverPackageController::class, 'store'])->name('handover.store');
         Route::post('/handover/packages/{package}/export', [HandoverPackageExportController::class, 'store'])->name('handover.packages.export');
@@ -147,6 +153,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/proposal-drafts/{proposalDraft}/submit', [ProposalApprovalController::class, 'store'])->name('proposal-drafts.submit');
         Route::patch('/proposal-drafts/{proposalDraft}/decision', [ProposalApprovalDecisionController::class, 'update'])->name('proposal-drafts.decision');
         Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');
+        Route::patch('/lpj-checklist/items/{item}', [LpjChecklistItemController::class, 'update'])->name('lpj-checklist.items.update');
+        Route::post('/lpj-checklist/{project}/export', [LpjExportController::class, 'store'])->name('lpj-checklist.export');
         Route::post('/lpj/{project}/ai-summary', [LpjAiSummaryController::class, 'store'])->name('lpj.ai-summary');
         Route::post('/lpj/{project}/review', [LpjReviewController::class, 'store'])->name('lpj.review');
         Route::patch('/lpj/{project}/decision', [LpjApprovalDecisionController::class, 'update'])->name('lpj.decision');
@@ -203,8 +211,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/invitations/{token}/accept', [OrganizationInvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitations/{token}/decline', [OrganizationInvitationController::class, 'decline'])->name('invitations.decline');
-    Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
-    Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])->name('notifications.meeting-alerts.store');
+    Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])
+        ->middleware('throttle:whatsapp-dispatch')
+        ->name('notifications.task-deadline-reminders.store');
+    Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])
+        ->middleware('throttle:whatsapp-dispatch')
+        ->name('notifications.meeting-alerts.store');
     Route::patch('/approval-workflows/{instance}/decision', [ApprovalWorkflowDecisionController::class, 'update'])->name('approval-workflows.decision');
     Route::patch('/approval-workflows/{instance}/delegate', [ApprovalWorkflowDelegationController::class, 'update'])->name('approval-workflows.delegate');
     Route::get('/campus/dashboard', [CampusDashboardController::class, 'show'])->name('campus.dashboard');
