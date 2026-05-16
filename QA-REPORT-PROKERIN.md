@@ -13,11 +13,11 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `363 passed, 1932 assertions` |
+| PHP feature/unit test | Pass | `364 passed, 1935 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
-| Targeted member role promotion | Pass | `5 passed, 10 assertions` |
+| Targeted member role promotion/demotion | Pass | `6 passed, 13 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
 | Targeted dashboard KPI accuracy | Pass | `4 passed, 153 assertions` |
 | Targeted workspace payload | Pass | `9 passed, 158 assertions` |
@@ -101,6 +101,7 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 | QA-OPEN-014 | Medium | Members Overview | `/members` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Members/Index.tsx:7`, `resources/js/Pages/Members/Index.tsx:14`, `resources/js/Pages/Members/Index.tsx:19`. | Jumlah member/invite dan daftar orang bisa menyesatkan user. |
 | QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
 | QA-OPEN-016 | High | Finance Access Control | GET route finance belum role-gated; member biasa yang menyembunyikan menu finance di sidebar masih bisa membuka direct URL `/finance`, `/finance/realization`, dan `/finance/approval`. | `routes/web.php:108`, `routes/web.php:114`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:16`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:37`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:19`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:50`. | Data RAB, realisasi, receipt status, dan approval queue bisa terbaca oleh role yang seharusnya tidak punya akses finance. |
+| QA-OPEN-017 | High | Proker Cross-Tenant Index | `/proker` masih membaca `workspaceMock`, sehingga org2/user mana pun berpotensi melihat sample proyek org lain seperti `Seminar Karier Digital`, `Workshop UI/UX HMIF`, dan `Makrab Angkatan 2026`. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Data/workspaceMock.ts:29`, `resources/js/Data/workspaceMock.ts:38`, `resources/js/Data/workspaceMock.ts:47`. | Checklist F6.2 fail: list proker belum tenant-scoped dan bisa memberi kesan ada data organisasi lain. |
 
 Catatan verifikasi tambahan:
 
@@ -111,7 +112,7 @@ Catatan verifikasi tambahan:
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
-- Latest full regression after role-promotion and finance-access QA refresh `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `363 passed, 1932 assertions`.
+- Latest full regression after role-demotion and proker-index QA refresh `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `364 passed, 1935 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
@@ -141,8 +142,6 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 | 6.2 | Duplicate invite | Belum ada submit route invite, jadi duplicate guard belum bisa diuji. |
 | 6.3 | Accept invitation | Accept token/route belum terlihat dari QA pass ini. |
 | 6.4 | Decline invitation | Decline token/route belum terlihat dari QA pass ini. |
-| 6.5 | Role promotion | Promote member ke treasurer lalu akses finance muncul. |
-| 6.6 | Role demotion | Demote admin ke member lalu approval access hilang. |
 | 6.8 | Remove member | Member dihapus dan kehilangan akses org. |
 | M03 overview | Members index data-backed | `/members` masih hardcoded. Lihat QA-OPEN-014. |
 
@@ -227,7 +226,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | Main workspace GET routes unauthenticated | Pass | Expanded automated sweep redirects guest access to `/login` across main workspace pages. |
 | Main workspace mutation routes unauthenticated | Pass | Expanded automated sweep redirects guest POST/PATCH/PUT/DELETE action routes to `/login`. |
 | Cross-tenant dashboard isolation | Pass | Dashboard org lain tidak bocor dari automated tests. |
-| Cross-tenant proker/finance/document | Belum lengkap | Perlu test semua route detail/download/action. |
+| Cross-tenant proker/finance/document | Fail/Belum lengkap | Proker index static mock fail tenant-scope (QA-OPEN-017), finance GET role guard fail (QA-OPEN-016), detail/download sebagian sudah pass. |
 | Finance GET role guard | Fail | Member biasa masih bisa membuka payload finance lewat direct URL. Lihat QA-OPEN-016. |
 | File upload MIME validation | Partial | Logo upload sudah, document/receipt/certificate asset belum semua. |
 | S3 signed URL | Partial | Unit download plan ada, browser/download route perlu dicek. |

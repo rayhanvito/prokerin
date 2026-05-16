@@ -203,7 +203,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 6.3 | Accept invitation | Log in as invited user, accept | User added to org with correct role | `[ ]` |
 | 6.4 | Decline invitation | Invited user declines | Removed from invite queue | `[ ]` |
 | 6.5 | Role promotion | Owner promotes member to treasurer | Role updated, treasurer sees finance in sidebar | `[P]` |
-| 6.6 | Role demotion | Owner demotes admin to member | Admin loses approval access | `[ ]` |
+| 6.6 | Role demotion | Owner demotes admin to member | Admin loses approval access | `[P]` |
 | 6.7 | Last owner protection | Owner tries to remove themselves as last owner | Blocked with clear error | `[P]` |
 | 6.8 | Remove member | Owner removes a member | User loses access to org | `[ ]` |
 | 6.9 | Member cannot change roles | Member visits /members | No role-edit controls visible | `[P]` |
@@ -624,7 +624,7 @@ All data checks below must pass simultaneously
 | Step | What to Verify | Status |
 |------|---------------|--------|
 | F6.1 | org2_owner visits /dashboard — sees ZERO org1 data | `[P]` |
-| F6.2 | org2_owner visits /proker — sees ZERO org1 projects | `[ ]` |
+| F6.2 | org2_owner visits /proker — sees ZERO org1 projects | `[F]` |
 | F6.3 | org2_owner visits /finance — sees ZERO org1 budget lines | `[ ]` |
 | F6.4 | org2_owner tries GET /proker/{org1_proker_slug} — 404 or 403 | `[P]` |
 | F6.5 | org2_owner sidebar badges show ONLY org2 data | `[P]` |
@@ -1185,6 +1185,13 @@ Notes: [Any additional context]
 
 ### QA Execution Notes
 
+- 2026-05-17 · Member role demotion and cross-tenant proker index follow-up:
+  - Added automated coverage for owner demoting admin to member and verifying finance/member management menu access disappears.
+  - Marked F6.2 fail because `/proker` still renders `workspaceMock` rows that include sample projects from multiple organizations instead of tenant-scoped database payload.
+  - Targeted role update suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationMemberRoleUpdateTest.php` → **6 passed, 13 assertions**.
+  - Targeted Pint check for changed role update test → passed.
+  - Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **364 passed, 1935 assertions**.
+
 - 2026-05-17 · Organization/member/proker checklist follow-up:
   - Added automated remember-me cookie coverage for login.
   - Existing automated coverage verified organization logo upload/MIME rejection, member role guards, last-owner protection, role matrix payload, project create/detail/update/archive, duplicate slug handling, member create denial, and atomic template generation.
@@ -1225,7 +1232,7 @@ Run this as the final gate before any public beta or paid plan activation.
 # Security
 [P] All /internal-admin routes inaccessible to non-super_admin
 [P] All organization data routes protected from unauthenticated requests
-[ ] Cross-tenant isolation verified: org2 cannot see org1 data
+[F] Cross-tenant isolation verified: org2 cannot see org1 data
 [ ] File upload MIME validation active on all upload endpoints
 [ ] S3 signed URLs working — raw S3 paths return 403
 [ ] CSRF protection active on all POST/PUT/PATCH/DELETE routes

@@ -66,6 +66,32 @@ final class OrganizationMemberRoleUpdateTest extends TestCase
         $this->assertContains('RAB & Keuangan', $labels);
     }
 
+    public function test_demoted_admin_loses_finance_sidebar_menu(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $admin = User::query()->where('email', 'admin@prokerin.test')->firstOrFail();
+        $membershipId = $this->membershipId($admin->id);
+
+        $this->actingAs($owner)
+            ->patch(route('members.role.update', $membershipId), [
+                'role' => OrganizationRole::Member->value,
+            ])
+            ->assertRedirect();
+
+        $organizationId = (int) DB::table('organization_members')
+            ->where('id', $membershipId)
+            ->value('organization_id');
+
+        $menu = app(SidebarMenuAction::class)->execute($admin, $organizationId);
+        $labels = array_values(array_map(
+            static fn (array $item): string => (string) $item['label'],
+            array_merge(...array_column($menu, 'items')),
+        ));
+
+        $this->assertNotContains('RAB & Keuangan', $labels);
+        $this->assertNotContains('Anggota & Role', $labels);
+    }
+
     public function test_regular_member_cannot_update_roles(): void
     {
         $actor = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
