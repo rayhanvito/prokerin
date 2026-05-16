@@ -37,6 +37,7 @@
 | Post-MVP Wave 3 | M22 | ✅ Complete |
 | Post-MVP Wave 3 | M23 | ✅ Complete |
 | Post-MVP Planned | M24 | 🟡 Partial |
+| Internal Tooling | SA01 | ✅ Complete |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
 
@@ -46,6 +47,12 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · SA01 Super Admin Panel completed: Filament gated to `super_admin` via `SuperAdminGate`, `internal_notes` column on organizations, `activity_logs` table + `LogActivityAction`, dashboard widgets (`PlatformStatsOverview`, `RecentOrganizationsTable`, `RecentUsersTable`), `UserResource` (edit, role guard, delete guard, impersonate action), `OrganizationResource` (plan tier change logging, force delete with typed confirmation), read-only `ProjectResource`, `NotificationRuleResource`, lab404 impersonation with `ImpersonationBanner.tsx` and stop route, Spatie roles wired for `super_admin`/`campus_admin`.
+- `[x]` 2026-05-17 · After SA01: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **311 passed, 1528 assertions**.
+- `[x]` 2026-05-17 · After SA01: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/SuperAdmin tests/Feature/SuperAdmin` → **25 passed, 73 assertions**.
+- `[x]` 2026-05-17 · After SA01: `npm run build` passed.
+- `[x]` 2026-05-17 · SA01 local migrations applied: `2026_05_17_000001_create_permission_tables.php`, `2026_05_17_000002_add_internal_notes_to_organizations_table.php`, `2026_05_17_000003_create_activity_logs_table.php`.
+- `[x]` 2026-05-17 · SA01 local `php artisan db:seed` assigned `super_admin` role to `superadmin@prokerin.test` and `campus_admin` to `campus@prokerin.test`.
 - `[x]` 2026-05-17 · M23 completed with `openai` production provider adapter using Responses API Structured Outputs, configurable `AI_BASE_URL`/`AI_TIMEOUT`, sanitized payload contract, usage token logging, and HTTP fake coverage.
 - `[~]` 2026-05-17 · M24 Campus Dashboard foundation shipped: campus tables, campus admin seed, linked organization dashboard payload, read-only Inertia page, campus sidebar, tenant isolation tests, mutation denial test, build, full regression, and browser smoke.
 - `[x]` 2026-05-17 · M24 local migration `2026_05_16_000017_create_campus_dashboard_tables.php` applied and `php artisan db:seed` added `Universitas Nusantara` linked to BEM Fakultas Teknologi + HIMA Informatika.
@@ -985,7 +992,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 - Campus admins receive a dedicated campus sidebar and do not get organization mutation access.
 
 #### Remaining Gap Before `[x]`
-- Install/wire formal Spatie Laravel Permission roles for `super_admin` and `campus_admin`, or explicitly accept the current `role_permission_matrix` abstraction as the project-local role system.
+- Install/wire formal Spatie Laravel Permission roles for `super_admin` and `campus_admin`, or explicitly accept the current `role_permission_matrix` abstraction as the project-local role system. → Addressed by SA01 (Spatie now seeded for both roles); only the deprecation/coexistence decision remains.
 
 #### Verification
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000017_create_campus_dashboard_tables.php`.
@@ -997,11 +1004,59 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ---
 
+### SA01 · Super Admin Panel (Filament)
+
+**Status:** `[x]` Complete.
+
+#### Product Goal
+Internal Prokerin team needs a secure, structured panel to inspect and manage all organizations, users, and platform-wide data without touching the database directly. Panel is server-rendered Filament gated to `super_admin` only — never exposed to organization users.
+
+#### What Is Built
+- Filament panel mounted at `/internal-admin`, protected by `SuperAdminGate` and Spatie's `super_admin` role on the User model (`canAccessPanel`).
+- `PlanTier` enum (`free`/`starter`/`pro`/`campus`) cast on `Organization` model, plus `internal_notes` text column for super-admin-only notes.
+- `activity_logs` table + `ActivityLog` model + `LogActivityAction` for append-only audit trail. Logged actions include `impersonate.start`, `impersonate.stop`, `user.role.change`, `user.delete`, `org.plan_tier.change`, `org.force_delete`.
+- Dashboard widgets: `PlatformStatsOverview` (totals + weekly deltas + plan breakdown), `RecentOrganizationsTable` (10 most recent orgs), `RecentUsersTable` (10 most recent users with role badges).
+- `UserResource`: list with role/verified filters and search; edit form supports name, email, password, force-verify toggle, and role assignment (excluding `super_admin` self-assignment via UI); impersonate row action; delete guard (cannot delete self, cannot delete `super_admin` via UI, cannot delete sole organization owner).
+- `OrganizationResource`: list with plan-tier filter and owner/member/active-project columns; edit form for name, slug, plan tier, status, and internal notes; force-delete row action with typed confirmation; plan-tier changes logged to `activity_logs` with `before`/`after` payload.
+- `ProjectResource`: read-only cross-org visibility (no create/edit/delete). Filterable by status and organization. View page surfaces task summary, planned budget, proposal status, and LPJ progress.
+- `NotificationRuleResource`: read/edit only. Edits global default notification rules (event type, label, audience, channels, status). No create or delete to preserve system-defined rules.
+- User impersonation via `lab404/laravel-impersonate`. `User` model implements `canImpersonate()`/`canBeImpersonated()` (super admins can impersonate non-super-admins only). Impersonation start redirects to `/dashboard`. `StopImpersonationController` posts to `impersonate.stop`, leaves the impersonation session, and redirects back to `/internal-admin/users`.
+- `ImpersonationBanner.tsx` rendered inside `AuthenticatedLayout`. Visible only when `impersonating.active` shared prop is set; surfaces impersonator name and a "Stop Impersonating" button.
+- Inertia `HandleInertiaRequests` shares an `impersonating` prop with `active`, `impersonator`, and `leaveUrl`.
+- Spatie Laravel Permission installed and migrated. `super_admin` and `campus_admin` roles seeded; `superadmin@prokerin.test` (local/staging only) seeded with `super_admin`, `campus@prokerin.test` with `campus_admin`.
+- `.env.example` extended with `FILAMENT_ADMIN_PATH`, `FILAMENT_BRAND_NAME`, `IMPERSONATE_MAX_DURATION_HOURS`. `config/prokerin.php` keeps these env keys out of application code.
+
+#### What Is NOT Yet Built
+- Production-grade Artisan command for assigning `super_admin` (currently the seeder does it for local/staging only).
+- Inactivity expiry for impersonation sessions (max duration env exists, enforcement TBD).
+- Dedicated activity log resource inside Filament (data is queryable via Eloquent and reachable through future Filament resource).
+
+#### Test Coverage
+- Unit:
+  - `SuperAdminGate`: grants for super_admin role, denies for organization_owner/no-role/unauthenticated.
+  - `LogActivityAction`: payload, user_id, ip_address/user_agent, null-payload behavior.
+- Feature:
+  - `FilamentAccessTest`: guest redirected, organization_owner blocked, member blocked, super_admin sees dashboard, super_admin lists users/organizations/projects/notification-rules, organization_owner cannot open users resource.
+  - `OrganizationResourceTest`: plan-tier change updates org and logs `org.plan_tier.change` with before/after.
+  - `UserResourceTest`: edit name/email, super_admin role excluded from assignable options, sole-organization-owner delete guard, self-delete guard, audit log on safe delete, list table renders.
+  - `ImpersonationTest`: super_admin can impersonate regular user (and audit log written), super_admin cannot impersonate another super_admin, organization_owner cannot trigger impersonate, stop redirects to `/internal-admin/users` and writes `impersonate.stop` log.
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied SA01 migrations cleanly on local MySQL.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed` assigned `super_admin` and `campus_admin` Spatie roles to seeded test users.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/SuperAdmin tests/Feature/SuperAdmin` → **25 passed, 73 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **311 passed, 1528 assertions**.
+- `[x]` 2026-05-17 · `npm run build` passed (production frontend bundle).
+
+---
+
 ## Next Action (Ordered Priority)
 
-### After M24 Foundation
-1. **Decide and implement formal M24 role persistence**: install/wire Spatie Laravel Permission for `super_admin`/`campus_admin`, or confirm the existing `role_permission_matrix` is the accepted local substitute.
-2. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
+### After SA01 Super Admin Panel
+1. **Add Filament `Impersonate` UI confirmation modal** for ergonomics. Currently the action is a one-click trigger; consider a confirmation step for support workflows.
+2. **Decide on production-grade `super_admin` provisioning command** (separate Artisan command that prompts for email + 2FA-style confirmation) instead of relying on the seeder for non-local environments.
+3. **Decide and implement formal M24 role persistence**: Spatie roles for `campus_admin` are now seeded; review if `role_permission_matrix` table should be deprecated or kept as the project-local permission ledger.
+4. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
