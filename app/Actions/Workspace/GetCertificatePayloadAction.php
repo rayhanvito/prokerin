@@ -11,7 +11,7 @@ final class GetCertificatePayloadAction
     /**
      * @return array{
      *     metrics: array<int, array{label: string, value: string, note: string}>,
-     *     templates: array<int, array{id: int, name: string, description: string|null, isActive: bool, issuedCount: int}>,
+     *     templates: array<int, array{id: int, name: string, description: string|null, templateHtml: string, signatureLabel: string|null, signatureName: string|null, isActive: bool, issuedCount: int}>,
      *     certificates: array<int, array{id: int, certificateNumber: string, recipientName: string, recipientEmail: string|null, templateName: string, projectName: string|null, meetingTitle: string|null, issuedAt: string, hasPdf: bool, verifyUrl: string, downloadUrl: string}>,
      *     recipients: array<int, array{id: int, name: string, email: string, role: string}>,
      *     projects: array<int, array{id: int, name: string}>,
@@ -34,13 +34,24 @@ final class GetCertificatePayloadAction
         $templates = DB::table('certificate_templates')
             ->leftJoin('certificate_recipients', 'certificate_recipients.template_id', '=', 'certificate_templates.id')
             ->whereIn('certificate_templates.organization_id', $organizationIds)
-            ->groupBy('certificate_templates.id', 'certificate_templates.name', 'certificate_templates.description', 'certificate_templates.is_active')
+            ->groupBy(
+                'certificate_templates.id',
+                'certificate_templates.name',
+                'certificate_templates.description',
+                'certificate_templates.template_html',
+                'certificate_templates.signature_label',
+                'certificate_templates.signature_name',
+                'certificate_templates.is_active',
+            )
             ->orderByDesc('certificate_templates.is_active')
             ->orderBy('certificate_templates.name')
             ->get([
                 'certificate_templates.id',
                 'certificate_templates.name',
                 'certificate_templates.description',
+                'certificate_templates.template_html',
+                'certificate_templates.signature_label',
+                'certificate_templates.signature_name',
                 'certificate_templates.is_active',
                 DB::raw('count(certificate_recipients.id) as issued_count'),
             ]);
@@ -107,6 +118,9 @@ final class GetCertificatePayloadAction
                     'id' => (int) $template->id,
                     'name' => (string) $template->name,
                     'description' => $template->description === null ? null : (string) $template->description,
+                    'templateHtml' => (string) $template->template_html,
+                    'signatureLabel' => $template->signature_label === null ? null : (string) $template->signature_label,
+                    'signatureName' => $template->signature_name === null ? null : (string) $template->signature_name,
                     'isActive' => (bool) $template->is_active,
                     'issuedCount' => (int) $template->issued_count,
                 ])

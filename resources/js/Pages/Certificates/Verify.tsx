@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { Award, CheckCircle2, ShieldCheck, XCircle } from 'lucide-react';
+import { Award, CheckCircle2, QrCode, ShieldCheck, XCircle } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface VerifiedCertificate {
     certificateNumber: string;
@@ -13,6 +14,7 @@ interface VerifiedCertificate {
     signatureLabel: string | null;
     signatureName: string | null;
     hasPdf: boolean;
+    verificationUrl: string;
 }
 
 interface CertificateVerifyProps {
@@ -63,19 +65,40 @@ export default function CertificateVerify({
                             </span>
                         </div>
 
-                        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                            <Detail label="Penerima" value={certificate.recipientName} />
-                            <Detail label="Organisasi" value={certificate.organizationName} />
-                            <Detail label="Template" value={certificate.templateName} />
-                            <Detail label="Tanggal terbit" value={certificate.issuedAt} />
-                            <Detail
-                                label="Proker"
-                                value={certificate.projectName ?? 'Tidak terkait proker'}
-                            />
-                            <Detail
-                                label="Rapat"
-                                value={certificate.meetingTitle ?? 'Tidak terkait rapat'}
-                            />
+                        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_220px]">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Detail label="Penerima" value={certificate.recipientName} />
+                                <Detail label="Organisasi" value={certificate.organizationName} />
+                                <Detail label="Template" value={certificate.templateName} />
+                                <Detail label="Tanggal terbit" value={certificate.issuedAt} />
+                                <Detail
+                                    label="Proker"
+                                    value={certificate.projectName ?? 'Tidak terkait proker'}
+                                />
+                                <Detail
+                                    label="Rapat"
+                                    value={certificate.meetingTitle ?? 'Tidak terkait rapat'}
+                                />
+                            </div>
+
+                            <div className="rounded-[4px] border border-[#e6edef] bg-[#f5f7fb] p-4 text-center">
+                                <div className="mx-auto inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#24695c]">
+                                    <QrCode className="h-4 w-4" />
+                                    QR Verifikasi
+                                </div>
+                                <div className="mt-4 inline-flex rounded-[4px] bg-white p-3 ring-1 ring-[#e6edef]">
+                                    <QRCodeSVG
+                                        value={certificate.verificationUrl}
+                                        size={156}
+                                        level="M"
+                                        includeMargin
+                                        title={`QR verifikasi ${certificate.certificateNumber}`}
+                                    />
+                                </div>
+                                <p className="mt-3 break-all text-xs leading-5 text-[#59667a]">
+                                    {certificate.verificationUrl}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="mt-8 rounded-[4px] bg-[#f5f7fb] p-4">

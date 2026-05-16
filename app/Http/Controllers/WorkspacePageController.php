@@ -225,9 +225,12 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Certificates/Index', $certificates->execute((int) $request->user()->id));
     }
 
-    public function certificateTemplates(Request $request, GetCertificatePayloadAction $certificates): Response
+    public function certificateTemplates(Request $request, GetCertificatePayloadAction $certificates, ?int $template = null): Response
     {
-        return Inertia::render('Certificates/Templates', $certificates->execute((int) $request->user()->id));
+        return Inertia::render('Certificates/Templates', [
+            ...$certificates->execute((int) $request->user()->id),
+            'selectedTemplateId' => $template,
+        ]);
     }
 
     public function certificateIssue(Request $request, GetCertificatePayloadAction $certificates): Response

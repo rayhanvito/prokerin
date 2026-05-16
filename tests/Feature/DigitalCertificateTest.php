@@ -65,6 +65,38 @@ final class DigitalCertificateTest extends TestCase
         ]);
     }
 
+    public function test_owner_can_edit_and_deactivate_certificate_template(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $templateId = $this->certificateTemplateId('Sertifikat Partisipasi Proker');
+
+        $this->actingAs($owner)
+            ->get(route('certificates.templates.edit', ['template' => $templateId]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Certificates/Templates')
+                ->where('selectedTemplateId', $templateId)
+                ->where('templates.0.templateHtml', '<h1>Sertifikat Penghargaan</h1><p class="meta">Nomor: {{certificate_number}}</p><p>Diberikan kepada</p><p class="recipient">{{recipient_name}}</p><p>atas partisipasi dalam {{project_name}} yang diselenggarakan oleh {{organization_name}}.</p><div class="signature"><p>{{signature_label}}</p><strong>{{signature_name}}</strong></div><p class="meta">Verifikasi: {{verification_url}}</p>'));
+
+        $this->actingAs($owner)
+            ->put(route('certificates.templates.update', ['template' => $templateId]), [
+                'name' => 'Sertifikat Partisipasi Proker Updated',
+                'description' => 'Template yang sudah diperbarui.',
+                'template_html' => '<h1>{{recipient_name}}</h1><p>{{verification_url}}</p>',
+                'signature_label' => 'Ketua BEM',
+                'signature_name' => 'Salsa Kirana',
+                'is_active' => false,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Template sertifikat berhasil diperbarui.');
+
+        $this->assertDatabaseHas('certificate_templates', [
+            'id' => $templateId,
+            'name' => 'Sertifikat Partisipasi Proker Updated',
+            'is_active' => false,
+        ]);
+    }
+
     public function test_owner_can_issue_certificate_batch_and_queue_pdf_generation(): void
     {
         Queue::fake();
@@ -132,7 +164,8 @@ final class DigitalCertificateTest extends TestCase
                 ->component('Certificates/Verify')
                 ->where('isValid', true)
                 ->where('certificate.recipientName', 'Salsa Kirana')
-                ->where('certificate.certificateNumber', 'PRK-2026-BEMFAKULTAST-0001'));
+                ->where('certificate.certificateNumber', 'PRK-2026-BEMFAKULTAST-0001')
+                ->where('certificate.verificationUrl', route('certificates.verify', ['token' => '11111111-1111-4111-8111-111111111111'])));
     }
 
     public function test_cross_tenant_user_cannot_download_other_organization_certificate(): void

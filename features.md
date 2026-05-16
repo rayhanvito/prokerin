@@ -27,8 +27,8 @@
 | Phase | Range | Status |
 |-------|-------|--------|
 | MVP Core | M01–M13 | ✅ All complete and verified |
-| Post-MVP Wave 1 | M14–M15 | ✅ Complete (initial scope) |
-| Post-MVP Active | M16 | 〜 Partial implementation verified |
+| Post-MVP Wave 1 | M14–M16 | ✅ Complete |
+| Post-MVP Active | M17/M19 selection | 🔎 Next module evaluation |
 | Post-MVP Planned | M17–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -39,6 +39,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M16 completion browser smoke passed for `/certificates/templates/1/edit` and public `/verify/11111111-1111-4111-8111-111111111111` with QR visual and no console errors.
+- `[x]` 2026-05-16 · After M16 completion polish: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **203 passed, 916 assertions**.
+- `[x]` 2026-05-16 · After M16 completion polish: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/CertificateNumberGeneratorTest.php tests/Feature/DigitalCertificateTest.php` → **11 passed, 77 assertions**.
+- `[x]` 2026-05-16 · After M16 completion polish: `npm run build` passed.
 - `[x]` 2026-05-16 · Landing responsive smoke passed at 375px, 768px, and 1280px after removing horizontal feature-card animation overflow.
 - `[x]` 2026-05-16 · After landing responsive polish: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **202 passed, 897 assertions**.
 - `[x]` 2026-05-16 · After landing responsive polish: `npm run build` passed (TypeScript + production frontend build).
@@ -432,7 +436,7 @@ All foundational work below is complete and must not be re-scaffolded.
 
 ### M16 · Sertifikat Digital (Digital Certificate)
 
-**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
+**Status:** `[x]` Complete.
 
 #### Product Goal
 Issue digitally-signed participation/achievement certificates for members who completed projects, attended events, or held organizational roles. Certificates are verifiable via a public URL (no account required).
@@ -459,9 +463,9 @@ certificate_recipients
 #### Backend to Build
 - [x] Migration: `2026_05_16_000008_create_certificate_tables.php` with `certificate_templates` and `certificate_recipients`.
 - [x] Seed: demo certificate template and recipients for BEM Fakultas Teknologi.
-- [~] `CreateCertificateTemplateAction` — create/update with org scope + validation exists; dedicated edit UI still needs polish.
+- [x] `CreateCertificateTemplateAction` — create/update with org scope + validation.
 - [x] `IssueCertificateBatchAction` — bulk issue to list of recipients; triggers PDF job per recipient.
-- [~] `GenerateCertificatePdfJob` (queued) — renders HTML template → DomPDF fallback → uploads to S3 → stores `pdf_path`. Browsershot engine swap remains a polish item.
+- [x] `GenerateCertificatePdfJob` (queued) — renders HTML template → DomPDF MVP engine → uploads to S3 → stores `pdf_path`.
 - [x] `VerifyCertificateAction` — public verification by `verification_token`; returns recipient + issue details without exposing internal IDs.
 - [x] `CertificateNumberGenerator` — format: `PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE}`, unique per organization per year.
 - [x] Form Request classes: `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
@@ -479,9 +483,9 @@ certificate_recipients
 
 #### Frontend to Build
 - [x] `resources/js/Pages/Certificates/Index.tsx` — list of issued certificates with stats.
-- [~] `resources/js/Pages/Certificates/Templates.tsx` — template list + create form exists; edit/activate toggle and richer preview still pending.
+- [x] `resources/js/Pages/Certificates/Templates.tsx` — template list, create/edit form, active toggle, and content preview.
 - [x] `resources/js/Pages/Certificates/Issue.tsx` — select template, select recipients (from members or manual), preview, issue.
-- [~] `resources/js/Pages/Certificates/Verify.tsx` — public verification page (unauthenticated) shows certificate details; QR code visual still pending.
+- [x] `resources/js/Pages/Certificates/Verify.tsx` — public verification page (unauthenticated) shows certificate details and scannable QR visual.
 - [x] Sidebar: "Sertifikat Digital" with badge `M16`.
 
 #### Test Coverage Required (before marking `[x]`)
@@ -493,15 +497,19 @@ certificate_recipients
 - [x] Feature: non-owner/admin cannot issue certificates.
 
 #### Verification
+- `[x]` 2026-05-16 · `npm run build` passed after template edit UX + QR verification visual.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **203 passed, 916 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/CertificateNumberGeneratorTest.php tests/Feature/DigitalCertificateTest.php` → **11 passed, 77 assertions**.
+- `[x]` 2026-05-16 · Browser smoke passed for `/certificates/templates/1/edit` and public `/verify/11111111-1111-4111-8111-111111111111`; QR visual rendered and no console errors.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/CertificateNumberGeneratorTest.php tests/Feature/DigitalCertificateTest.php` → **10 passed, 58 assertions**.
 - `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **200 passed, 865 assertions**.
 - `[x]` 2026-05-16 · `npm run build` passed.
 - `[x]` 2026-05-16 · Browser smoke passed for `/certificates`, `/certificates/templates`, `/certificates/issue`, and public `/verify/11111111-1111-4111-8111-111111111111`.
 
 #### Remaining Before `[x]`
-- [ ] Add richer template edit/activate UX instead of routing edit back to the create/list page.
-- [ ] Add a scannable QR code visual on the public verification page.
-- [ ] Decide whether to install/configure Browsershot for certificate PDF generation or keep DomPDF fallback as the accepted MVP engine.
+- [x] Add richer template edit/activate UX instead of routing edit back to the create/list page.
+- [x] Add a scannable QR code visual on the public verification page.
+- [x] PDF engine decision: keep DomPDF as the accepted M16 MVP engine; revisit Browsershot when certificate design needs browser-grade CSS rendering.
 
 #### Commit Message Convention
 `feat: add digital certificate module (M16)`
@@ -680,25 +688,19 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ## Next Action (Ordered Priority)
 
-### Immediate M16 Polish
-1. **Add richer template edit/activate UX** — edit route exists, but the UI still needs a selected-template edit state and active/inactive toggle.
-2. **Add QR code visual to public verification page** — keep it client-rendered or generated from a local package; do not depend on an unaudited external image endpoint.
-3. **Decide PDF engine** — either install/configure Browsershot for certificate PDFs or explicitly accept DomPDF fallback for M16 MVP.
-4. **Run verification again**:
+### After M16
+1. **Evaluate M19 (Handover)** — partial scaffold exists; prioritize over M17/M18 if the next semester handover deadline is approaching.
+2. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+3. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+4. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+5. **M22 (Payment)** only after M21 is stable.
+6. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+7. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+8. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
    ```
-5. **If polish is complete, mark M16 `[x]` and commit:** `feat: add digital certificate module (M16)`
-
-### After M16
-6. **Evaluate M19 (Handover)** — partial scaffold exists; prioritize over M17/M18 if the next semester handover deadline is approaching.
-7. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
-8. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
-9. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
-10. **M22 (Payment)** only after M21 is stable.
-11. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-12. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
 
 ---
 

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 final class VerifyCertificateAction
 {
     /**
-     * @return array{isValid: bool, certificate: array{certificateNumber: string, recipientName: string, recipientEmail: string|null, templateName: string, organizationName: string, projectName: string|null, meetingTitle: string|null, issuedAt: string, signatureLabel: string|null, signatureName: string|null, hasPdf: bool}|null}
+     * @return array{isValid: bool, certificate: array{certificateNumber: string, recipientName: string, recipientEmail: string|null, templateName: string, organizationName: string, projectName: string|null, meetingTitle: string|null, issuedAt: string, signatureLabel: string|null, signatureName: string|null, hasPdf: bool, verificationUrl: string}|null}
      */
     public function execute(string $verificationToken): array
     {
@@ -55,6 +55,7 @@ final class VerifyCertificateAction
                 'signatureLabel' => $certificate->signature_label === null ? null : (string) $certificate->signature_label,
                 'signatureName' => $certificate->signature_name === null ? null : (string) $certificate->signature_name,
                 'hasPdf' => filled($certificate->pdf_path),
+                'verificationUrl' => route('certificates.verify', ['token' => $verificationToken]),
             ],
         ];
     }
