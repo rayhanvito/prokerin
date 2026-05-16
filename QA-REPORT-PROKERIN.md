@@ -18,6 +18,7 @@ Status automated regression terakhir:
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
+| Targeted workspace payload | Pass | `9 passed, 158 assertions` |
 | Targeted workspace/org/member/proker smoke | Pass | `20 passed, 226 assertions` |
 | Targeted task/finance/proposal/lpj/document | Pass | `49 passed, 322 assertions` |
 | Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |

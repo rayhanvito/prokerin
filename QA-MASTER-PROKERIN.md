@@ -371,7 +371,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 15.6 | Proposal approval notification | Owner approves proposal | Submitter receives notification | `[ ]` |
 | 15.7 | LPJ revision notification | Owner requests revision | LPJ submitter notified | `[ ]` |
 | 15.8 | Meeting alert | Trigger meeting alert | WhatsApp queued for all attendees with WA enabled | `[P]` |
-| 15.9 | Notification rules page | Visit /notifications | Rules, channels, and delivery log render | `[ ]` |
+| 15.9 | Notification rules page | Visit /notifications | Rules, channels, and delivery log render | `[P]` |
 | 15.10 | Simulate reminder | Click "Simulate" button | Job dispatched, flash success shown | `[P]` |
 
 ---
