@@ -1,4 +1,5 @@
 # Sudah selesai dan berjalan
+- [x] Feature tracker consolidated here from `AGENTS.md`; keep detailed module status in this file so future agents do not need to scan the operating guide for completion details.
 - [x] Project scaffold Laravel latest + Breeze React/Inertia TypeScript
 - [x] Viho-inspired app shell: fixed sidebar, top header, guest layout, copied Viho assets in `public/vendor/viho/`
 - [x] Dashboard Monitoring UI foundation with Viho cards and Prokerin metrics
@@ -98,3 +99,13 @@
 - [x] M11 · Dashboard Monitoring (Viho UI, DTO payload, aggregate metrics Action, seed data, database-backed tenant-scoped overview metrics, priority projects, weekly focus, member summary, and anti-leak tests done)
 - [x] M12 · Notification Basic (notification rules/channel UI, default rule Action, notification rule table, seed data, database-backed rule payload, Laravel notification table, queued task deadline reminder delivery, email/database channels, simulate route, and feature tests done)
 - [x] M13 · Admin Panel Internal (planning UI scaffold, backend readiness payload, resource plan, system health counters, Filament package install, `/internal-admin` panel provider, and Organization/User/DocumentExport resources done)
+
+# Verifikasi terakhir
+- [x] 2026-05-16 · Frontend production build passed with `npm run build` (`tsc && vite build`).
+- [x] 2026-05-16 · Platform check confirmed required PHP runtime is PHP 8.4+ because installed Composer dependencies include `symfony/clock` requiring `>=8.4`.
+- [ ] 2026-05-16 · Full PHP test suite pending: `php artisan test` reached 181 tests with 180 passing and 1 runtime error because current PHP CLI is `8.3.23` and lacks `ReflectionProperty::isVirtual()`.
+
+# Belum dilanjutkan
+- [ ] Upgrade local PHP CLI/runtime to PHP 8.4+ and rerun `composer install`, `php artisan optimize:clear`, and `php artisan test`.
+- [ ] Record the passing PHP test result here after the runtime is fixed.
+- [ ] Start Post-MVP modules M14-M24 only after MVP tests pass again under PHP 8.4+.

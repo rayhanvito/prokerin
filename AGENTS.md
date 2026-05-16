@@ -15,7 +15,7 @@
 
 ## 2. Tech Stack
 
-- **Language**        : PHP 8.3+
+- **Language**        : PHP 8.4+
 - **Framework**       : Latest Laravel currently installed in this project (Laravel 13.x at scaffold time)
 - **Frontend**        : React (via Inertia.js) — NOT a standalone SPA
 - **Bridge**          : Inertia.js — connects Laravel routes directly to React pages
@@ -211,7 +211,7 @@ prokerin/                    # Single monolith project folder; keep app code and
 - Strict types: always add declare(strict_types=1) at top of PHP files
 - Type hints: always type-hint parameters and return types
 - No mixed or untyped return unless absolutely unavoidable
-- Use readonly properties and enums where appropriate (PHP 8.3+)
+- Use readonly properties and enums where appropriate (PHP 8.4+)
 - Use Laravel's built-in helpers (collect(), rescue(), filled(), blank(), etc.)
 - Always use Form Request classes for validation — never validate in controllers directly
 
@@ -465,6 +465,15 @@ Feature completion tracker is maintained in `features.md` so this operating guid
 - [x] Export Queue exposes tenant-scoped signed downloads for completed exports.
 - [x] Filament MVP resources remove destructive delete actions until admin policies are formalized.
 - [x] Finance approval queue is wired to backend approve/reject mutations for review-stage RAB lines.
+
+### Current Handoff Notes — 2026-05-16
+
+- `features.md` is the source of truth for detailed feature status; keep AGENTS.md limited to rules, constraints, and short handoff notes.
+- MVP M01-M13 are implemented in code and listed in `features.md`.
+- Frontend build verification passed on 2026-05-16 with `npm run build`.
+- PHP test verification is currently blocked until the local CLI/runtime is upgraded to PHP 8.4+. `composer check-platform-reqs` reports `symfony/clock` requires PHP `>=8.4`, while this machine is running PHP `8.3.23`; `php artisan test` reaches 181 tests with 180 passing and 1 runtime error from missing `ReflectionProperty::isVirtual()`.
+- After upgrading PHP, run `composer install`, `php artisan optimize:clear`, `php artisan test`, and then update `features.md` with the result.
+- Do not start Post-MVP modules M14-M24 until PHP tests pass again under PHP 8.4+ and the MVP validation result is recorded.
 
 # Post-MVP — jangan dikerjakan sebelum MVP selesai dan divalidasi
 - [ ] M14 · Rapat & Notulen
