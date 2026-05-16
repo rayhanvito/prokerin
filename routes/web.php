@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ApprovalWorkflowDecisionController;
+use App\Http\Controllers\ApprovalWorkflowDelegationController;
 use App\Http\Controllers\AttendanceQrCheckInController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
@@ -133,6 +135,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
     Route::post('/notifications/meeting-alerts', [MeetingWhatsAppAlertController::class, 'store'])->name('notifications.meeting-alerts.store');
+    Route::patch('/approval-workflows/{instance}/decision', [ApprovalWorkflowDecisionController::class, 'update'])->name('approval-workflows.decision');
+    Route::patch('/approval-workflows/{instance}/delegate', [ApprovalWorkflowDelegationController::class, 'update'])->name('approval-workflows.delegate');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

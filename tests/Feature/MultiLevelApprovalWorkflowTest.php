@@ -122,6 +122,33 @@ final class MultiLevelApprovalWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_workflow_decision_and_delegation_routes_are_wired(): void
+    {
+        $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
+        $admin = User::query()->where('email', 'admin@prokerin.test')->firstOrFail();
+        $instanceId = $this->startWorkflow([$treasurer->id], $treasurer->id);
+
+        $this->actingAs($treasurer)
+            ->patch(route('approval-workflows.delegate', ['instance' => $instanceId]), [
+                'delegate_user_id' => $admin->id,
+                'note' => 'Admin review lanjutan.',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Workflow approval berhasil didelegasikan.');
+
+        $this->actingAs($admin)
+            ->patch(route('approval-workflows.decision', ['instance' => $instanceId]), [
+                'decision' => 'approved',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Workflow approval berhasil diproses.');
+
+        $this->assertDatabaseHas('approval_instances', [
+            'id' => $instanceId,
+            'status' => 'approved',
+        ]);
+    }
+
     /**
      * @param  array<int, int>  $approverIds
      */
