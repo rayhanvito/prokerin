@@ -49,6 +49,10 @@ final class GenerateDocumentExportContentAction
             return $this->eventRegistrationDocument($export, $project);
         }
 
+        if ((string) $export->document_type === 'meeting_minutes') {
+            return $this->meetingMinutesDocument($export);
+        }
+
         return [
             'title' => (string) $export->document_title,
             'subtitle' => $project === null ? 'Prokerin export' : (string) $project->name,
@@ -188,6 +192,122 @@ final class GenerateDocumentExportContentAction
     private function handoverPackageId(object $export): ?int
     {
         preg_match('/handover-package-(\d+)/', (string) $export->output_path, $matches);
+
+        return isset($matches[1]) ? (int) $matches[1] : null;
+    }
+
+    /**
+     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}
+     */
+    private function meetingMinutesDocument(object $export): array
+    {
+        $meetingId = $this->meetingId($export);
+
+        if ($meetingId === null) {
+            return [
+                'title' => (string) $export->document_title,
+                'subtitle' => 'Notulen rapat tidak ditemukan.',
+                'sections' => [],
+            ];
+        }
+
+        $meeting = DB::table('meetings')
+            ->leftJoin('organizations', 'organizations.id', '=', 'meetings.organization_id')
+            ->leftJoin('projects', 'projects.id', '=', 'meetings.project_id')
+            ->where('meetings.id', $meetingId)
+            ->first([
+                'meetings.*',
+                'organizations.name as organization_name',
+                'projects.name as project_name',
+            ]);
+
+        if ($meeting === null) {
+            return [
+                'title' => (string) $export->document_title,
+                'subtitle' => 'Notulen rapat tidak ditemukan.',
+                'sections' => [],
+            ];
+        }
+
+        $minutes = DB::table('meeting_minutes')
+            ->where('meeting_id', $meetingId)
+            ->first();
+
+        $attendees = DB::table('meeting_attendees')
+            ->where('meeting_id', $meetingId)
+            ->orderBy('id')
+            ->get(['name', 'role', 'attendance_status']);
+
+        $attendeeRows = $attendees
+            ->map(static fn (object $row): string => sprintf(
+                '%s | %s | %s',
+                (string) $row->name,
+                (string) ($row->role ?? '-'),
+                (string) $row->attendance_status,
+            ))
+            ->all();
+
+        $decisions = $minutes === null ? [] : (json_decode((string) $minutes->decisions, true) ?: []);
+        $actionItems = $minutes === null ? [] : (json_decode((string) $minutes->action_items, true) ?: []);
+
+        $decisionLines = array_filter(array_map(
+            static fn ($decision): ?string => is_string($decision) && trim($decision) !== '' ? '- '.trim($decision) : null,
+            $decisions,
+        ));
+
+        $actionLines = array_filter(array_map(
+            static function ($item): ?string {
+                if (! is_array($item)) {
+                    return null;
+                }
+
+                return sprintf(
+                    '- %s | PIC: %s | Due: %s | Status: %s',
+                    (string) ($item['task'] ?? ''),
+                    (string) ($item['owner'] ?? '-'),
+                    (string) ($item['due'] ?? '-'),
+                    (string) ($item['status'] ?? 'open'),
+                );
+            },
+            $actionItems,
+        ));
+
+        return [
+            'title' => (string) $export->document_title,
+            'subtitle' => sprintf(
+                '%s · %s · %s',
+                (string) ($meeting->organization_name ?? '-'),
+                (string) ($meeting->project_name ?? 'Agenda organisasi'),
+                (string) $meeting->starts_at,
+            ),
+            'sections' => array_values(array_filter([
+                [
+                    'title' => 'Agenda',
+                    'body' => (string) $meeting->agenda,
+                ],
+                [
+                    'title' => 'Daftar Hadir',
+                    'body' => $attendeeRows === [] ? 'Belum ada peserta.' : implode(PHP_EOL, $attendeeRows),
+                ],
+                [
+                    'title' => 'Ringkasan',
+                    'body' => $minutes === null ? 'Notulen belum dipublikasikan.' : (string) $minutes->summary,
+                ],
+                [
+                    'title' => 'Keputusan',
+                    'body' => $decisionLines === [] ? 'Tidak ada keputusan tercatat.' : implode(PHP_EOL, $decisionLines),
+                ],
+                [
+                    'title' => 'Action Items',
+                    'body' => $actionLines === [] ? 'Tidak ada tindak lanjut.' : implode(PHP_EOL, $actionLines),
+                ],
+            ])),
+        ];
+    }
+
+    private function meetingId(object $export): ?int
+    {
+        preg_match('/meeting-(\d+)/', (string) $export->output_path, $matches);
 
         return isset($matches[1]) ? (int) $matches[1] : null;
     }
