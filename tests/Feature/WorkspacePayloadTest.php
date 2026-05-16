@@ -80,12 +80,15 @@ final class WorkspacePayloadTest extends TestCase
 
     public function test_lpj_checklist_receives_readiness_payload(): void
     {
-        $response = $this->actingAs(User::factory()->create())
+        $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($user)
             ->get(route('reports.lpj-checklist'));
 
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Reports/LpjChecklist')
+            ->where('project.status', 'proposal_review')
             ->has('checklistItems', 5)
             ->where('readiness.completionProgress', 40)
             ->where('readiness.isReadyForReview', false));

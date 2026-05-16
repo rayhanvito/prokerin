@@ -1,8 +1,8 @@
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle, RotateCcw, Send } from 'lucide-react';
 
 import VihoCard from '@/Components/Viho/VihoCard';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 interface LpjChecklistItem {
     title: string;
@@ -19,14 +19,47 @@ interface LpjReadiness {
 }
 
 interface LpjChecklistProps {
+    project: {
+        id: number | null;
+        status: string | null;
+        canSubmit: boolean;
+        canApprove: boolean;
+    };
     checklistItems: LpjChecklistItem[];
     readiness: LpjReadiness;
 }
 
 export default function LpjChecklist({
+    project,
     checklistItems,
     readiness,
 }: LpjChecklistProps) {
+    const reviewForm = useForm();
+    const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
+        decision: 'approve',
+    });
+
+    const submitReview = (): void => {
+        if (project.id === null) {
+            return;
+        }
+
+        reviewForm.post(route('reports.lpj.review', project.id), {
+            preserveScroll: true,
+        });
+    };
+
+    const decideLpj = (decision: 'approve' | 'request_changes'): void => {
+        if (project.id === null) {
+            return;
+        }
+
+        decisionForm.transform(() => ({ decision }));
+        decisionForm.patch(route('reports.lpj.decision', project.id), {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -45,6 +78,43 @@ export default function LpjChecklist({
             <VihoCard
                 title="Checklist Pertanggungjawaban"
                 subtitle={`${readiness.completionProgress}% lengkap · ${readiness.missingRequiredItems.length} item wajib belum lengkap.`}
+                action={
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            disabled={!project.canSubmit || reviewForm.processing}
+                            onClick={submitReview}
+                            className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                        >
+                            <Send className="h-4 w-4" />
+                            Kirim Review
+                        </button>
+                        {project.canApprove && (
+                            <>
+                                <button
+                                    type="button"
+                                    disabled={decisionForm.processing}
+                                    onClick={() => decideLpj('approve')}
+                                    className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                                >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    Approve
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={decisionForm.processing}
+                                    onClick={() =>
+                                        decideLpj('request_changes')
+                                    }
+                                    className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#ba895d] hover:text-[#ba895d] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                                >
+                                    <RotateCcw className="h-4 w-4" />
+                                    Revisi
+                                </button>
+                            </>
+                        )}
+                    </div>
+                }
             >
                 <div className="-m-5 divide-y divide-[#e6edef]">
                     {checklistItems.map((item) => (

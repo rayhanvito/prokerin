@@ -142,9 +142,9 @@ final class WorkspacePageController extends Controller
         ]);
     }
 
-    public function lpjChecklist(GetLpjChecklistPayloadAction $lpjChecklist): Response
+    public function lpjChecklist(Request $request, GetLpjChecklistPayloadAction $lpjChecklist): Response
     {
-        return Inertia::render('Reports/LpjChecklist', $lpjChecklist->execute());
+        return Inertia::render('Reports/LpjChecklist', $lpjChecklist->execute((int) $request->user()->id));
     }
 
     public function exportQueue(Request $request, GetExportQueuePayloadAction $exportQueue): Response

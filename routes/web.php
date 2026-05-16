@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\DocumentDownloadController;
+use App\Http\Controllers\LpjApprovalDecisionController;
+use App\Http\Controllers\LpjReviewController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
@@ -68,6 +70,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/proposal-drafts/{proposalDraft}/submit', [ProposalApprovalController::class, 'store'])->name('proposal-drafts.submit');
         Route::patch('/proposal-drafts/{proposalDraft}/decision', [ProposalApprovalDecisionController::class, 'update'])->name('proposal-drafts.decision');
         Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');
+        Route::post('/lpj/{project}/review', [LpjReviewController::class, 'store'])->name('lpj.review');
+        Route::patch('/lpj/{project}/decision', [LpjApprovalDecisionController::class, 'update'])->name('lpj.decision');
         Route::get('/export-queue', [WorkspacePageController::class, 'exportQueue'])->name('export-queue');
     });
 
