@@ -62,12 +62,16 @@ final class WorkspacePayloadTest extends TestCase
 
     public function test_proposal_editor_receives_draft_payload(): void
     {
-        $response = $this->actingAs(User::factory()->create())
+        $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($user)
             ->get(route('reports.proposal-editor'));
 
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Reports/ProposalEditor')
+            ->where('proposalDraft.status', 'draft')
+            ->where('proposalDraft.canSubmit', true)
             ->where('proposalDraft.title', 'Proposal Seminar Karier Digital')
             ->has('proposalDraft.sections', 6));
     }
@@ -87,7 +91,9 @@ final class WorkspacePayloadTest extends TestCase
 
     public function test_export_queue_receives_export_plan_payload(): void
     {
-        $response = $this->actingAs(User::factory()->create())
+        $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($user)
             ->get(route('reports.export-queue'));
 
         $response->assertOk();

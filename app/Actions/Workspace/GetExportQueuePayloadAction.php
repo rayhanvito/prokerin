@@ -11,10 +11,12 @@ final class GetExportQueuePayloadAction
     /**
      * @return array<int, array{document: string, type: string, requested: string, queue: string, status: string, plan: array<string, mixed>}>
      */
-    public function execute(): array
+    public function execute(int $actorUserId): array
     {
         return DB::table('document_exports')
+            ->join('organization_members', 'organization_members.organization_id', '=', 'document_exports.organization_id')
             ->leftJoin('users', 'users.id', '=', 'document_exports.requested_by_user_id')
+            ->where('organization_members.user_id', $actorUserId)
             ->select('document_exports.*', 'users.name as requested_by_name')
             ->orderBy('document_exports.id')
             ->get()

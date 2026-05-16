@@ -1,16 +1,29 @@
-import { FilePenLine, Save } from 'lucide-react';
+import { FilePenLine, Send } from 'lucide-react';
 
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { humanizeStatus } from '@/lib/format';
 import type { ProposalDraft } from '@/types/prokerin';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 interface ProposalEditorProps {
     proposalDraft: ProposalDraft;
 }
 
 export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
+    const { post, processing } = useForm();
+
+    const submitForApproval = (): void => {
+        if (proposalDraft.id === null) {
+            return;
+        }
+
+        post(route('reports.proposal-drafts.submit', proposalDraft.id), {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -48,14 +61,16 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
 
                 <VihoCard
                     title="Draft Proposal"
-                    subtitle="Editor UI awal. Konten auto-fill nanti berasal dari data proker, timeline, dan RAB."
+                    subtitle="Konten auto-fill dari data proker, timeline, dan RAB sebelum dikirim ke approval."
                     action={
                         <button
                             type="button"
-                            className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
+                            disabled={!proposalDraft.canSubmit || processing}
+                            onClick={submitForApproval}
+                            className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
                         >
-                            <Save className="h-4 w-4" />
-                            Simpan Draft
+                            <Send className="h-4 w-4" />
+                            Kirim Approval
                         </button>
                     }
                 >
@@ -65,10 +80,15 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                 <FilePenLine className="h-5 w-5" />
                             </span>
                             <div>
-                                <p className="font-semibold text-[#242934]">
-                                    {proposalDraft.title}
-                                </p>
-                                <p className="text-sm text-[#717171]">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-semibold text-[#242934]">
+                                        {proposalDraft.title}
+                                    </p>
+                                    <VihoStatusBadge tone="success">
+                                        {humanizeStatus(proposalDraft.status)}
+                                    </VihoStatusBadge>
+                                </div>
+                                <p className="mt-1 text-sm text-[#717171]">
                                     {proposalDraft.subtitle}
                                 </p>
                             </div>

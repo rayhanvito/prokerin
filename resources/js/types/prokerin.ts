@@ -135,8 +135,13 @@ export interface ProjectTemplateSummary {
 }
 
 export interface ProposalDraft {
+    id: number | null;
     title: string;
     subtitle: string;
+    status: 'draft' | 'submitted' | 'approved' | 'empty';
+    projectSlug: string | null;
+    projectStatus: ProjectStatus | null;
+    canSubmit: boolean;
     sections: Array<{
         heading: string;
         body: string;

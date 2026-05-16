@@ -6,6 +6,7 @@ use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTemplateGenerationController;
+use App\Http\Controllers\ProposalApprovalController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\WorkspacePageController;
@@ -60,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'reportsIndex'])->name('index');
         Route::get('/proposal-editor', [WorkspacePageController::class, 'proposalEditor'])->name('proposal-editor');
+        Route::post('/proposal-drafts/{proposalDraft}/submit', [ProposalApprovalController::class, 'store'])->name('proposal-drafts.submit');
         Route::get('/lpj-checklist', [WorkspacePageController::class, 'lpjChecklist'])->name('lpj-checklist');
         Route::get('/export-queue', [WorkspacePageController::class, 'exportQueue'])->name('export-queue');
     });

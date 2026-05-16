@@ -134,10 +134,10 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Reports/Index');
     }
 
-    public function proposalEditor(GetProposalDraftPayloadAction $proposalDraft): Response
+    public function proposalEditor(Request $request, GetProposalDraftPayloadAction $proposalDraft): Response
     {
         return Inertia::render('Reports/ProposalEditor', [
-            'proposalDraft' => $proposalDraft->execute(),
+            'proposalDraft' => $proposalDraft->execute((int) $request->user()->id),
         ]);
     }
 
@@ -146,10 +146,10 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Reports/LpjChecklist', $lpjChecklist->execute());
     }
 
-    public function exportQueue(GetExportQueuePayloadAction $exportQueue): Response
+    public function exportQueue(Request $request, GetExportQueuePayloadAction $exportQueue): Response
     {
         return Inertia::render('Reports/ExportQueue', [
-            'exportQueue' => $exportQueue->execute(),
+            'exportQueue' => $exportQueue->execute((int) $request->user()->id),
         ]);
     }
 
