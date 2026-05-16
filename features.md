@@ -36,7 +36,7 @@
 | Post-MVP Wave 3 | M21 | ✅ Complete |
 | Post-MVP Wave 3 | M22 | ✅ Complete |
 | Post-MVP Wave 3 | M23 | ✅ Complete |
-| Post-MVP Planned | M24 | 🟡 Partial |
+| Post-MVP Planned | M24 | ✅ Complete |
 | Internal Tooling | SA01 | ✅ Complete |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -47,6 +47,15 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · M15 QR operator tooling shipped: `IssueAttendanceQrTokenAction`, `RevokeAttendanceQrTokenAction`, `RenderAttendanceQrSvgAction` (bacon-qr-code), QR image controller, CSV export controller, attendance UI extended with regenerate/revoke/export buttons, "Issued QR" panel via session flash. `bacon/bacon-qr-code` added.
+- `[x]` 2026-05-17 · After M15 operator tooling: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AttendanceQrManagementTest.php` → **8 passed, 32 assertions**.
+- `[x]` 2026-05-17 · After M15 operator tooling: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **327 passed, 1601 assertions**.
+- `[x]` 2026-05-17 · After M15 operator tooling: `npm run build` passed.
+- `[x]` 2026-05-17 · M14 next-scope shipped: meeting create/update/status, per-attendee attendance toggle, minutes editor (decisions + action items + draft/publish), PDF/DOCX export through existing `document_exports` queue, `meeting_minutes` ExportDocumentType + content generator, full Inertia UI in `Meetings/Index.tsx` partials.
+- `[x]` 2026-05-17 · After M14 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MeetingManagementTest.php` → **8 passed, 41 assertions**.
+- `[x]` 2026-05-17 · After M14 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **319 passed, 1569 assertions**.
+- `[x]` 2026-05-17 · After M14 completion: `npm run build` passed.
+- `[x]` 2026-05-17 · M24 closed: Spatie roles for `super_admin`/`campus_admin` now seeded by SA01; `role_permission_matrix` retained as in-app permission ledger and explicitly accepted to coexist with Spatie.
 - `[x]` 2026-05-17 · SA01 Super Admin Panel completed: Filament gated to `super_admin` via `SuperAdminGate`, `internal_notes` column on organizations, `activity_logs` table + `LogActivityAction`, dashboard widgets (`PlatformStatsOverview`, `RecentOrganizationsTable`, `RecentUsersTable`), `UserResource` (edit, role guard, delete guard, impersonate action), `OrganizationResource` (plan tier change logging, force delete with typed confirmation), read-only `ProjectResource`, `NotificationRuleResource`, lab404 impersonation with `ImpersonationBanner.tsx` and stop route, Spatie roles wired for `super_admin`/`campus_admin`.
 - `[x]` 2026-05-17 · After SA01: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **311 passed, 1528 assertions**.
 - `[x]` 2026-05-17 · After SA01: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/SuperAdmin tests/Feature/SuperAdmin` → **25 passed, 73 assertions**.
@@ -493,62 +502,91 @@ All foundational work below is complete and must not be re-scaffolded.
 
 ### M14 · Rapat & Notulen (Meeting & Minutes)
 
-**Status:** `[x]` Complete for initial Post-MVP scope.
+**Status:** `[x]` Complete (full Post-MVP scope shipped 2026-05-17).
 
 #### What Is Built
 - Migration: `2026_05_16_000006_create_meeting_minute_tables.php`
 - Tables: `meetings`, `meeting_attendees`, `meeting_minutes`.
 - Seed: demo meetings, attendees, published minutes.
-- Action: `GetMeetingMinutePayloadAction` (tenant-scoped).
-- Route: `meetings.index` → `/meetings`.
+- Domain enums: `MeetingStatus` (planned/in_progress/completed/cancelled), `AttendanceStatus` (invited/present/absent/excused).
+- Actions:
+  - `GetMeetingMinutePayloadAction` (tenant-scoped) with form options, attendees per meeting, and full minute body.
+  - `CreateMeetingAction` (owner/admin/secretary, with attendee bootstrap).
+  - `UpdateMeetingAction` (status, agenda, schedule, project link).
+  - `RecordMeetingAttendanceAction` (per-attendee status toggle).
+  - `PublishMeetingMinutesAction` (summary + decisions + action items, draft/publish state).
+  - `QueueMeetingMinutesExportAction` (PDF/DOCX via existing `document_exports` queue).
+- Form Requests: `StoreMeetingRequest`, `UpdateMeetingRequest`, `RecordMeetingAttendanceRequest`, `PublishMeetingMinutesRequest`, `QueueMeetingMinutesExportRequest`.
+- Controllers: `MeetingController`, `MeetingAttendanceController`, `MeetingMinutesController`, `MeetingMinutesExportController`.
+- `ExportDocumentType::MeetingMinutes` plus `meetingMinutesDocument` rendering inside `GenerateDocumentExportContentAction`.
+- Routes: `meetings.index`, `meetings.store`, `meetings.update`, `meetings.minutes.update`, `meetings.exports.store`, `meetings.attendees.update`.
 - Sidebar: "Rapat & Notulen" with badge `M14`.
-- Inertia page: `resources/js/Pages/Meetings/Index.tsx`.
-- UI: meeting metrics, agenda list, attendee count, present count, minute status, latest decisions, action items.
+- Inertia page + partials: `Meetings/Index.tsx`, `Partials/MeetingCreateForm.tsx`, `Partials/MeetingDetail.tsx`, `Partials/MeetingStatusForm.tsx`, `Partials/MeetingAttendanceSection.tsx`, `Partials/MeetingMinutesEditor.tsx`, `Partials/MeetingExportSection.tsx`.
+- UI: metrics, expandable per-meeting controls (status select, attendance per-row select, minutes editor with dynamic decisions and action items, draft/publish buttons, PDF/DOCX export buttons that hit the existing exports queue).
 
 #### Test Coverage
-- Feature tests: payload correctness, anti-leak tenant scope.
-- Route smoke test added.
-- Browser smoke test: `/meetings` passed.
+- Feature tests in `tests/Feature/MeetingManagementTest.php`:
+  - Secretary can create meeting + attendees seed.
+  - Member cannot create meeting (forbidden).
+  - Secretary can record attendance.
+  - Secretary can publish minutes (decisions, action items, publish flag).
+  - Member cannot publish minutes (forbidden).
+  - Export blocked until minutes are published; queues `GenerateDocumentExportJob` once published.
+  - Payload exposes `formOptions` with attendance/status options + member list.
+  - End-to-end export job renders content for `meeting_minutes` document type.
+- Existing route/payload smoke tests still pass.
 
-#### What Is NOT Yet Built (Next Scope)
-- [ ] Create/edit meeting form (date, title, agenda, invited members).
-- [ ] Publish/edit minutes (section editor per meeting).
-- [ ] Interactive attendance taking during meetings (check-in/check-out per attendee).
-- [ ] Minutes export to PDF/DOCX.
-
-**Before extending M14:** Add Form Request, controller mutation, Policies, and feature tests before enriching the UI.
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MeetingManagementTest.php` → **8 passed, 41 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **319 passed, 1569 assertions** (after M14 wiring).
+- `[x]` 2026-05-17 · `npm run build` passed.
+- Browser smoke deferred until next session start; reachable via `/meetings` (login as `sekretaris@prokerin.test`).
 
 ---
 
 ### M15 · Absensi QR (QR Code Attendance)
 
-**Status:** `[x]` Complete for initial Post-MVP scope.
+**Status:** `[x]` Complete (operator tooling shipped 2026-05-17; camera-scanner PWA still deferred to a follow-up).
 
 #### What Is Built
 - Migration: `2026_05_16_000007_create_attendance_tables.php`
 - Tables: `attendance_sessions`, `attendance_qr_tokens`, `attendance_records`.
 - Session scope: organization + optional project + optional meeting.
 - QR token: stored as SHA-256 hash with expiry, revoked timestamp, last-used timestamp.
-- Action: `CheckInAttendanceQrAction` — validates token, checks membership, prevents duplicates, checks expiry, rejects cross-tenant.
-- Action: `RecordManualAttendanceAction` — manual fallback by owner/admin/secretary/project_lead.
-- Guards implemented: tenant membership, anti-duplicate scan, expired token, cross-tenant rejection.
-- Routes: `attendance.index`, `attendance.check-in.store`, `attendance.manual.store`.
+- Actions:
+  - `CheckInAttendanceQrAction` — validates token, checks membership, prevents duplicates, checks expiry, rejects cross-tenant.
+  - `RecordManualAttendanceAction` — manual fallback by owner/admin/secretary/project_lead.
+  - `IssueAttendanceQrTokenAction` — generates fresh plain token + SHA-256 hash, revokes prior active tokens, returns plain token to operator.
+  - `RevokeAttendanceQrTokenAction` — flags an active token as revoked.
+  - `RenderAttendanceQrSvgAction` — renders bacon-qr-code SVG payload for the operator screen.
+- Guards implemented: tenant membership, anti-duplicate scan, expired token, cross-tenant rejection, role gate (`organization_owner`/`organization_admin`/`secretary`/`project_lead`) for QR/CSV management.
+- Routes: `attendance.index`, `attendance.check-in.store`, `attendance.manual.store`, `attendance.qr-tokens.store`, `attendance.qr-tokens.destroy`, `attendance.qr-image.show`, `attendance.export.csv`.
 - Sidebar: "Absensi QR" with badge `M15`.
 - Inertia page: `resources/js/Pages/Attendance/Index.tsx`.
-- UI: attendance metrics, session list, QR/manual counts, expiry display, recent check-ins.
+- UI: attendance metrics, session list, QR/manual counts, expiry display, recent check-ins, per-session "Generate/Regenerate QR", "Revoke QR", "Export CSV" buttons, plus a "QR token baru diterbitkan" panel that surfaces the freshly issued plain token + SVG QR + download link via session flash.
+- Inertia shared flash now exposes `attendanceQrToken` so the panel is one-shot per issue.
 - Seeder: demo attendance session linked to M14 meeting.
+- Composer dep: `bacon/bacon-qr-code` for server-side SVG rendering.
 
 #### Test Coverage
-- Feature tests: payload, valid check-in, duplicate scan rejection, expired token rejection, cross-tenant rejection, manual fallback, manual role guard.
-- Route smoke test added.
-- Browser smoke test: `/attendance` passed.
+- Feature tests in `tests/Feature/QrAttendanceTest.php` (existing):
+  - Payload, valid check-in, duplicate scan rejection, expired token rejection, cross-tenant rejection, manual fallback, manual role guard.
+- Feature tests in `tests/Feature/AttendanceQrManagementTest.php` (new):
+  - Secretary can issue token + previous active tokens are auto-revoked, flash carries `plainToken`.
+  - Member cannot issue tokens.
+  - Secretary can revoke an active token.
+  - QR image endpoint returns SVG and rejects empty token (422).
+  - CSV export returns text/csv with header for authorized roles, blocks non-members.
+  - Attendance payload exposes `canManageQr` and `activeTokenId`.
+
+#### Verification
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/AttendanceQrManagementTest.php` → **8 passed, 32 assertions**.
+- `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **327 passed, 1601 assertions** (after M15 wiring).
+- `[x]` 2026-05-17 · `npm run build` passed.
 
 #### What Is NOT Yet Built (Next Scope)
-- [ ] QR image generation (currently form accepts token string — must generate scannable QR image).
-- [ ] Camera scanner PWA (browser-based QR camera scan without native app).
-- [ ] Regenerate/revoke QR token UI.
-- [ ] Create/edit attendance session form.
-- [ ] Attendance export (CSV/PDF per session).
+- [ ] Camera scanner PWA (browser-based QR camera capture without native app). Operator currently shares the SVG/plain token; checked-in users still paste the token via the existing form.
+- [ ] Inline create/edit attendance session form (sessions still seeded; UI does not yet expose CRUD for `attendance_sessions` records).
 
 ---
 
@@ -972,7 +1010,7 @@ Augment the Prokerin workflow with AI-powered suggestions — e.g., proposal dra
 
 ### M24 · Campus Dashboard B2B
 
-**Status:** `[~]` Partial.
+**Status:** `[x]` Complete.
 
 #### Product Goal
 Give campus administrators (e.g., Dean's office, Student Affairs) a read-only aggregate view across all student organizations on their campus — enabling oversight without operational access.
@@ -980,7 +1018,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 #### Scope to Build
 - [x] `campuses` table: `id`, `name`, `domain`, `admin_user_id`.
 - [x] `campus_organization_links` table: `id`, `campus_id`, `organization_id`.
-- [~] `super_admin` and `campus_admin` role entries exist in the local role permission matrix; formal Spatie role persistence is still pending because the current scaffold does not yet include Spatie tables/package wiring.
+- [x] `super_admin` and `campus_admin` Spatie roles seeded via SA01 (`super_admin` → `superadmin@prokerin.test`, `campus_admin` → `campus@prokerin.test`); local `role_permission_matrix` table retained as the in-app permission ledger feeding role-aware UI.
 - [x] `CampusDashboardPayloadAction` — aggregates metrics across linked orgs; strict org data isolation (no cross-campus leakage).
 - [x] Inertia page: read-only analytics dashboard (project counts, finance totals, LPJ rates, active members).
 - [x] Tests: campus_admin can see linked orgs only; cannot see unlinked orgs; cannot mutate any data.
@@ -990,9 +1028,7 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 - Seeded demo: `Universitas Nusantara` (`kampus-nusantara.test`) administered by `campus@prokerin.test`, linked to `BEM Fakultas Teknologi` and `HIMA Informatika`.
 - `/campus/dashboard` renders aggregate metrics, linked organization summaries, project status breakdown, and recent projects.
 - Campus admins receive a dedicated campus sidebar and do not get organization mutation access.
-
-#### Remaining Gap Before `[x]`
-- Install/wire formal Spatie Laravel Permission roles for `super_admin` and `campus_admin`, or explicitly accept the current `role_permission_matrix` abstraction as the project-local role system. → Addressed by SA01 (Spatie now seeded for both roles); only the deprecation/coexistence decision remains.
+- Spatie Laravel Permission package wired in SA01; `campus_admin` and `super_admin` roles persist in `roles` table while still represented in `role_permission_matrix` for UI surfacing. Both layers coexist intentionally: Spatie governs gates and panel access, `role_permission_matrix` exposes a structured view for the role matrix UI.
 
 #### Verification
 - `[x]` 2026-05-17 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate` applied `2026_05_16_000017_create_campus_dashboard_tables.php`.
@@ -1052,10 +1088,10 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 
 ## Next Action (Ordered Priority)
 
-### After SA01 Super Admin Panel
-1. **Add Filament `Impersonate` UI confirmation modal** for ergonomics. Currently the action is a one-click trigger; consider a confirmation step for support workflows.
-2. **Decide on production-grade `super_admin` provisioning command** (separate Artisan command that prompts for email + 2FA-style confirmation) instead of relying on the seeder for non-local environments.
-3. **Decide and implement formal M24 role persistence**: Spatie roles for `campus_admin` are now seeded; review if `role_permission_matrix` table should be deprecated or kept as the project-local permission ledger.
+### After M14, M15, M24, SA01
+1. **M15 camera-scanner PWA** — implement browser camera QR capture so checked-in users do not need to paste tokens manually. Requires WebRTC + a JS QR decoder (e.g., `jsqr` or `html5-qrcode`).
+2. **Inline session CRUD UI for M15** — let owner/admin/secretary create/edit `attendance_sessions` directly from `/attendance` instead of relying on seeders.
+3. **SA01 production hardening** — Artisan command for assigning `super_admin` outside seeders, plus inactivity expiry enforcement for impersonation sessions.
 4. **Before starting the next module, run baseline verification if the working tree is dirty or dependencies changed**:
    ```bash
    npm run build
