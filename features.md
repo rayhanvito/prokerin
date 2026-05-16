@@ -47,6 +47,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-17 · SA01 Filament asset fix: published Filament CSS/JS/font assets to `public/css`, `public/js`, and `public/fonts`; `/internal-admin/login` now loads `css/filament/filament/app.css` successfully and the broken oversized-icon layout is resolved. Added `FilamentAssetTest`; BUG-008 recorded in `QA-MASTER-PROKERIN.md`.
+- `[x]` 2026-05-17 · After SA01 Filament asset fix: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php` → **11 passed, 18 assertions**.
+- `[x]` 2026-05-17 · After SA01 Filament asset fix: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **343 passed, 1714 assertions**.
+- `[x]` 2026-05-17 · After SA01 Filament asset fix: `npm run build` passed.
 - `[x]` 2026-05-17 · SA01 user delete hardening: Super Admin delete-user action now requires typing the target email before deletion; mismatch aborts without audit log, and BUG-007 is recorded in `QA-MASTER-PROKERIN.md`.
 - `[x]` 2026-05-17 · After SA01 user delete hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/UserResourceTest.php --stop-on-failure` → **7 passed, 42 assertions**.
 - `[x]` 2026-05-17 · After SA01 user delete hardening: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **32 passed, 110 assertions**.
@@ -1063,6 +1067,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 
 #### What Is Built
 - Filament panel mounted at `/internal-admin`, protected by `SuperAdminGate` and Spatie's `super_admin` role on the User model (`canAccessPanel`).
+- Filament published assets are present under `public/css/filament`, `public/js/filament`, and `public/fonts/filament`, so the internal admin panel loads its own CSS/JS independently of the React/Inertia build.
 - `PlanTier` enum (`free`/`starter`/`pro`/`campus`) cast on `Organization` model, plus `internal_notes` text column for super-admin-only notes.
 - `activity_logs` table + `ActivityLog` model + `LogActivityAction` for append-only audit trail. Logged actions include `impersonate.start`, `impersonate.stop`, `user.role.change`, `user.delete`, `org.plan_tier.change`, `org.force_delete`.
 - Dashboard widgets: `PlatformStatsOverview` (totals + weekly deltas + plan breakdown), `RecentOrganizationsTable` (10 most recent orgs), `RecentUsersTable` (10 most recent users with role badges).
@@ -1088,6 +1093,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
   - `LogActivityAction`: payload, user_id, ip_address/user_agent, null-payload behavior.
 - Feature:
   - `FilamentAccessTest`: guest redirected, organization_owner blocked, member blocked, super_admin sees dashboard, super_admin lists users/organizations/projects/notification-rules/document-exports, document exports are read-only, organization_owner cannot open users resource.
+  - `FilamentAssetTest`: published Filament CSS, JS, and Inter font manifest exist for the internal admin UI.
   - `OrganizationResourceTest`: plan-tier change updates org and logs `org.plan_tier.change` with before/after.
   - `UserResourceTest`: edit name/email, super_admin role excluded from assignable options, sole-organization-owner delete guard, self-delete guard, typed email confirmation for delete, audit log on safe delete, list table renders.
   - `ImpersonationTest`: super_admin can impersonate regular user (and audit log written), super_admin cannot impersonate another super_admin, organization_owner cannot trigger impersonate, stop redirects to `/internal-admin/users` and writes `impersonate.stop` log.
@@ -1100,6 +1106,7 @@ Internal Prokerin team needs a secure, structured panel to inspect and manage al
 - `[x]` 2026-05-17 · `npm run build` passed (production frontend bundle).
 - `[x]` 2026-05-17 · SA01 QA hardening follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **41 passed, 117 assertions**; full `php artisan test` → **341 passed, 1703 assertions**; `npm run build` passed.
 - `[x]` 2026-05-17 · SA01 user delete hardening follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin tests/Unit/SuperAdmin` → **32 passed, 110 assertions**; full `php artisan test` → **342 passed, 1711 assertions**; `npm run build` passed.
+- `[x]` 2026-05-17 · SA01 Filament asset follow-up: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/FilamentAssetTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php` → **11 passed, 18 assertions**; full `php artisan test` → **343 passed, 1714 assertions**; `npm run build` passed.
 
 ---
 
