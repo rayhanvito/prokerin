@@ -27,7 +27,7 @@ final class UserResourceTest extends TestCase
 
     public function test_super_admin_can_edit_user_name_and_email(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
 
         $this->actingAs($superAdmin);
@@ -48,7 +48,7 @@ final class UserResourceTest extends TestCase
 
     public function test_super_admin_role_is_not_listed_as_assignable_option(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
         Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
 
@@ -60,7 +60,7 @@ final class UserResourceTest extends TestCase
 
     public function test_super_admin_cannot_delete_their_own_account(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin);
 
@@ -76,7 +76,7 @@ final class UserResourceTest extends TestCase
 
     public function test_super_admin_cannot_delete_sole_organization_owner(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
 
         $this->actingAs($superAdmin);
@@ -93,7 +93,7 @@ final class UserResourceTest extends TestCase
 
     public function test_user_delete_is_logged_when_safe(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $target = User::factory()->create([
             'email' => 'temp-user@prokerin.test',
             'name' => 'Temp User',
@@ -119,11 +119,12 @@ final class UserResourceTest extends TestCase
 
     public function test_users_list_shows_all_users_to_super_admin(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin);
 
         Livewire::test(ListUsers::class)
-            ->assertCanSeeTableRecords(User::query()->limit(5)->get());
+            ->set('tableRecordsPerPage', 50)
+            ->assertCanSeeTableRecords(User::query()->get());
     }
 }

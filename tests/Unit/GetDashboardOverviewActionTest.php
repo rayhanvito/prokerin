@@ -31,7 +31,7 @@ final class GetDashboardOverviewActionTest extends TestCase
         $this->assertArrayHasKey('weeklyFocus', $payload);
         $this->assertArrayHasKey('memberSummary', $payload);
         $this->assertSame('1', $payload['metrics'][0]['value']);
-        $this->assertSame('6 anggota aktif', $payload['memberSummary']['value']);
+        $this->assertSame('11 anggota aktif', $payload['memberSummary']['value']);
     }
 
     public function test_it_scopes_dashboard_payload_to_actor_organizations(): void

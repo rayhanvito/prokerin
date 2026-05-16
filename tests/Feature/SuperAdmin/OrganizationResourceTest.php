@@ -25,7 +25,7 @@ final class OrganizationResourceTest extends TestCase
 
     public function test_super_admin_can_change_organization_plan_tier_and_log_activity(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $organization = Organization::query()->where('slug', 'hima-informatika')->firstOrFail();
 
         $this->assertSame('free', (string) $organization->getRawOriginal('plan_tier'));

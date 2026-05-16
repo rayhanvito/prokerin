@@ -25,7 +25,7 @@ final class ImpersonationTest extends TestCase
 
     public function test_super_admin_can_impersonate_a_regular_user(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
 
         $this->actingAs($superAdmin);
@@ -47,9 +47,31 @@ final class ImpersonationTest extends TestCase
         $this->assertSame($superAdmin->id, $log->user_id);
     }
 
+    public function test_get_impersonation_take_route_logs_start_and_redirects_to_dashboard(): void
+    {
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
+        $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($superAdmin)->get(route('impersonate', ['id' => $target->id]));
+
+        $response->assertRedirect(route('dashboard'));
+
+        $this->assertSame($target->id, auth()->id());
+
+        $log = ActivityLog::query()
+            ->where('action', 'impersonate.start')
+            ->where('target_id', $target->id)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame($superAdmin->id, $log->user_id);
+        $this->assertSame($target->id, $log->payload['target_user_id'] ?? null);
+    }
+
     public function test_super_admin_cannot_impersonate_another_super_admin(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $secondSuperAdmin = User::factory()->create(['email' => 'second-super@prokerin.test']);
         $secondSuperAdmin->assignRole('super_admin');
@@ -68,7 +90,7 @@ final class ImpersonationTest extends TestCase
 
     public function test_stop_impersonation_returns_to_internal_admin_and_logs_activity(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
         $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
 
         $this->actingAs($superAdmin);
@@ -91,5 +113,29 @@ final class ImpersonationTest extends TestCase
 
         $this->assertNotNull($log);
         $this->assertSame($target->id, $log->payload['target_user_id'] ?? null);
+        $this->assertSame($superAdmin->id, $log->user_id);
+    }
+
+    public function test_get_impersonation_leave_route_logs_stop_as_super_admin_actor(): void
+    {
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
+        $target = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->actingAs($superAdmin);
+        $superAdmin->impersonate($target);
+
+        $response = $this->get(route('impersonate.leave'));
+
+        $response->assertRedirect('/internal-admin/users');
+
+        $log = ActivityLog::query()
+            ->where('action', 'impersonate.stop')
+            ->where('target_id', $target->id)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame($target->id, $log->payload['target_user_id'] ?? null);
+        $this->assertSame($superAdmin->id, $log->user_id);
     }
 }

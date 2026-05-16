@@ -47,7 +47,7 @@ final class FilamentAccessTest extends TestCase
 
     public function test_super_admin_can_access_internal_admin_dashboard(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $response = $this->actingAs($superAdmin)->get('/internal-admin');
 
@@ -56,7 +56,7 @@ final class FilamentAccessTest extends TestCase
 
     public function test_super_admin_can_list_users(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin)
             ->get('/internal-admin/users')
@@ -65,7 +65,7 @@ final class FilamentAccessTest extends TestCase
 
     public function test_super_admin_can_list_organizations(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin)
             ->get('/internal-admin/organizations')
@@ -74,7 +74,7 @@ final class FilamentAccessTest extends TestCase
 
     public function test_super_admin_can_list_projects(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin)
             ->get('/internal-admin/projects')
@@ -83,7 +83,7 @@ final class FilamentAccessTest extends TestCase
 
     public function test_super_admin_can_list_notification_rules(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $this->actingAs($superAdmin)
             ->get('/internal-admin/notification-rules')

@@ -1175,9 +1175,10 @@ Notes: [Any additional context]
 | ID | Severity | Module | Title | Status | Assignee |
 |----|----------|--------|-------|--------|----------|
 | BUG-001 | MEDIUM | QA Tooling | `npm run lint` fails because `package.json` has no `lint` script | Open | TBD |
-| BUG-002 | HIGH | Seed / QA Data | Seeded test users do not match Section 2 QA matrix (`secretary@`, `treasurer@`, `coordinator@`, `owner2@`, `superadmin@prokerin.internal` missing; localized/test alternatives exist) | Open | TBD |
+| BUG-002 | HIGH | Seed / QA Data | Seeded test users do not match Section 2 QA matrix (`secretary@`, `treasurer@`, `coordinator@`, `owner2@`, `superadmin@prokerin.internal` missing; localized/test alternatives exist) | Fixed | Codex |
 | BUG-003 | LOW | L01 Pricing | `/pricing` emits React duplicate-key warnings in feature comparison table because repeated cells use `key={cell}` | Open | TBD |
 | BUG-004 | LOW | Mobile App Shell | Workspace mobile menu button is icon-only without an accessible label, so QA/accessibility tooling cannot identify it as the sidebar toggle | Open | TBD |
+| BUG-005 | HIGH | SA01 Impersonation | `/impersonate/leave` could stop impersonation through the package route without Prokerin audit logging, and stop logs used the impersonated user as actor instead of the super admin | Fixed | Codex |
 
 ---
 

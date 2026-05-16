@@ -21,7 +21,7 @@ final class DashboardRedirectsForPlatformAdminsTest extends TestCase
 
     public function test_super_admin_is_redirected_from_dashboard_to_internal_admin(): void
     {
-        $superAdmin = User::query()->where('email', 'superadmin@prokerin.test')->firstOrFail();
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
 
         $response = $this->actingAs($superAdmin)->get(route('dashboard'));
 

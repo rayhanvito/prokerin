@@ -65,14 +65,19 @@ final class DatabaseSeeder extends Seeder
     {
         foreach ([
             ['name' => 'Dimas Aji', 'email' => 'owner@prokerin.test', 'whatsapp_number' => '+628111111111'],
+            ['name' => 'Dewi Rahma', 'email' => 'owner2@prokerin.test', 'whatsapp_number' => '+628199999999'],
             ['name' => 'Nadia Putri', 'email' => 'admin@prokerin.test', 'whatsapp_number' => '+628122222222'],
+            ['name' => 'Salsa Kirana', 'email' => 'secretary@prokerin.test', 'whatsapp_number' => '+628133333333'],
             ['name' => 'Salsa Kirana', 'email' => 'sekretaris@prokerin.test', 'whatsapp_number' => '+628133333333'],
+            ['name' => 'Raka Pratama', 'email' => 'treasurer@prokerin.test', 'whatsapp_number' => '+628144444444'],
             ['name' => 'Raka Pratama', 'email' => 'bendahara@prokerin.test', 'whatsapp_number' => '+628144444444'],
             ['name' => 'Fajar Nugroho', 'email' => 'lead@prokerin.test', 'whatsapp_number' => '+628155555555'],
+            ['name' => 'Mira Anggraini', 'email' => 'coordinator@prokerin.test', 'whatsapp_number' => '+628166666666'],
             ['name' => 'Mira Anggraini', 'email' => 'koordinator@prokerin.test', 'whatsapp_number' => '+628166666666'],
             ['name' => 'Ardi Saputra', 'email' => 'member@prokerin.test', 'whatsapp_number' => '+628177777777'],
             ['name' => 'Tari Lestari', 'email' => 'viewer@prokerin.test', 'whatsapp_number' => '+628188888888'],
             ['name' => 'Rina Campus Affairs', 'email' => 'campus@prokerin.test', 'whatsapp_number' => null],
+            ['name' => 'Satria Platform Admin', 'email' => 'superadmin@prokerin.internal', 'whatsapp_number' => null],
             ['name' => 'Satria Platform Admin', 'email' => 'superadmin@prokerin.test', 'whatsapp_number' => null],
             ['name' => 'Test User', 'email' => 'test@example.com', 'whatsapp_number' => null],
         ] as $user) {
@@ -170,11 +175,17 @@ final class DatabaseSeeder extends Seeder
         foreach ([
             ['org' => 'bem-fakultas-teknologi', 'email' => 'owner@prokerin.test', 'role' => 'organization_owner'],
             ['org' => 'bem-fakultas-teknologi', 'email' => 'admin@prokerin.test', 'role' => 'organization_admin'],
+            ['org' => 'bem-fakultas-teknologi', 'email' => 'secretary@prokerin.test', 'role' => 'secretary'],
             ['org' => 'bem-fakultas-teknologi', 'email' => 'sekretaris@prokerin.test', 'role' => 'secretary'],
+            ['org' => 'bem-fakultas-teknologi', 'email' => 'treasurer@prokerin.test', 'role' => 'treasurer'],
             ['org' => 'bem-fakultas-teknologi', 'email' => 'bendahara@prokerin.test', 'role' => 'treasurer'],
+            ['org' => 'bem-fakultas-teknologi', 'email' => 'lead@prokerin.test', 'role' => 'project_lead'],
+            ['org' => 'bem-fakultas-teknologi', 'email' => 'coordinator@prokerin.test', 'role' => 'division_coordinator'],
+            ['org' => 'bem-fakultas-teknologi', 'email' => 'koordinator@prokerin.test', 'role' => 'division_coordinator'],
             ['org' => 'bem-fakultas-teknologi', 'email' => 'member@prokerin.test', 'role' => 'member'],
             ['org' => 'bem-fakultas-teknologi', 'email' => 'viewer@prokerin.test', 'role' => 'viewer'],
             ['org' => 'hima-informatika', 'email' => 'admin@prokerin.test', 'role' => 'organization_admin'],
+            ['org' => 'ukm-kreatif', 'email' => 'owner2@prokerin.test', 'role' => 'organization_owner'],
             ['org' => 'ukm-kreatif', 'email' => 'viewer@prokerin.test', 'role' => 'viewer'],
         ] as $member) {
             DB::table('organization_members')->updateOrInsert(
@@ -252,11 +263,19 @@ final class DatabaseSeeder extends Seeder
 
         if (app()->environment(['local', 'staging', 'testing'])) {
             $superAdmin = User::query()
-                ->where('email', 'superadmin@prokerin.test')
+                ->where('email', 'superadmin@prokerin.internal')
                 ->first();
 
             if ($superAdmin instanceof User && ! $superAdmin->hasRole('super_admin')) {
                 $superAdmin->assignRole('super_admin');
+            }
+
+            $legacySuperAdmin = User::query()
+                ->where('email', 'superadmin@prokerin.test')
+                ->first();
+
+            if ($legacySuperAdmin instanceof User && ! $legacySuperAdmin->hasRole('super_admin')) {
+                $legacySuperAdmin->assignRole('super_admin');
             }
 
             $campusAdmin = User::query()

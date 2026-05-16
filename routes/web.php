@@ -187,7 +187,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::impersonate();
+    Route::get('/impersonate/take/{id}/{guardName?}', [StopImpersonationController::class, 'take'])
+        ->name('impersonate');
+    Route::get('/impersonate/leave', [StopImpersonationController::class, 'leave'])
+        ->name('impersonate.leave');
     Route::post('/impersonate/stop-from-banner', [StopImpersonationController::class, 'store'])
         ->name('impersonate.stop');
 });

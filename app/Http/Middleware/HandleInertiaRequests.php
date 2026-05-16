@@ -89,7 +89,7 @@ class HandleInertiaRequests extends Middleware
         return [
             'active' => true,
             'impersonator' => $impersonator instanceof User ? (string) $impersonator->name : null,
-            'leaveUrl' => route('impersonate.stop', absolute: false),
+            'leaveUrl' => route('impersonate.leave', absolute: false),
         ];
     }
 

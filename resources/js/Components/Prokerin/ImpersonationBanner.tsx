@@ -10,7 +10,7 @@ export default function ImpersonationBanner() {
     }
 
     const handleStop = () => {
-        router.post(impersonating.leaveUrl);
+        router.get(impersonating.leaveUrl);
     };
 
     return (

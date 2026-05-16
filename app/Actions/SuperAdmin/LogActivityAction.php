@@ -12,10 +12,14 @@ final class LogActivityAction
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function execute(string $action, Model $target, array $payload = []): ActivityLog
-    {
+    public function execute(
+        string $action,
+        Model $target,
+        array $payload = [],
+        ?int $actorUserId = null,
+    ): ActivityLog {
         return ActivityLog::create([
-            'user_id' => auth()->id(),
+            'user_id' => $actorUserId ?? auth()->id(),
             'action' => $action,
             'target_type' => $target::class,
             'target_id' => (int) $target->getKey(),
