@@ -202,7 +202,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 6.2 | Duplicate invite | Invite already-invited email | Duplicate blocked | `[ ]` |
 | 6.3 | Accept invitation | Log in as invited user, accept | User added to org with correct role | `[ ]` |
 | 6.4 | Decline invitation | Invited user declines | Removed from invite queue | `[ ]` |
-| 6.5 | Role promotion | Owner promotes member to treasurer | Role updated, treasurer sees finance in sidebar | `[ ]` |
+| 6.5 | Role promotion | Owner promotes member to treasurer | Role updated, treasurer sees finance in sidebar | `[P]` |
 | 6.6 | Role demotion | Owner demotes admin to member | Admin loses approval access | `[ ]` |
 | 6.7 | Last owner protection | Owner tries to remove themselves as last owner | Blocked with clear error | `[P]` |
 | 6.8 | Remove member | Owner removes a member | User loses access to org | `[ ]` |
@@ -268,7 +268,7 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 | 10.8 | Treasurer approves | Log in as treasurer → approve | Status → Approved, budget updated | `[P]` |
 | 10.9 | Treasurer rejects | Reject with note | Status → Rejected, submitter notified | `[P]` |
 | 10.10 | RAB vs Realization summary | View finance overview | Bar chart shows RAB total vs approved realization | `[ ]` |
-| 10.11 | Member cannot access finance | Log in as member → /finance | 403 or redirect | `[ ]` |
+| 10.11 | Member cannot access finance | Log in as member → /finance | 403 or redirect | `[F]` |
 | 10.12 | Remaining budget calculation | After approvals | Remaining = RAB total − approved realization (correct math) | `[ ]` |
 
 ---

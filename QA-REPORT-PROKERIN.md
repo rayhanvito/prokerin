@@ -13,10 +13,11 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `362 passed, 1930 assertions` |
+| PHP feature/unit test | Pass | `363 passed, 1932 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
+| Targeted member role promotion | Pass | `5 passed, 10 assertions` |
 | Targeted dashboard/workspace | Pass | `48 passed, 415 assertions` |
 | Targeted dashboard KPI accuracy | Pass | `4 passed, 153 assertions` |
 | Targeted workspace payload | Pass | `9 passed, 158 assertions` |
@@ -80,7 +81,7 @@ Tidak ada bug baru berstatus `Open` dari pass terakhir. Yang masih banyak adalah
 
 ## 3. Open Findings Untuk Dev
 
-Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-to-end. Halaman render, tetapi beberapa data masih static atau action belum tersambung ke route mutasi.
+Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-to-end atau guard akses belum sesuai ekspektasi. Halaman render, tetapi beberapa data masih static, action belum tersambung ke route mutasi, atau direct URL masih terlalu longgar.
 
 | ID | Severity | Area | Temuan | Bukti Teknis | Dampak |
 |---|---|---|---|---|---|
@@ -99,6 +100,7 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 | QA-OPEN-013 | Medium | Proker Overview | `/proker` masih memakai `workspaceMock`; item link juga masih ke sample route, bukan slug project masing-masing. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Pages/Proker/Index.tsx:16`, `resources/js/Pages/Proker/Index.tsx:45`. | Dashboard list proker bisa beda dari database walaupun create/detail proker sudah punya backend. |
 | QA-OPEN-014 | Medium | Members Overview | `/members` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Members/Index.tsx:7`, `resources/js/Pages/Members/Index.tsx:14`, `resources/js/Pages/Members/Index.tsx:19`. | Jumlah member/invite dan daftar orang bisa menyesatkan user. |
 | QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
+| QA-OPEN-016 | High | Finance Access Control | GET route finance belum role-gated; member biasa yang menyembunyikan menu finance di sidebar masih bisa membuka direct URL `/finance`, `/finance/realization`, dan `/finance/approval`. | `routes/web.php:108`, `routes/web.php:114`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:16`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:37`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:19`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:50`. | Data RAB, realisasi, receipt status, dan approval queue bisa terbaca oleh role yang seharusnya tidak punya akses finance. |
 
 Catatan verifikasi tambahan:
 
@@ -109,7 +111,7 @@ Catatan verifikasi tambahan:
 - Expanded guest-route security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `2 passed, 67 assertions`.
 - Latest full regression after expanded security assertions `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `352 passed, 1800 assertions`.
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
-- Latest full regression after template/cross-module QA refresh `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `362 passed, 1930 assertions`.
+- Latest full regression after role-promotion and finance-access QA refresh `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `363 passed, 1932 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
@@ -160,7 +162,7 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 Area ini masih butuh QA lanjutan paling banyak:
 
 - Task board: Kanban load, status advance, member status guard, dan calendar data sudah automated pass. Assign PIC, quick-add, overdue state, dan progress 100% masih belum lengkap.
-- Finance: Receipt upload, receipt MIME rejection, approval approve/reject, dan member guard sudah automated pass. Create/edit/delete budget line, RAB overview data-backed, dan remaining budget UI masih belum lengkap.
+- Finance: Receipt upload, receipt MIME rejection, approval approve/reject, dan member mutation guard sudah automated pass. GET finance page guard untuk member masih fail karena direct URL belum role-gated. Create/edit/delete budget line, RAB overview data-backed, dan remaining budget UI masih belum lengkap.
 - Proposal: Edit section, submit, approve, request revision, lock submitted proposal, export PDF/DOCX job coverage, dan member guard sudah automated pass. Browser/manual state loading tetap perlu dicek.
 - Reports overview masih hardcoded walaupun proposal/LPJ detail action sudah punya coverage. Lihat QA-OPEN-015.
 - Document: Signed private download, restricted finance receipt guard, committee URL, export download guard sudah automated pass. Upload dokumen umum, oversized rejection dari UI, folder tree, recent documents, dan cross-tenant document download masih perlu lanjut.
@@ -226,6 +228,7 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | Main workspace mutation routes unauthenticated | Pass | Expanded automated sweep redirects guest POST/PATCH/PUT/DELETE action routes to `/login`. |
 | Cross-tenant dashboard isolation | Pass | Dashboard org lain tidak bocor dari automated tests. |
 | Cross-tenant proker/finance/document | Belum lengkap | Perlu test semua route detail/download/action. |
+| Finance GET role guard | Fail | Member biasa masih bisa membuka payload finance lewat direct URL. Lihat QA-OPEN-016. |
 | File upload MIME validation | Partial | Logo upload sudah, document/receipt/certificate asset belum semua. |
 | S3 signed URL | Partial | Unit download plan ada, browser/download route perlu dicek. |
 | CSRF protection | Belum audited penuh | Perlu spot-check semua POST/PUT/PATCH/DELETE penting. |
