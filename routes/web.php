@@ -3,6 +3,10 @@
 use App\Http\Controllers\AttendanceQrCheckInController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
+use App\Http\Controllers\CertificateDownloadController;
+use App\Http\Controllers\CertificateIssueController;
+use App\Http\Controllers\CertificateTemplateController;
+use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
 use App\Http\Controllers\LpjApprovalDecisionController;
@@ -23,6 +27,7 @@ use App\Http\Controllers\WorkspacePageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicPageController::class, 'welcome']);
+Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])->name('certificates.verify');
 
 Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])
@@ -101,6 +106,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');
         Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])->name('check-in.store');
         Route::post('/sessions/{session}/manual-check-in', [ManualAttendanceController::class, 'store'])->name('manual.store');
+    });
+    Route::prefix('certificates')->name('certificates.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'certificatesIndex'])->name('index');
+        Route::get('/templates', [WorkspacePageController::class, 'certificateTemplates'])->name('templates');
+        Route::post('/templates', [CertificateTemplateController::class, 'store'])->name('templates.store');
+        Route::get('/templates/{template}/edit', [WorkspacePageController::class, 'certificateTemplates'])->name('templates.edit');
+        Route::put('/templates/{template}', [CertificateTemplateController::class, 'update'])->name('templates.update');
+        Route::get('/issue', [WorkspacePageController::class, 'certificateIssue'])->name('issue');
+        Route::post('/issue', [CertificateIssueController::class, 'store'])->name('issue.store');
+        Route::get('/{certificateNumber}/download', [CertificateDownloadController::class, 'show'])->name('download');
     });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');

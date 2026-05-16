@@ -329,12 +329,12 @@ php artisan filament:make-resource [Name]   # Scaffold Filament resource
 |-------|-----------|--------|
 | M14 · Rapat & Notulen | Agenda, attendee, keputusan, action items | ✅ |
 | M15 · Absensi QR | QR token, check-in, manual fallback, anti-duplikat | ✅ |
+| M16 · Sertifikat Digital | Issue, verifikasi publik, PDF generation | 〜 Partial |
 
 ### Post-MVP Aktif & Planned
 
 | Modul | Deskripsi | Status |
 |-------|-----------|--------|
-| M16 · Sertifikat Digital | Issue, verifikasi publik, PDF generation | 🔲 Next |
 | M17 · WhatsApp Reminder | Notifikasi via WhatsApp channel | 🔲 |
 | M18 · Multi-Level Approval | Workflow approval bertahap | 🔲 |
 | M19 · Handover Kepengurusan | Serah terima antar periode | 〜 Partial |

@@ -70,6 +70,7 @@ php artisan storage:link       # Create public storage symlink
 php artisan filament:make-resource [Name]  # Scaffold Filament resource
 ```
 
+> Current local macOS note: shell default may still point to PHP 8.3. Until Homebrew PHP is relinked to 8.4, prefix every Composer/Artisan command with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`.
 > Never use `npm` for PHP packages — always use `composer`.
 > Never run `migrate:fresh` or `db:seed` on production.
 > Always run `php artisan optimize:clear` after pulling changes to staging/production.

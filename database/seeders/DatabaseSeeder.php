@@ -48,6 +48,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedLpjChecklist($now);
         $this->seedMeetings($now);
         $this->seedAttendance($now);
+        $this->seedCertificates($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
     }
@@ -629,6 +630,61 @@ final class DatabaseSeeder extends Seeder
             ]);
     }
 
+    private function seedCertificates($now): void
+    {
+        DB::table('certificate_templates')->updateOrInsert(
+            [
+                'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+                'name' => 'Sertifikat Partisipasi Proker',
+            ],
+            [
+                'description' => 'Template sertifikat untuk peserta kegiatan dan kepanitiaan proker.',
+                'template_html' => '<h1>Sertifikat Penghargaan</h1><p class="meta">Nomor: {{certificate_number}}</p><p>Diberikan kepada</p><p class="recipient">{{recipient_name}}</p><p>atas partisipasi dalam {{project_name}} yang diselenggarakan oleh {{organization_name}}.</p><div class="signature"><p>{{signature_label}}</p><strong>{{signature_name}}</strong></div><p class="meta">Verifikasi: {{verification_url}}</p>',
+                'signature_label' => 'Ketua BEM FT',
+                'signature_name' => 'Dimas Aji',
+                'is_active' => true,
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
+
+        foreach ([
+            [
+                'number' => 'PRK-2026-BEMFAKULTAST-0001',
+                'email' => 'sekretaris@prokerin.test',
+                'name' => 'Salsa Kirana',
+                'token' => '11111111-1111-4111-8111-111111111111',
+                'pdf_path' => 'certificates/bem-fakultas-teknologi/prk-2026-bemfakultast-0001.pdf',
+            ],
+            [
+                'number' => 'PRK-2026-BEMFAKULTAST-0002',
+                'email' => 'bendahara@prokerin.test',
+                'name' => 'Raka Pratama',
+                'token' => '22222222-2222-4222-8222-222222222222',
+                'pdf_path' => null,
+            ],
+        ] as $certificate) {
+            DB::table('certificate_recipients')->updateOrInsert(
+                ['certificate_number' => $certificate['number']],
+                [
+                    'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+                    'template_id' => $this->certificateTemplateId('Sertifikat Partisipasi Proker'),
+                    'user_id' => $this->userId($certificate['email']),
+                    'recipient_name' => $certificate['name'],
+                    'recipient_email' => $certificate['email'],
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                    'meeting_id' => $this->meetingId('Technical Meeting Seminar Karier'),
+                    'issued_at' => '2026-05-16 09:00:00',
+                    'issued_by' => $this->userId('owner@prokerin.test'),
+                    'verification_token' => $certificate['token'],
+                    'pdf_path' => $certificate['pdf_path'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+    }
+
     private function seedNotificationRules($now): void
     {
         foreach ((new GetDefaultNotificationRulesAction)->execute() as $rule) {
@@ -728,6 +784,11 @@ final class DatabaseSeeder extends Seeder
     private function attendanceSessionId(string $title): int
     {
         return (int) DB::table('attendance_sessions')->where('title', $title)->value('id');
+    }
+
+    private function certificateTemplateId(string $name): int
+    {
+        return (int) DB::table('certificate_templates')->where('name', $name)->value('id');
     }
 
     private function meetingAttendeeId(string $meetingTitle, string $email): int

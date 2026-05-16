@@ -28,7 +28,7 @@
 |-------|-------|--------|
 | MVP Core | M01–M13 | ✅ All complete and verified |
 | Post-MVP Wave 1 | M14–M15 | ✅ Complete (initial scope) |
-| Post-MVP Active | M16 | 🔲 Next to build |
+| Post-MVP Active | M16 | 〜 Partial implementation verified |
 | Post-MVP Planned | M17–M24 | 🔲 Not started |
 
 **Current active risk:** Shell default still points to PHP 8.3. Always prefix Composer/Artisan with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH` until Homebrew PHP is relinked.
@@ -39,6 +39,10 @@
 
 All entries are recorded in reverse-chronological order. Always add a new entry when a module is verified.
 
+- `[x]` 2026-05-16 · M16 initial browser smoke passed for `/certificates`, `/certificates/templates`, `/certificates/issue`, and public `/verify/11111111-1111-4111-8111-111111111111`.
+- `[x]` 2026-05-16 · M16 local migration + seeder ran clean on local MySQL.
+- `[x]` 2026-05-16 · After M16 initial implementation: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **200 passed, 865 assertions**.
+- `[x]` 2026-05-16 · After M16 initial implementation: `npm run build` passed (TypeScript + production frontend build).
 - `[x]` 2026-05-16 · `composer validate --strict` passed.
 - `[x]` 2026-05-16 · PHP 8.4.10 platform check passed: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH composer check-platform-reqs`
 - `[x]` 2026-05-16 · MVP baseline: `php artisan test` → **181 passed, 712 assertions**.
@@ -60,6 +64,7 @@ All entries are recorded in reverse-chronological order. Always add a new entry 
 - **Local database:** MySQL via `.env` port `8889`.
 - **M14 migration** applied locally on 2026-05-16.
 - **M15 migration** applied locally on 2026-05-16. Seeder re-run after M15.
+- **M16 migration** applied locally on 2026-05-16. Seeder re-run after M16.
 
 ---
 
@@ -424,7 +429,7 @@ All foundational work below is complete and must not be re-scaffolded.
 
 ### M16 · Sertifikat Digital (Digital Certificate)
 
-**Status:** `[ ]` Not started. **← CURRENT NEXT TARGET**
+**Status:** `[~]` Partial implementation verified. **← CURRENT ACTIVE TARGET**
 
 #### Product Goal
 Issue digitally-signed participation/achievement certificates for members who completed projects, attended events, or held organizational roles. Certificates are verifiable via a public URL (no account required).
@@ -449,37 +454,51 @@ certificate_recipients
 ```
 
 #### Backend to Build
-- [ ] `CreateCertificateTemplateAction` — CRUD with org scope + validation.
-- [ ] `IssueCertificateBatchAction` — bulk issue to list of recipients; triggers PDF job per recipient.
-- [ ] `GenerateCertificatePdfJob` (queued) — renders HTML template → Browsershot PDF → uploads to S3 → stores `pdf_path`.
-- [ ] `VerifyCertificateAction` — public verification by `verification_token`; returns recipient + issue details without exposing internal IDs.
-- [ ] `CertificateNumberGenerator` — format: `PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE}`, unique per organization per year.
-- [ ] Form Request classes: `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
-- [ ] Policy: `CertificatePolicy` — owner/admin can issue, all authenticated org members can view, public can verify.
-- [ ] Routes:
+- [x] Migration: `2026_05_16_000008_create_certificate_tables.php` with `certificate_templates` and `certificate_recipients`.
+- [x] Seed: demo certificate template and recipients for BEM Fakultas Teknologi.
+- [~] `CreateCertificateTemplateAction` — create/update with org scope + validation exists; dedicated edit UI still needs polish.
+- [x] `IssueCertificateBatchAction` — bulk issue to list of recipients; triggers PDF job per recipient.
+- [~] `GenerateCertificatePdfJob` (queued) — renders HTML template → DomPDF fallback → uploads to S3 → stores `pdf_path`. Browsershot engine swap remains a polish item.
+- [x] `VerifyCertificateAction` — public verification by `verification_token`; returns recipient + issue details without exposing internal IDs.
+- [x] `CertificateNumberGenerator` — format: `PRK-{YEAR}-{ORG_SLUG}-{SEQUENCE}`, unique per organization per year.
+- [x] Form Request classes: `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
+- [x] Policy: `CertificatePolicy` — owner/admin can issue, all authenticated org members can view, public can verify.
+- [x] Routes:
   - `GET /certificates` — index (list issued, templates)
   - `GET /certificates/templates` — template manager
   - `POST /certificates/templates` — create template
-  - `GET /certificates/templates/{id}/edit` — edit template
+  - `GET /certificates/templates/{id}/edit` — edit template route wired
   - `PUT /certificates/templates/{id}` — update template
+  - `GET /certificates/issue` — issue form
   - `POST /certificates/issue` — issue batch
   - `GET /certificates/{certificate_number}/download` — signed download (member only)
   - `GET /verify/{token}` — **public** verification page (no auth required)
 
 #### Frontend to Build
-- [ ] `resources/js/Pages/Certificates/Index.tsx` — list of issued certificates with stats.
-- [ ] `resources/js/Pages/Certificates/Templates.tsx` — template management (create, preview, activate).
-- [ ] `resources/js/Pages/Certificates/Issue.tsx` — select template, select recipients (from members or manual), preview, issue.
-- [ ] `resources/js/Pages/Certificates/Verify.tsx` — public verification page (unauthenticated), shows certificate details and QR code.
-- [ ] Sidebar: "Sertifikat Digital" with badge `M16`.
+- [x] `resources/js/Pages/Certificates/Index.tsx` — list of issued certificates with stats.
+- [~] `resources/js/Pages/Certificates/Templates.tsx` — template list + create form exists; edit/activate toggle and richer preview still pending.
+- [x] `resources/js/Pages/Certificates/Issue.tsx` — select template, select recipients (from members or manual), preview, issue.
+- [~] `resources/js/Pages/Certificates/Verify.tsx` — public verification page (unauthenticated) shows certificate details; QR code visual still pending.
+- [x] Sidebar: "Sertifikat Digital" with badge `M16`.
 
 #### Test Coverage Required (before marking `[x]`)
-- [ ] Unit: `CertificateNumberGenerator` — unique per org per year, sequential, no collision.
-- [ ] Feature: issue certificate → PDF job dispatched → `pdf_path` stored after job.
-- [ ] Feature: verify by `verification_token` → returns correct recipient data.
-- [ ] Feature: cross-tenant rejection — cannot view/download another org's certificates.
-- [ ] Feature: public verification route is accessible without authentication.
-- [ ] Feature: non-owner/admin cannot issue certificates.
+- [x] Unit: `CertificateNumberGenerator` — unique per org per year, sequential, no collision.
+- [x] Feature: issue certificate → PDF job dispatched → `pdf_path` stored after job.
+- [x] Feature: verify by `verification_token` → returns correct recipient data.
+- [x] Feature: cross-tenant rejection — cannot view/download another org's certificates.
+- [x] Feature: public verification route is accessible without authentication.
+- [x] Feature: non-owner/admin cannot issue certificates.
+
+#### Verification
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/CertificateNumberGeneratorTest.php tests/Feature/DigitalCertificateTest.php` → **10 passed, 58 assertions**.
+- `[x]` 2026-05-16 · `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → **200 passed, 865 assertions**.
+- `[x]` 2026-05-16 · `npm run build` passed.
+- `[x]` 2026-05-16 · Browser smoke passed for `/certificates`, `/certificates/templates`, `/certificates/issue`, and public `/verify/11111111-1111-4111-8111-111111111111`.
+
+#### Remaining Before `[x]`
+- [ ] Add richer template edit/activate UX instead of routing edit back to the create/list page.
+- [ ] Add a scannable QR code visual on the public verification page.
+- [ ] Decide whether to install/configure Browsershot for certificate PDF generation or keep DomPDF fallback as the accepted MVP engine.
 
 #### Commit Message Convention
 `feat: add digital certificate module (M16)`
@@ -658,37 +677,25 @@ Give campus administrators (e.g., Dean's office, Student Affairs) a read-only ag
 
 ## Next Action (Ordered Priority)
 
-### Immediate (Before Starting M16)
-1. **Fix PHP shell default** — relink Homebrew PHP to 8.4, or document the PATH prefix as a required dev step in `AGENTS.md` and README.
-2. **Run full test suite** — confirm all 190 tests still pass before touching anything.
+### Immediate M16 Polish
+1. **Add richer template edit/activate UX** — edit route exists, but the UI still needs a selected-template edit state and active/inactive toggle.
+2. **Add QR code visual to public verification page** — keep it client-rendered or generated from a local package; do not depend on an unaudited external image endpoint.
+3. **Decide PDF engine** — either install/configure Browsershot for certificate PDFs or explicitly accept DomPDF fallback for M16 MVP.
+4. **Run verification again**:
    ```bash
+   npm run build
    PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
    ```
-
-### M16 Build Sequence
-3. **Create migration** — `database/migrations/2026_05_16_000008_create_certificate_tables.php` (additive, non-destructive) with `certificate_templates` and `certificate_recipients` tables.
-4. **Implement `CertificateNumberGenerator`** — format `PRK-{YEAR}-{ORG_SLUG}-{SEQ}`, unique per org per year.
-5. **Write unit tests for `CertificateNumberGenerator`** first — TDD before implementation.
-6. **Implement Actions** — `CreateCertificateTemplateAction`, `IssueCertificateBatchAction`, `VerifyCertificateAction`.
-7. **Implement `GenerateCertificatePdfJob`** (queued) — Browsershot → S3 upload → `pdf_path` stored.
-8. **Create Form Request classes** — `StoreCertificateTemplateRequest`, `IssueCertificateRequest`.
-9. **Create `CertificatePolicy`**.
-10. **Register routes** — internal (authenticated) and public `/verify/{token}` (unauthenticated).
-11. **Build Inertia pages** — Index, Templates, Issue, Verify.
-12. **Add sidebar entry** — "Sertifikat Digital" badge `M16` in `vihoMenu`.
-13. **Write feature tests** — all required coverage listed in M16 section above.
-14. **Run full test suite** — must be green before marking M16 `[x]`.
-15. **Update this file** — module status → `[x]`, add Verification Log entry, update Next Action.
-16. **Commit:** `feat: add digital certificate module (M16)`
+5. **If polish is complete, mark M16 `[x]` and commit:** `feat: add digital certificate module (M16)`
 
 ### After M16
-17. **Evaluate M19 (Handover)** — partial scaffold exists; prioritize over M17/M18 if the next semester handover deadline is approaching.
-18. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
-19. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
-20. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
-21. **M22 (Payment)** only after M21 is stable.
-22. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
-23. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
+6. **Evaluate M19 (Handover)** — partial scaffold exists; prioritize over M17/M18 if the next semester handover deadline is approaching.
+7. **Start M17 (WhatsApp Reminder)** if notification engagement is a growth lever.
+8. **Start M18 (Multi-Level Approval)** if enterprise/academic institution clients need it.
+9. **Start M21 (Event Registration)** when Prokerin is ready to enable public-facing event management.
+10. **M22 (Payment)** only after M21 is stable.
+11. **M23 (AI Assistant)** only after defining explicit use cases and completing data minimization design.
+12. **M24 (Campus Dashboard)** as the B2B/enterprise growth layer.
 
 ---
 

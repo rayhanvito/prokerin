@@ -67,6 +67,9 @@ final class WorkspaceRouteSmokeTest extends TestCase
             'members.roles',
             'meetings.index',
             'attendance.index',
+            'certificates.index',
+            'certificates.templates',
+            'certificates.issue',
             'notifications.index',
             'admin.index',
         ];

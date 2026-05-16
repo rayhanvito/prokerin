@@ -8,6 +8,7 @@ use App\Actions\Dashboard\GetDashboardOverviewAction;
 use App\Actions\Document\ValidateDocumentUploadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
+use App\Actions\Workspace\GetCertificatePayloadAction;
 use App\Actions\Workspace\GetDocumentUploadCenterPayloadAction;
 use App\Actions\Workspace\GetExportQueuePayloadAction;
 use App\Actions\Workspace\GetFinanceApprovalPayloadAction;
@@ -217,6 +218,21 @@ final class WorkspacePageController extends Controller
     public function attendanceIndex(Request $request, GetQrAttendancePayloadAction $attendance): Response
     {
         return Inertia::render('Attendance/Index', $attendance->execute((int) $request->user()->id));
+    }
+
+    public function certificatesIndex(Request $request, GetCertificatePayloadAction $certificates): Response
+    {
+        return Inertia::render('Certificates/Index', $certificates->execute((int) $request->user()->id));
+    }
+
+    public function certificateTemplates(Request $request, GetCertificatePayloadAction $certificates): Response
+    {
+        return Inertia::render('Certificates/Templates', $certificates->execute((int) $request->user()->id));
+    }
+
+    public function certificateIssue(Request $request, GetCertificatePayloadAction $certificates): Response
+    {
+        return Inertia::render('Certificates/Issue', $certificates->execute((int) $request->user()->id));
     }
 
     public function notificationsIndex(GetNotificationRulePayloadAction $notificationRules): Response
