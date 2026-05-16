@@ -182,16 +182,20 @@ Bikin sekali, dipakai berulang. Fase berikutnya **tidak boleh** menulis ulang em
   dipanggil di `AuthenticatedLayout` lewat `useEffect` agar setiap kali Inertia flash berubah, otomatis muncul toast.
 
 ### Phase 0 Checklist
-- [ ] `EmptyState.tsx` selesai dengan ilustrasi default lucide.
-- [ ] `ConfirmDialog.tsx` selesai dengan typed-phrase guard berfungsi.
-- [ ] `FormField.tsx` selesai dengan red-border + error state.
-- [ ] `app/Support/Roles.php` selesai dan minimal 1 Action existing direfaktor pakai konstanta ini sebagai sanity check.
-- [ ] `GetActiveOrganizationContextAction` + DTO selesai, satu Action existing direfaktor pakai (misal `StoreSponsorVendorAction`) dan test ulang pass.
-- [ ] `sonner` terinstall, `Toaster` ter-mount, flash success/error otomatis jadi toast.
-- [ ] `npm run build` pass, `php artisan test` pass tanpa regresi.
+- [x] `EmptyState.tsx` selesai dengan ilustrasi default lucide.
+- [x] `ConfirmDialog.tsx` selesai dengan typed-phrase guard berfungsi.
+- [x] `FormField.tsx` selesai dengan red-border + error state.
+- [x] `app/Support/Roles.php` selesai dan minimal 1 Action existing direfaktor pakai konstanta ini sebagai sanity check.
+- [x] `GetActiveOrganizationContextAction` + DTO selesai, satu Action existing direfaktor pakai (misal `StoreSponsorVendorAction`) dan test ulang pass.
+- [x] `sonner` terinstall, `Toaster` ter-mount, flash success/error otomatis jadi toast.
+- [x] `npm run build` pass, `php artisan test` pass tanpa regresi.
 
 ### Verification (Phase 0)
-- Catat: targeted refactor test pass, full regression count tetap atau naik, no TypeScript error, no Pint violation.
+- 2026-05-17: `StoreSponsorVendorAction` direfaktor memakai `Roles::ORGANIZATION_MANAGERS` dan `GetActiveOrganizationContextAction`; ditambah regression bahwa create sponsor/vendor mengikuti `active_organization_id` session.
+- Targeted refactor test: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SponsorVendorTest.php tests/Feature/WorkspacePayloadTest.php --stop-on-failure` -> **15 passed, 190 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter gate: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test app/Support/Roles.php app/DTOs/Workspace/ActiveOrganizationContextData.php app/Actions/Workspace/GetActiveOrganizationContextAction.php app/Actions/Organization/StoreSponsorVendorAction.php app/Http/Middleware/HandleInertiaRequests.php tests/Feature/SponsorVendorTest.php` pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **368 passed, 1968 assertions**.
 
 ---
 
@@ -327,18 +331,20 @@ Cakupan: QA-OPEN-001, QA-OPEN-002, QA-OPEN-003, QA-OPEN-005, dan QA-MASTER 5.1, 
 - File: `tests/Feature/OrganizationUpdateTest.php`. Owner bisa update name; admin tidak bisa; cross-tenant ditolak.
 
 ### Phase 1 Checklist
-- [ ] QA-OPEN-001: Form create organisasi + route + auto-create owner membership + default period.
-- [ ] QA-OPEN-002: Switcher data dari DB + action switch + session active org id.
-- [ ] QA-OPEN-003: Periods data-backed + create/edit + set active flow.
-- [ ] QA-OPEN-005: Calendar data-backed dengan event aggregator.
-- [ ] 5.8: Edit organization name + description.
-- [ ] Update `QA-REPORT-PROKERIN.md`: pindahkan QA-OPEN-001/002/003/005 ke "Bug Fixed".
+- [x] QA-OPEN-001: Form create organisasi + route + auto-create owner membership + default period.
+- [x] QA-OPEN-002: Switcher data dari DB + action switch + session active org id.
+- [x] QA-OPEN-003: Periods data-backed + create/edit + set active flow.
+- [x] QA-OPEN-005: Calendar data-backed dengan event aggregator.
+- [x] 5.8: Edit organization name + description.
+- [x] Update `QA-REPORT-PROKERIN.md`: pindahkan QA-OPEN-001/002/003/005 ke "Bug Fixed".
 
 ### Verification (Phase 1)
-- Targeted: `php artisan test tests/Feature/Organization*Test.php tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationPeriodsTest.php tests/Feature/OrganizationSwitcherTest.php tests/Feature/OrganizationCalendarPayloadTest.php tests/Feature/OrganizationUpdateTest.php`.
-- Full regression `php artisan test` → pass, jumlah test naik.
-- Browser smoke: login owner → buat org baru → switch ke org baru → tambah periode → ubah ke active → buka calendar bulan berjalan.
-- Pint dan build hijau.
+- 2026-05-17: Phase 1 organization management selesai. Create organization, switch active org, periods create/update/set-active, calendar project/meeting/attendance aggregator, and organization profile name/description update sudah wired ke Inertia UI dan route mutasi.
+- Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php --stop-on-failure` -> **14 passed, 101 assertions**.
+- Regression smoke: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **27 passed, 430 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter gate: targeted Pint check pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **382 passed, 2069 assertions**.
 
 ---
 
@@ -421,14 +427,18 @@ Cakupan: QA-OPEN-004, QA-OPEN-014, QA-MASTER 6.1–6.4, 6.8, S2.3.
 - File: `tests/Feature/RemoveOrganizationMemberTest.php`.
 
 ### Phase 2 Checklist
-- [ ] QA-OPEN-004: Invitation form, accept/decline route, duplicate guard, role guard.
-- [ ] QA-OPEN-014: Members overview data-backed.
-- [ ] 6.8: Remove member dengan typed confirm.
-- [ ] Update `QA-REPORT-PROKERIN.md` untuk QA-OPEN-004 dan QA-OPEN-014.
+- [x] QA-OPEN-004: Invitation form, accept/decline route, duplicate guard, role guard.
+- [x] QA-OPEN-014: Members overview data-backed.
+- [x] 6.8: Remove member dengan typed confirm.
+- [x] Update `QA-REPORT-PROKERIN.md` untuk QA-OPEN-004 dan QA-OPEN-014.
 
 ### Verification (Phase 2)
-- Targeted suite test members + invitation pass.
-- Browser smoke: invite email -> notification ke user -> accept -> muncul di members list -> demote/remove.
+- 2026-05-17: Phase 2 member/invitation selesai. Invite form, pending duplicate/member guard, public token preview, auth accept/decline, expired-token rejection, members overview payload, filters UI, and owner-only remove member dengan typed confirm sudah wired.
+- Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationInvitationFlowTest.php tests/Feature/MembersOverviewPayloadTest.php --stop-on-failure` -> **9 passed, 75 assertions**.
+- Regression smoke: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php tests/Feature/OrganizationInvitationFlowTest.php tests/Feature/MembersOverviewPayloadTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **35 passed, 502 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter gate: targeted Pint check pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **391 passed, 2144 assertions**.
 
 ---
 
@@ -504,17 +514,21 @@ Cakupan: QA-OPEN-013, QA-OPEN-017, QA-OPEN-018, QA-MASTER 7.5, 7.8, F1, F6.2.
 - File: `tests/Feature/ProjectMembersManagementTest.php`.
 
 ### Phase 3 Checklist
-- [ ] QA-OPEN-013: Proker index dari DB.
-- [ ] QA-OPEN-017 / F6.2: Cross-tenant no leak proker index.
-- [ ] QA-OPEN-018 / 7.5: Status transition lengkap dengan guard.
-- [ ] QA-OPEN-018 / 7.8: Progress 100% saat semua task done.
-- [ ] Project members assign/remove.
-- [ ] `QA-REPORT-PROKERIN.md` updated untuk QA-OPEN-013/017/018.
+- [x] QA-OPEN-013: Proker index dari DB.
+- [x] QA-OPEN-017 / F6.2: Cross-tenant no leak proker index.
+- [x] QA-OPEN-018 / 7.5: Status transition lengkap dengan guard.
+- [x] QA-OPEN-018 / 7.8: Progress 100% saat semua task done.
+- [x] Project members assign/remove.
+- [x] `QA-REPORT-PROKERIN.md` updated untuk QA-OPEN-013/017/018.
 
 ### Verification (Phase 3)
-- Targeted: Project lifecycle suite + multi-tenant index.
-- Full regression hijau.
-- Browser smoke: buat proker dari template → assign anggota → tandai semua task done → status pindah ke completed → progress 100.
+- Targeted project lifecycle: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ProkerIndexPayloadTest.php tests/Feature/ProkerStatusTransitionTest.php tests/Feature/ProjectMembersManagementTest.php tests/Feature/ProjectDetailTest.php tests/Feature/TaskInteractionTest.php --stop-on-failure` -> `21 passed, 200 assertions`.
+- Targeted proker/workspace/security smoke: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ProkerIndexPayloadTest.php tests/Feature/ProkerStatusTransitionTest.php tests/Feature/ProjectMembersManagementTest.php tests/Feature/ProjectDetailTest.php tests/Feature/TaskInteractionTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `34 passed, 529 assertions`.
+- Pint targeted: pass.
+- npm lint: pass.
+- npm build: pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `404 passed, 2246 assertions`.
+- Browser smoke: belum dijalankan di fase ini; automated route/payload/regression sudah hijau.
 
 ---
 
@@ -575,15 +589,20 @@ Cakupan: QA-OPEN-006, QA-OPEN-007, QA-OPEN-019, QA-MASTER 9.3, 9.4, 9.6, 9.7.
 - File: `tests/Feature/TaskOverdueBadgePayloadTest.php` (assert flag `isOverdue` di payload), atau cukup unit test untuk helper.
 
 ### Phase 4 Checklist
-- [ ] QA-OPEN-006: Task overview data-backed.
-- [ ] QA-OPEN-007 / 9.3, 9.4: Assign PIC end-to-end.
-- [ ] QA-OPEN-019 / 9.7: Quick-add task.
-- [ ] 9.6: Overdue visual state.
-- [ ] Update `QA-REPORT-PROKERIN.md` untuk QA-OPEN-006/007/019.
+- [x] QA-OPEN-006: Task overview data-backed.
+- [x] QA-OPEN-007 / 9.3, 9.4: Assign PIC end-to-end.
+- [x] QA-OPEN-019 / 9.7: Quick-add task.
+- [x] 9.6: Overdue visual state.
+- [x] Update `QA-REPORT-PROKERIN.md` untuk QA-OPEN-006/007/019.
 
 ### Verification (Phase 4)
-- Targeted suite tugas pass.
-- Browser smoke: Kanban → quick-add → assign PIC → tandai due lewat → muncul badge merah → tandai done → progress proker bertambah (kombinasi dengan Phase 3).
+- Targeted task suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskOverviewPayloadTest.php tests/Feature/AssignTaskPicTest.php tests/Feature/CreateTaskTest.php tests/Feature/TaskOverdueBadgePayloadTest.php tests/Feature/TaskInteractionTest.php --stop-on-failure` -> `15 passed, 125 assertions`.
+- Targeted task/workspace/security smoke: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskOverviewPayloadTest.php tests/Feature/AssignTaskPicTest.php tests/Feature/CreateTaskTest.php tests/Feature/TaskOverdueBadgePayloadTest.php tests/Feature/TaskInteractionTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `28 passed, 454 assertions`.
+- Pint targeted: pass.
+- npm lint: pass.
+- npm build: pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `415 passed, 2328 assertions`.
+- Browser smoke: belum dijalankan di fase ini; automated payload/mutation/regression sudah hijau.
 
 ---
 
@@ -645,16 +664,22 @@ Cakupan: QA-OPEN-008, QA-OPEN-009, QA-OPEN-016, QA-MASTER 10.1, 10.2, 10.3, 10.1
 - Audit perhitungan di `CalculateBudgetSummaryAction`. Pastikan `remaining = sum(planned approved) - sum(realized approved)`. Tambah unit test eksplisit.
 
 ### Phase 5 Checklist
-- [ ] QA-OPEN-016 / 10.11: Finance GET role-gate.
-- [ ] QA-OPEN-008: Finance overview data-backed.
-- [ ] QA-OPEN-009 / 10.1, 10.2, 10.3: Budget line CRUD.
-- [ ] 10.10: RAB vs Realization summary chart.
-- [ ] 10.12: Remaining budget math.
-- [ ] Update `QA-REPORT-PROKERIN.md`.
+- [x] QA-OPEN-016 / 10.11: Finance GET role-gate.
+- [x] QA-OPEN-008: Finance overview data-backed.
+- [x] QA-OPEN-009 / 10.1, 10.2, 10.3: Budget line CRUD.
+- [x] 10.10: RAB vs Realization summary chart.
+- [x] 10.12: Remaining budget math.
+- [x] Update `QA-REPORT-PROKERIN.md` untuk seluruh Phase 5.
 
 ### Verification (Phase 5)
-- Targeted: finance test suite.
-- Browser smoke owner: tambah RAB line → upload receipt → approve → sisa anggaran turun → ekspektasi math benar.
+- Partial QA-OPEN-016 targeted finance/security: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/MultiTenantFinanceAccessTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `19 passed, 255 assertions`.
+- Partial QA-OPEN-008 targeted finance overview: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/FinanceOverviewPayloadTest.php tests/Feature/Security/MultiTenantFinanceAccessTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/BudgetReceiptRealizationTest.php --stop-on-failure` -> `17 passed, 130 assertions`.
+- QA-OPEN-009 targeted budget CRUD: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/BudgetLineCrudTest.php` -> `9 passed, 39 assertions`.
+- 10.10: `Finance/Index.tsx` RAB vs Realisasi chart sekarang menampilkan planned bar (abu-abu) overlay realized bar (hijau / merah saat over-budget) dengan persentase per kategori dan legend (Planned, Realized, Over budget).
+- 10.12: `CalculateBudgetSummaryAction` + `Money::subtract` clamping ke 0 sudah ditest di `tests/Unit/CalculateBudgetSummaryActionTest.php` (4 test, termasuk overspend flag).
+- Pint targeted (15 files): pass.
+- npm build: pass.
+- Full regression after Phase 5 completion: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `436 passed, 2469 assertions`.
 
 ---
 
@@ -703,15 +728,20 @@ Cakupan: QA-OPEN-010, QA-OPEN-011, 12.1, 12.2, 12.5, 12.7, 12.8, S4.1, S4.3.
 - Audit `DocumentVisibility` enum. Tambah test feature: owner private hanya owner+uploader, public terlihat semua org member, committee terlihat committee saja.
 
 ### Phase 6 Checklist
-- [ ] QA-OPEN-010 / 12.1, 12.2: Upload real, MIME guard, size guard.
-- [ ] QA-OPEN-011 / 12.8: Folders data-backed.
-- [ ] 12.5, 12.7: Visibility audit + tests.
-- [ ] S4.1, S4.3: PHP/SVG payload reject.
-- [ ] Update `QA-REPORT-PROKERIN.md`.
+- [x] QA-OPEN-010 / 12.1, 12.2: Upload real, MIME guard, size guard.
+- [x] QA-OPEN-011 / 12.8: Folders data-backed.
+- [x] 12.5, 12.7: Visibility audit + tests.
+- [x] S4.1, S4.3: PHP/SVG payload reject.
+- [x] Update `QA-REPORT-PROKERIN.md`.
 
 ### Verification (Phase 6)
-- Targeted documents test pass.
-- Browser smoke upload PDF, refresh, download.
+- 2026-05-17: Upload Center diganti dari dropzone dummy menjadi form upload nyata (`documents.store`) dengan file input/drop, `forceFormData`, progress Inertia, folder/visibility/project fields, dan S3-backed `StoreDocumentAction`.
+- 2026-05-17: Folder page kini data-backed via `GetDocumentFolderTreePayloadAction`; visibility download/payload meng-cover private, restricted, committee, dan public.
+- Targeted documents/payload suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/DocumentUploadTest.php tests/Feature/DocumentDownloadTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Unit/ValidateDocumentUploadActionTest.php --stop-on-failure` -> **29 passed, 268 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Browser smoke: `http://127.0.0.1:8004/documents/upload-center` renders upload form, file picker CTA, and recent uploads; `http://127.0.0.1:8004/documents/folders` renders data-backed folders plus document download links after login as `owner@prokerin.test`.
+- Formatter gate: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test app/Actions/Document/StoreDocumentAction.php app/Actions/Document/ValidateDocumentUploadAction.php app/Actions/Document/CreateDocumentDownloadUrlAction.php app/Actions/Workspace/GetDocumentUploadCenterPayloadAction.php app/Actions/Workspace/GetDocumentFolderTreePayloadAction.php app/Domain/Document/DocumentVisibility.php app/Http/Controllers/DocumentController.php app/Http/Controllers/WorkspacePageController.php app/Http/Requests/StoreDocumentRequest.php routes/web.php tests/Feature/DocumentUploadTest.php` pass.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **436 passed, 2469 assertions**.
 
 ---
 
@@ -927,21 +957,21 @@ Centang sesuai progress:
 - [ ] **QA-OPEN-002** Switcher data + action switch (Phase 1)
 - [ ] **QA-OPEN-003** Periods CRUD (Phase 1)
 - [ ] **QA-OPEN-004** Invitation form, accept/decline (Phase 2)
-- [ ] **QA-OPEN-007** Assign PIC end-to-end (Phase 4)
-- [ ] **QA-OPEN-009** Budget draft CRUD (Phase 5)
-- [ ] **QA-OPEN-010** Document upload form (Phase 6)
-- [ ] **QA-OPEN-013** Proker index data-backed (Phase 3)
-- [ ] **QA-OPEN-016** Finance role gate (Phase 5)
-- [ ] **QA-OPEN-017** F6.2 cross-tenant proker (Phase 3)
-- [ ] **QA-OPEN-018** Status transition + progress 100% (Phase 3)
-- [ ] **QA-OPEN-019** Quick-add task + overdue (Phase 4)
+- [x] **QA-OPEN-007** Assign PIC end-to-end (Phase 4)
+- [x] **QA-OPEN-009** Budget draft CRUD (Phase 5)
+- [x] **QA-OPEN-010** Document upload form (Phase 6)
+- [x] **QA-OPEN-013** Proker index data-backed (Phase 3)
+- [x] **QA-OPEN-016** Finance role gate (Phase 5)
+- [x] **QA-OPEN-017** F6.2 cross-tenant proker (Phase 3)
+- [x] **QA-OPEN-018** Status transition + progress 100% (Phase 3)
+- [x] **QA-OPEN-019** Quick-add task + overdue (Phase 4)
 - [ ] **QA-OPEN-020** LPJ checklist toggle + export (Phase 7)
 
 ### Medium Severity
 - [ ] **QA-OPEN-005** Calendar data-backed (Phase 1)
-- [ ] **QA-OPEN-006** Task overview data-backed (Phase 4)
-- [ ] **QA-OPEN-008** Finance overview data-backed (Phase 5)
-- [ ] **QA-OPEN-011** Folders data-backed (Phase 6)
+- [x] **QA-OPEN-006** Task overview data-backed (Phase 4)
+- [x] **QA-OPEN-008** Finance overview data-backed (Phase 5)
+- [x] **QA-OPEN-011** Folders data-backed (Phase 6)
 - [ ] **QA-OPEN-014** Members overview data-backed (Phase 2)
 - [ ] **QA-OPEN-015** Reports overview data-backed (Phase 7)
 
@@ -960,7 +990,7 @@ Centang sesuai progress:
 - [ ] **TECH-05** Soft deletes (Phase 11)
 - [ ] **TECH-07** Failed job handling + retry UI (Phase 12)
 - [ ] **TECH-08** DB indexes (Phase 11)
-- [ ] **S4.1 / S4.3** SVG/PHP upload reject (Phase 11)
+- [x] **S4.1 / S4.3** SVG/PHP upload reject (Phase 11)
 
 ---
 

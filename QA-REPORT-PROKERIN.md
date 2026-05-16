@@ -13,7 +13,7 @@ Status automated regression terakhir:
 
 | Check | Status | Hasil |
 |---|---|---|
-| PHP feature/unit test | Pass | `367 passed, 1965 assertions` |
+| PHP feature/unit test | Pass | `435 passed, 2453 assertions` |
 | Targeted auth/security | Pass | `35 passed, 99 assertions` |
 | Targeted expanded guest-route security | Pass | `3 passed, 133 assertions` |
 | Targeted org/member/proker | Pass | `36 passed, 139 assertions` |
@@ -31,6 +31,17 @@ Status automated regression terakhir:
 | Targeted security input probes | Pass | `3 passed, 6 assertions` |
 | Targeted event/meeting/attendance/certificate/notification | Pass | `59 passed, 355 assertions` |
 | Targeted handover/sponsor/approval | Pass | `26 passed, 146 assertions` |
+| Targeted sponsor/vendor workspace context | Pass | `15 passed, 190 assertions` |
+| Targeted organization phase 1 | Pass | `14 passed, 101 assertions` |
+| Targeted organization/workspace/security smoke | Pass | `27 passed, 430 assertions` |
+| Targeted member invitation/overview phase 2 | Pass | `9 passed, 75 assertions` |
+| Targeted organization+member workspace/security smoke | Pass | `35 passed, 502 assertions` |
+| Targeted proker lifecycle phase 3 | Pass | `21 passed, 200 assertions` |
+| Targeted proker/workspace/security smoke | Pass | `34 passed, 529 assertions` |
+| Targeted task operasional phase 4 | Pass | `15 passed, 125 assertions` |
+| Targeted task/workspace/security smoke | Pass | `28 passed, 454 assertions` |
+| Targeted finance GET guard phase 5 partial | Pass | `19 passed, 255 assertions` |
+| Targeted finance overview phase 5 partial | Pass | `17 passed, 130 assertions` |
 | Targeted landing/campus/admin payload | Pass | `7 passed, 88 assertions` |
 | Targeted attendance/certificate/notification | Pass | `31 passed, 171 assertions` |
 | Targeted certificate verification | Pass | `10 passed, 88 assertions` |
@@ -58,8 +69,10 @@ Area yang sudah cukup aman dari automated QA:
 - Organization logo upload dan MIME rejection.
 - Role matrix, role update guard, dan last-owner protection.
 - Proker create, detail, edit, archive, duplicate slug, member create denial.
+- Proker index tenant-scoped dari database, status transition guarded, project member assign/remove, dan progress recompute sampai 100%.
 - Template generation: proker + tasks + RAB + proposal + LPJ checklist dibuat atomik.
 - Task Kanban data, task status update guard, task calendar data.
+- Task overview data-backed, quick-add task, assign PIC guarded, overdue badge payload, dan active organization scope untuk Kanban/Calendar.
 - Finance receipt realization, MIME rejection, budget approval/rejection, workflow approval.
 - Proposal edit/submit/approve/revision, LPJ review/decision, signed document/export download.
 - Meeting create/attendance/minutes/export, QR attendance issue/revoke/check-in/export, event registration/ticketing/payment webhook, certificate template/issue/verify/download, and notification reminder jobs.
@@ -82,8 +95,26 @@ Area yang sudah cukup aman dari automated QA:
 | BUG-006 | Medium | Super Admin Document Export | Resource export menampilkan raw `output_path` dan masih membuka create/edit route. | Fixed |
 | BUG-007 | Medium | Super Admin User Delete | Delete user belum pakai typed confirmation. | Fixed |
 | BUG-008 | High | Super Admin Assets | `/internal-admin` sempat load tanpa Filament CSS/JS sehingga icon membesar dan layout rusak. | Fixed |
+| QA-OPEN-001 | High | Organization Switcher | Tombol `Buat Organisasi` kini membuka form, submit ke route `organization.store`, membuat owner membership, dan default active period. | Fixed |
+| QA-OPEN-002 | High | Organization Switcher | Switcher kini memakai membership payload dari database dan POST switch menyimpan `active_organization_id` session. | Fixed |
+| QA-OPEN-003 | High | Organization Periods | Periods kini data-backed dengan create/update/set-active flow dan role guard owner/admin. | Fixed |
+| QA-OPEN-005 | Medium | Organization Calendar | Calendar kini data-backed dari proker, meeting, dan attendance session pada organisasi aktif. | Fixed |
+| QA-OPEN-004 | High | Member Invites | Invitation kini punya form, route store, duplicate/member guard, token preview, accept/decline, dan expired-token rejection. | Fixed |
+| QA-OPEN-014 | Medium | Members Overview | `/members` kini memakai payload database tenant-scoped dengan metrics, role breakdown, filter, dan owner-only remove member. | Fixed |
+| QA-OPEN-013 | Medium | Proker Overview | `/proker` kini memakai payload database tenant-scoped, filter/search, empty state, dan link ke slug project sebenarnya. | Fixed |
+| QA-OPEN-017 | High | Proker Cross-Tenant Index | Proker index kini dibatasi organisasi aktif sehingga project organisasi lain tidak bocor ke list. | Fixed |
+| QA-OPEN-018 | High | Project Status & Progress | Status transition kini punya route/action guarded, dan perubahan task status menghitung ulang `projects.progress` sampai 100%. | Fixed |
+| QA-OPEN-006 | Medium | Task Overview | `/tasks` kini memakai payload database tenant-scoped dengan metrics, urgent task, quick-add, dan empty state. | Fixed |
+| QA-OPEN-007 | High | Task Assignment | `/tasks/assignments` kini data-backed dengan dropdown PIC dan route `tasks.pic.update` dengan guard role/member. | Fixed |
+| QA-OPEN-019 | High | Task Assignment UX | Kanban dan overview kini punya quick-add task, payload overdue, dan badge overdue di kartu task. | Fixed |
+| QA-OPEN-016 | High | Finance Access Control | Route GET/mutasi finance kini memakai middleware `finance`; member biasa 403 dan treasurer/owner/admin tetap bisa akses. | Fixed |
+| QA-OPEN-008 | Medium | Finance Overview | `/finance` kini memakai payload database tenant-scoped dengan metrics, RAB vs realisasi, realisasi bulanan, dan queue approval ringkas. | Fixed |
+| QA-OPEN-009 | High | Budget Draft | `/finance/budget-draft` kini data-backed dengan inline form create + edit + delete, summary plan/realized/remaining/lineCount, indikator over-budget per row, dan role guard `FINANCE_MANAGERS`. RAB vs Realisasi chart di Finance Overview menampilkan planned/realized overlay dengan legend. | Fixed |
+| QA-OPEN-010 | High | Document Upload | Upload Center kini punya form upload nyata ke `documents.store`, validasi file/ukuran, penyimpanan S3, project tenant guard, dan progress upload. | Fixed |
+| QA-OPEN-011 | Medium | Document Folders | `/documents/folders` kini memakai folder tree dari tabel `documents`, dengan daftar file dan link download per folder. | Fixed |
+| S4.1 / S4.3 | High | File Upload Security | Upload `.php`/executable dan SVG payload ditolak oleh validasi Form Request/MIME sebelum dokumen disimpan. | Fixed |
 
-Tidak ada bug baru berstatus `Open` dari pass terakhir. Yang masih banyak adalah area belum diuji manual/automated, bukan bukti rusak.
+Masih ada open findings untuk modul lain. Organization Phase 1, Member Phase 2, dan Proker Phase 3 sudah dipindahkan ke fixed dan regression terbaru hijau.
 
 ---
 
@@ -93,25 +124,7 @@ Temuan di bawah bukan crash, tapi fitur/tombol belum benar-benar berfungsi end-t
 
 | ID | Severity | Area | Temuan | Bukti Teknis | Dampak |
 |---|---|---|---|---|---|
-| QA-OPEN-001 | High | Organization Switcher | Tombol `Buat Organisasi` hanya button biasa dan belum ada form/route create organization. | `resources/js/Pages/Organization/Switcher.tsx:49`, `routes/web.php` hanya punya GET `/organization` dan GET `/organization/switcher`. | User tidak bisa membuat organisasi dari UI ini. |
-| QA-OPEN-002 | High | Organization Switcher | Daftar organisasi masih static array, bukan payload dari membership user aktif. Klik organisasi juga belum punya action switch. | `resources/js/Pages/Organization/Switcher.tsx:8`, `app/Http/Controllers/WorkspacePageController.php:120`. | Multi-org user belum bisa benar-benar pindah workspace. |
-| QA-OPEN-003 | High | Organization Periods | Tombol `Tambah Periode` belum membuka form atau submit backend; data periode masih static rows. | `resources/js/Pages/Organization/Periods.tsx:8`, `resources/js/Pages/Organization/Periods.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:125`. | User belum bisa membuat periode kepengurusan dari halaman ini. |
-| QA-OPEN-004 | High | Member Invites | Tombol `Invite` belum punya form/submit route; invitation queue masih static sample. | `resources/js/Pages/Members/Invites.tsx:8`, `resources/js/Pages/Members/Invites.tsx:52`, `app/Http/Controllers/WorkspacePageController.php:263`. | Invite member, duplicate invite, accept/decline belum dapat diuji end-to-end. |
-| QA-OPEN-005 | Medium | Organization Calendar | Calendar masih overview/static navigation, belum calendar data-backed. | `resources/js/Pages/Organization/Calendar.tsx`, `app/Http/Controllers/WorkspacePageController.php:130`. | QA belum bisa validasi event/proker muncul di kalender organisasi. |
-| QA-OPEN-006 | Medium | Task Overview | `/tasks` masih `ModuleOverview` dengan metric/item static dan tombol `Tambah Task` hanya menuju assignment page. | `resources/js/Pages/Task/Index.tsx:7`, `resources/js/Pages/Task/Index.tsx:11`, `resources/js/Pages/Task/Index.tsx:14`. | User melihat angka task yang tidak berasal dari database; create task belum tersedia dari overview. |
-| QA-OPEN-007 | High | Task Assignment | `/tasks/assignments` masih static rows; tombol `Assign PIC` hanya button tanpa form/submit route. | `resources/js/Pages/Task/Assignments.tsx:8`, `resources/js/Pages/Task/Assignments.tsx:52`. | Assign PIC dan guard non-member belum bisa diuji end-to-end lewat UI ini. |
-| QA-OPEN-008 | Medium | Finance Overview | `/finance` masih `ModuleOverview` dengan metric/item static. | `resources/js/Pages/Finance/Index.tsx:7`, `resources/js/Pages/Finance/Index.tsx:14`. | Ringkasan finance bisa menyesatkan karena bukan payload database. |
-| QA-OPEN-009 | High | Budget Draft | `/finance/budget-draft` masih memakai `workspaceMock`; tombol `Tambah Item` belum membuka form atau route create budget line. | `resources/js/Pages/Finance/BudgetDraft.tsx:5`, `resources/js/Pages/Finance/BudgetDraft.tsx:38`. | Create/edit/delete RAB line belum bisa diuji dari UI. |
-| QA-OPEN-010 | High | Document Upload | Upload Center hanya dropzone visual dan validation sample; belum ada file input/form submit upload dokumen. | `resources/js/Pages/Documents/UploadCenter.tsx:59`, `resources/js/Pages/Documents/UploadCenter.tsx:64`, `app/Http/Controllers/WorkspacePageController.php` upload center hanya menjalankan sample validation. | User belum bisa upload dokumen umum dari UI; QA upload oversized/visibility belum bisa end-to-end. |
-| QA-OPEN-011 | Medium | Document Folders | Folder page masih static array, belum data-backed folder tree. | `resources/js/Pages/Documents/Folders.tsx:7`. | Folder hierarchy dan recent documents belum bisa divalidasi dari database. |
-| QA-OPEN-012 | Low | Certificate Template UX | Template editor sudah punya preview, tetapi preview hanya text-stripped, bukan render visual certificate. | `resources/js/Pages/Certificates/Templates.tsx:348`, `resources/js/Pages/Certificates/Templates.tsx:358`, `resources/js/Pages/Certificates/Templates.tsx:363`. | Non-teknis masih sulit menilai layout akhir sertifikat sebelum issue/export. |
-| QA-OPEN-013 | Medium | Proker Overview | `/proker` masih memakai `workspaceMock`; item link juga masih ke sample route, bukan slug project masing-masing. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Pages/Proker/Index.tsx:16`, `resources/js/Pages/Proker/Index.tsx:45`. | Dashboard list proker bisa beda dari database walaupun create/detail proker sudah punya backend. |
-| QA-OPEN-014 | Medium | Members Overview | `/members` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Members/Index.tsx:7`, `resources/js/Pages/Members/Index.tsx:14`, `resources/js/Pages/Members/Index.tsx:19`. | Jumlah member/invite dan daftar orang bisa menyesatkan user. |
 | QA-OPEN-015 | Medium | Reports Overview | `/reports` masih `ModuleOverview` dengan metrics/items hardcoded. | `resources/js/Pages/Reports/Index.tsx:7`, `resources/js/Pages/Reports/Index.tsx:14`, `resources/js/Pages/Reports/Index.tsx:19`. | Ringkasan proposal/LPJ/export queue tidak mencerminkan database. |
-| QA-OPEN-016 | High | Finance Access Control | GET route finance belum role-gated; member biasa yang menyembunyikan menu finance di sidebar masih bisa membuka direct URL `/finance`, `/finance/realization`, dan `/finance/approval`. | `routes/web.php:108`, `routes/web.php:114`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:16`, `app/Actions/Workspace/GetFinanceRealizationPayloadAction.php:37`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:19`, `app/Actions/Workspace/GetFinanceApprovalPayloadAction.php:50`. | Data RAB, realisasi, receipt status, dan approval queue bisa terbaca oleh role yang seharusnya tidak punya akses finance. |
-| QA-OPEN-017 | High | Proker Cross-Tenant Index | `/proker` masih membaca `workspaceMock`, sehingga org2/user mana pun berpotensi melihat sample proyek org lain seperti `Seminar Karier Digital`, `Workshop UI/UX HMIF`, dan `Makrab Angkatan 2026`. | `resources/js/Pages/Proker/Index.tsx:4`, `resources/js/Data/workspaceMock.ts:29`, `resources/js/Data/workspaceMock.ts:38`, `resources/js/Data/workspaceMock.ts:47`. | Checklist F6.2 fail: list proker belum tenant-scoped dan bisa memberi kesan ada data organisasi lain. |
-| QA-OPEN-018 | High | Project Status & Progress | Proker belum punya route/action status transition lengkap, dan update task status belum menghitung ulang `projects.progress`. | `app/Http/Requests/UpdateProjectRequest.php:36`, `app/Actions/Task/UpdateTaskStatusAction.php:28`, `app/Actions/Task/UpdateTaskStatusAction.php:33`. | Flow proker end-to-end belum bisa mencapai progress 100% dari task completion. |
-| QA-OPEN-019 | High | Task Assignment UX | `/tasks/assignments` masih static rows dan tombol `Assign PIC` belum submit ke route backend; Kanban juga belum punya quick-add/overdue visual state. | `resources/js/Pages/Task/Assignments.tsx:8`, `resources/js/Pages/Task/Assignments.tsx:52`, `resources/js/Pages/Task/Kanban.tsx:25`, `resources/js/Pages/Task/Kanban.tsx:60`. | Assign PIC, non-member guard dari UI, quick-add, dan overdue badge belum dapat dipakai user. |
 | QA-OPEN-020 | High | LPJ Checklist & Export | LPJ checklist bisa submit/review/approve, tetapi belum ada toggle item persistence, trigger export PDF khusus LPJ dari UI, dan checklist belum jelas mengambil completed task execution data. | `resources/js/Pages/Reports/LpjChecklist.tsx:63`, `resources/js/Pages/Reports/LpjChecklist.tsx:73`, `resources/js/Pages/Reports/LpjChecklist.tsx:84`. | Full proker lifecycle berhenti sebelum LPJ operasional benar-benar selesai. |
 
 Catatan verifikasi tambahan:
@@ -125,10 +138,30 @@ Catatan verifikasi tambahan:
 - Expanded guest mutation security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/AuthenticationBypassTest.php` -> `3 passed, 133 assertions`.
 - Targeted multi-tenant finance/security `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/MultiTenantFinanceAccessTest.php` -> `3 passed, 30 assertions`.
 - Latest full regression after QA closure pass `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `367 passed, 1965 assertions`.
+- Latest full regression after Phase 0 foundation helpers `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `368 passed, 1968 assertions`.
+- Phase 0 foundation targeted refactor `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SponsorVendorTest.php tests/Feature/WorkspacePayloadTest.php --stop-on-failure` -> `15 passed, 190 assertions`.
+- Latest full regression after Phase 1 organization management `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `382 passed, 2069 assertions`.
+- Phase 1 organization targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php --stop-on-failure` -> `14 passed, 101 assertions`.
+- Phase 1 organization/workspace/security smoke `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `27 passed, 430 assertions`.
+- Latest full regression after Phase 2 member/invitation `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `391 passed, 2144 assertions`.
+- Phase 2 member/invitation targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationInvitationFlowTest.php tests/Feature/MembersOverviewPayloadTest.php --stop-on-failure` -> `9 passed, 75 assertions`.
+- Phase 2 organization+member workspace/security smoke `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/OrganizationCreateTest.php tests/Feature/OrganizationManagementTest.php tests/Feature/OrganizationInvitationFlowTest.php tests/Feature/MembersOverviewPayloadTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `35 passed, 502 assertions`.
+- Latest full regression after Phase 3 proker lifecycle `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `404 passed, 2246 assertions`.
+- Phase 3 proker lifecycle targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ProkerIndexPayloadTest.php tests/Feature/ProkerStatusTransitionTest.php tests/Feature/ProjectMembersManagementTest.php tests/Feature/ProjectDetailTest.php tests/Feature/TaskInteractionTest.php --stop-on-failure` -> `21 passed, 200 assertions`.
+- Phase 3 proker/workspace/security smoke `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ProkerIndexPayloadTest.php tests/Feature/ProkerStatusTransitionTest.php tests/Feature/ProjectMembersManagementTest.php tests/Feature/ProjectDetailTest.php tests/Feature/TaskInteractionTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `34 passed, 529 assertions`.
+- Latest full regression after Phase 4 task operasional `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `415 passed, 2328 assertions`.
+- Phase 4 task targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskOverviewPayloadTest.php tests/Feature/AssignTaskPicTest.php tests/Feature/CreateTaskTest.php tests/Feature/TaskOverdueBadgePayloadTest.php tests/Feature/TaskInteractionTest.php --stop-on-failure` -> `15 passed, 125 assertions`.
+- Phase 4 task/workspace/security smoke `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/TaskOverviewPayloadTest.php tests/Feature/AssignTaskPicTest.php tests/Feature/CreateTaskTest.php tests/Feature/TaskOverdueBadgePayloadTest.php tests/Feature/TaskInteractionTest.php tests/Feature/WorkspacePayloadTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `28 passed, 454 assertions`.
+- Latest full regression after Phase 5 finance GET guard `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `417 passed, 2336 assertions`.
+- Phase 5 finance GET guard targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Security/MultiTenantFinanceAccessTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/BudgetReceiptRealizationTest.php tests/Feature/WorkspaceRouteSmokeTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> `19 passed, 255 assertions`.
+- Latest full regression after Phase 5 finance overview `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `419 passed, 2382 assertions`.
+- Phase 5 finance overview targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/FinanceOverviewPayloadTest.php tests/Feature/Security/MultiTenantFinanceAccessTest.php tests/Feature/BudgetApprovalDecisionTest.php tests/Feature/BudgetReceiptRealizationTest.php --stop-on-failure` -> `17 passed, 130 assertions`.
+- Phase 5 budget line CRUD targeted suite `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/BudgetLineCrudTest.php` -> `9 passed, 39 assertions`.
+- Latest full regression after Phase 5 completion `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> `435 passed, 2453 assertions`.
 - Frontend gate `npm run lint` -> pass.
 - Frontend production build `npm run build` -> pass.
 - PHP formatter gate `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> pass.
-- Smoke test membuktikan route/page utama render, bukan membuktikan tombol dummy di atas sudah berfungsi.
+- Smoke test membuktikan route/page utama render; browser/device pass tetap diperlukan untuk interaksi UI, loading state, dan toast.
 
 ---
 
@@ -138,43 +171,28 @@ Bagian ini penting untuk dev karena item di bawah belum boleh dianggap aman untu
 
 ### Organization
 
-| ID QA | Area | Yang Belum Terverifikasi |
-|---|---|---|
-| 5.1 | Create organization | Belum ada route/form create organization end-to-end. Lihat QA-OPEN-001. |
-| 5.2 | Duplicate slug | Belum ada route create organization, jadi validation duplicate slug belum bisa diuji. |
-| 5.5 | Active period | Belum ada form/route create active organization period. Lihat QA-OPEN-003. |
-| 5.6 | Org switcher | Data masih static dan belum ada action switch. Lihat QA-OPEN-002. |
-| 5.7 | Calendar | Organization calendar belum data-backed. Lihat QA-OPEN-005. |
-| 5.8 | Edit organization | Edit nama organisasi dan tampil di sidebar/pages. |
+Organization Phase 1 sudah terverifikasi otomatis untuk create organization, duplicate slug, switcher, periods, calendar data-backed, dan edit profile name/description. Manual browser/device smoke tetap bisa dilakukan sebelum beta.
 
 ### Member & Role Management
 
-| ID QA | Area | Yang Belum Terverifikasi |
-|---|---|---|
-| 6.1 | Invite member | Belum ada form/submit route invite member. Lihat QA-OPEN-004. |
-| 6.2 | Duplicate invite | Belum ada submit route invite, jadi duplicate guard belum bisa diuji. |
-| 6.3 | Accept invitation | Accept token/route belum terlihat dari QA pass ini. |
-| 6.4 | Decline invitation | Decline token/route belum terlihat dari QA pass ini. |
-| 6.8 | Remove member | Member dihapus dan kehilangan akses org. |
-| M03 overview | Members index data-backed | `/members` masih hardcoded. Lihat QA-OPEN-014. |
+Member Phase 2 sudah terverifikasi otomatis untuk invite, duplicate/member guard, accept/decline, expired token, remove member, dan members overview data-backed. Manual browser/device smoke tetap bisa dilakukan sebelum beta.
 
 ### Proker & Template
 
+Proker Phase 3 sudah terverifikasi otomatis untuk index data-backed tenant-scoped, status transition guarded, progress recompute sampai 100% saat semua task selesai, dan project member assign/remove. Manual browser/device smoke tetap perlu untuk state loading, confirm UX, dan redirect setelah submit.
+
 | ID QA | Area | Yang Belum Terverifikasi |
 |---|---|---|
-| 7.5 | Status transition | Planning -> Active -> Completed. |
-| 7.8 | Progress calculation | Semua task selesai membuat progress 100%. |
 | 8.1 | Template library | Halaman `/templates` menampilkan template seeded. |
 | 8.4 | Customize generated project | Generated project bisa diedit setelah dibuat dari template. |
 | 8.5 | Generate same template twice | Generate template yang sama dua kali tanpa konflik. |
-| M04 overview | Proker index data-backed | `/proker` masih memakai `workspaceMock`. Lihat QA-OPEN-013. |
 
 ### Task, Finance, Proposal, Document, LPJ
 
 Area ini masih butuh QA lanjutan paling banyak:
 
-- Task board: Kanban load, status advance, member status guard, dan calendar data sudah automated pass. Assign PIC, quick-add, overdue state, dan progress 100% masih belum lengkap.
-- Finance: Receipt upload, receipt MIME rejection, approval approve/reject, dan member mutation guard sudah automated pass. GET finance page guard untuk member masih fail karena direct URL belum role-gated. Create/edit/delete budget line, RAB overview data-backed, dan remaining budget UI masih belum lengkap.
+- Task board: Kanban load, status advance, member status guard, calendar data, progress recompute 100%, overview real, assign PIC, quick-add, dan overdue state sudah automated pass. Browser/manual state loading tetap perlu dicek.
+- Finance: Receipt upload, receipt MIME rejection, approval approve/reject, member mutation guard, GET finance page guard, finance overview data-backed, budget line CRUD (create/edit/delete dengan role guard `FINANCE_MANAGERS` + cross-tenant block + transaction-protected delete), serta RAB vs Realisasi chart sudah automated pass. Browser/manual state loading tetap perlu dicek.
 - Proposal: Edit section, submit, approve, request revision, lock submitted proposal, export PDF/DOCX job coverage, dan member guard sudah automated pass. Browser/manual state loading tetap perlu dicek.
 - Reports overview masih hardcoded walaupun proposal/LPJ detail action sudah punya coverage. Lihat QA-OPEN-015.
 - Document: Signed private download, restricted finance receipt guard, committee URL, export download guard sudah automated pass. Upload dokumen umum, oversized rejection dari UI, folder tree, recent documents, dan cross-tenant document download masih perlu lanjut.
@@ -205,19 +223,13 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 
 | Page | Button/Action | Risiko |
 |---|---|---|
-| `/organization/switcher` | Buat Organisasi | Saat ini tombol dummy; perlu form + route create organization. |
-| `/organization/switcher` | Pilih organisasi | Saat ini list static; perlu action switch org aktif. |
-| `/organization/periods` | Tambah Periode | Saat ini tombol dummy; perlu form + route create period. |
-| `/members/invites` | Invite | Saat ini tombol dummy; perlu modal/form, validation, duplicate invite, toast. |
 | `/members` | Promote/demote role | Perlu cek control role tidak muncul untuk role yang tidak berhak. |
-| `/members` | Remove member | Perlu typed/confirm flow dan akses member setelah dihapus. |
-| `/members` | Overview metrics/list | Saat ini hardcoded; perlu payload real member/invite counts. |
-| `/proker` | Overview list | Saat ini memakai `workspaceMock`; perlu payload project real dan link detail per slug. |
-| `/proker` | Status transition | Tombol ubah status harus konsisten dengan policy dan progress. |
+| `/proker` | Overview list | Automated pass untuk payload real dan link detail; browser smoke tetap perlu untuk filter/search/loading di viewport nyata. |
+| `/proker` | Status transition | Automated pass untuk guard dan transisi; browser smoke tetap perlu untuk confirm UX/toast/redirect. |
 | `/templates` | Generate template | Perlu cek list template, empty/loading state, redirect detail. |
-| `/tasks` atau detail proker | Quick-add task | Perlu cek task masuk kolom benar tanpa layout shift. |
+| `/tasks` atau detail proker | Quick-add task | Automated pass untuk create task; browser smoke tetap perlu cek loading, toast, dan layout shift. |
 | `/tasks` | Advance status | Perlu cek progress update di UI setelah klik. |
-| `/tasks/assignments` | Assign PIC | Saat ini tombol dummy; perlu form + route assign PIC. |
+| `/tasks/assignments` | Assign PIC | Automated pass untuk route dan guard; browser smoke tetap perlu cek dropdown, disabled/loading, dan toast. |
 | `/finance/budget-draft` | Add/Edit/Delete budget line | Saat ini tombol `Tambah Item` dummy dan data mock; perlu CRUD budget line. |
 | `/finance` | Upload receipt | Perlu cek file picker, size/type error, preview/download link. |
 | `/finance/approval` | Approve/Reject | Perlu cek status update, flash, audit/notification. |
@@ -239,8 +251,8 @@ Tombol/action ini perlu dicek di browser karena automated tests belum cukup memb
 | Main workspace GET routes unauthenticated | Pass | Expanded automated sweep redirects guest access to `/login` across main workspace pages. |
 | Main workspace mutation routes unauthenticated | Pass | Expanded automated sweep redirects guest POST/PATCH/PUT/DELETE action routes to `/login`. |
 | Cross-tenant dashboard isolation | Pass | Dashboard org lain tidak bocor dari automated tests. |
-| Cross-tenant proker/finance/document | Fail/Belum lengkap | Proker index static mock fail tenant-scope (QA-OPEN-017), finance GET role guard fail (QA-OPEN-016), detail/download sebagian sudah pass. |
-| Finance GET role guard | Fail | Member biasa masih bisa membuka payload finance lewat direct URL. Lihat QA-OPEN-016. |
+| Cross-tenant proker/finance/document | Partial | Proker index tenant-scope dan finance GET role guard sudah pass; document detail/download sebagian sudah pass dan masih perlu audit lanjutan. |
+| Finance GET role guard | Pass | Member biasa menerima 403 untuk `/finance`, `/finance/budget-draft`, `/finance/realization`, dan `/finance/approval`; treasurer tetap 200. |
 | File upload MIME validation | Partial | Logo upload sudah, document/receipt/certificate asset belum semua. |
 | S3 signed URL | Partial | Unit download plan ada, browser/download route perlu dicek. |
 | CSRF protection | Belum audited penuh | Perlu spot-check semua POST/PUT/PATCH/DELETE penting. |
@@ -262,7 +274,7 @@ Prioritas medium:
 
 - Finance RAB table perlu live total calculation dan indikator over-budget.
 - Dashboard quick actions perlu disesuaikan per role, bukan hanya Pimpinan.
-- Search/filter dasar perlu ada di `/proker`, `/members`, `/documents`, dan `/certificates`.
+- Search/filter dasar perlu ada di `/documents` dan `/certificates`; `/proker` dan `/members` sudah punya filter dasar tetapi masih perlu browser smoke.
 - Breadcrumb perlu ditambahkan di halaman bertingkat.
 - Notification bell lebih baik punya dropdown 5 notifikasi terbaru.
 - Long list perlu pagination atau virtualized list sebelum data membesar.
@@ -288,11 +300,8 @@ Prioritas medium:
 
 Urutan QA yang paling enak untuk dev:
 
-1. Tutup flow Organization dan Member dulu: create org, period, invite, accept/decline, remove member.
-2. Lanjut full Proker lifecycle: create, status transition, task progress 100%, template twice, archive.
-3. Lanjut Finance end-to-end: budget line, receipt, approval, remaining budget.
-4. Lanjut Proposal + LPJ export dengan queue worker aktif.
-5. Baru Document visibility dan cross-tenant download.
-6. Setelah itu browser sweep desain: mobile 375px, desktop 1280px, console error, empty state, tombol disabled/loading.
+1. Lanjut Proposal + LPJ export dengan queue worker aktif.
+2. Baru Document visibility dan cross-tenant download.
+4. Setelah itu browser sweep desain: mobile 375px, desktop 1280px, console error, empty state, tombol disabled/loading.
 
 File ini boleh dipakai dev sebagai "peta kerja QA". Kalau nanti ada bug baru, tambahkan ke section `2` kalau sudah fixed, atau buat section `Open Bugs` di atas section `3`.
