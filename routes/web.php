@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AttendanceQrCheckInController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjReviewController;
+use App\Http\Controllers\ManualAttendanceController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\OrganizationMemberRoleController;
 use App\Http\Controllers\ProfileController;
@@ -95,6 +97,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/meetings', [WorkspacePageController::class, 'meetingsIndex'])->name('meetings.index');
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');
+        Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])->name('check-in.store');
+        Route::post('/sessions/{session}/manual-check-in', [ManualAttendanceController::class, 'store'])->name('manual.store');
+    });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])->name('notifications.task-deadline-reminders.store');
     Route::get('/admin', [WorkspacePageController::class, 'adminIndex'])->name('admin.index');

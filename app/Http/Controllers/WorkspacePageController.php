@@ -17,6 +17,7 @@ use App\Actions\Workspace\GetMeetingMinutePayloadAction;
 use App\Actions\Workspace\GetNotificationRulePayloadAction;
 use App\Actions\Workspace\GetProjectTemplatePayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
+use App\Actions\Workspace\GetQrAttendancePayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
@@ -211,6 +212,11 @@ final class WorkspacePageController extends Controller
     public function meetingsIndex(Request $request, GetMeetingMinutePayloadAction $meetings): Response
     {
         return Inertia::render('Meetings/Index', $meetings->execute((int) $request->user()->id));
+    }
+
+    public function attendanceIndex(Request $request, GetQrAttendancePayloadAction $attendance): Response
+    {
+        return Inertia::render('Attendance/Index', $attendance->execute((int) $request->user()->id));
     }
 
     public function notificationsIndex(GetNotificationRulePayloadAction $notificationRules): Response

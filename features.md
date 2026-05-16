@@ -13,8 +13,8 @@ Dokumen ini adalah sumber utama status fitur Prokerin. `AGENTS.md` hanya menyimp
 ## Ringkasan Status
 
 - MVP M01-M13: selesai dan tervalidasi.
-- Post-MVP M14: selesai dan tervalidasi.
-- Post-MVP berikutnya: M15 Absensi QR.
+- Post-MVP M14-M15: selesai dan tervalidasi.
+- Post-MVP berikutnya: M16 Sertifikat Digital.
 - Risiko operasional saat ini: shell default masih menunjuk PHP 8.3, sedangkan proyek membutuhkan PHP 8.4+.
 
 ## Verifikasi Terakhir
@@ -28,9 +28,16 @@ Dokumen ini adalah sumber utama status fitur Prokerin. `AGENTS.md` hanya menyimp
 - [x] 2026-05-16 · Setelah M14, full test suite berhasil:
   `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
   Hasil: `183 passed`, `755 assertions`.
+- [x] 2026-05-16 · Setelah M15, full test suite berhasil:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
+  Hasil: `190 passed`, `804 assertions`.
+- [x] 2026-05-16 · M15 migration dan seeder berhasil di MySQL lokal:
+  `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan migrate`
+  dan `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan db:seed`.
 - [x] 2026-05-16 · Frontend production build berhasil:
   `npm run build`
 - [x] 2026-05-16 · Browser smoke test untuk `/meetings` berhasil setelah login seeded user `owner@prokerin.test`.
+- [x] 2026-05-16 · Browser smoke test untuk `/attendance` berhasil setelah login seeded user `owner@prokerin.test`.
 
 ## Environment Notes
 
@@ -41,7 +48,8 @@ Dokumen ini adalah sumber utama status fitur Prokerin. `AGENTS.md` hanya menyimp
   `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`
 - Database lokal menggunakan MySQL di `.env` port `8889`.
 - Migration additive M14 sudah dijalankan di database lokal pada 2026-05-16.
-- Seeder idempotent sudah dijalankan ulang setelah M14.
+- Migration additive M15 sudah dijalankan di database lokal pada 2026-05-16.
+- Seeder idempotent sudah dijalankan ulang setelah M15.
 
 ## Fondasi Selesai
 
@@ -320,20 +328,38 @@ Belum/next:
 
 ### M15 · Absensi QR
 
-Status: `[ ]` Belum dikerjakan.
+Status: `[x]` Selesai untuk scope awal Post-MVP.
 
-Target scope yang disarankan:
-- Tables untuk attendance sessions, QR tokens, dan attendance records.
-- Tenant/project/meeting scoped attendance session.
-- QR token generation dengan expiry.
-- Check-in endpoint dengan guard anti replay.
-- Manual attendance fallback.
-- Inertia page untuk session list dan scan/check-in result.
-- Tests untuk tenant scope, expired token, duplicate check-in, dan valid check-in.
+Sudah ada:
+- Additive migration `2026_05_16_000007_create_attendance_tables.php`.
+- Tables: `attendance_sessions`, `attendance_qr_tokens`, `attendance_records`.
+- Attendance session bisa scoped ke organization, project, dan meeting.
+- QR token disimpan sebagai SHA-256 hash dengan expiry, revoked timestamp, dan last-used timestamp.
+- `CheckInAttendanceQrAction` untuk valid QR check-in.
+- `RecordManualAttendanceAction` untuk fallback absensi manual oleh owner/admin/secretary/project_lead.
+- Tenant membership guard untuk QR check-in.
+- Anti-duplikat untuk scan QR berulang pada user/session yang sama.
+- Expired token guard.
+- Cross-tenant rejection untuk user yang bukan anggota organisasi sesi absensi.
+- Manual fallback route dengan role guard.
+- Route `attendance.index` di `/attendance`.
+- Route `attendance.check-in.store` untuk QR check-in.
+- Route `attendance.manual.store` untuk manual fallback.
+- Sidebar menu `Absensi QR` dengan badge `M15`.
+- Inertia page `resources/js/Pages/Attendance/Index.tsx`.
+- UI menampilkan metrics, session list, QR/manual counts, expiry, dan check-in terbaru.
+- Seeder demo session absensi untuk M14 meeting.
+- Feature tests untuk payload, valid check-in, duplicate scan, expired token, cross-tenant guard, manual fallback, dan manual role guard.
+- Route smoke test ditambahkan.
+- Browser smoke test `/attendance` berhasil.
 
-Catatan dependensi:
-- Bisa terhubung ke M14 meeting attendees.
-- Jangan implement native mobile app; tetap PWA/web.
+Belum/next:
+- QR image generation belum ada; saat ini form menerima token hasil scan/paste.
+- Camera scanner PWA belum ada.
+- Regenerate/revoke QR token UI belum ada.
+- Create/edit attendance session belum ada.
+- Attendance export belum ada.
+- Migration M15 perlu dijalankan ke database lokal persistent sebelum browser smoke test manual.
 
 ### M16 · Sertifikat Digital
 
@@ -458,10 +484,9 @@ Target scope yang disarankan:
 ## Next Action
 
 1. Relink shell PHP ke PHP 8.4 atau terus gunakan PATH prefix untuk semua Composer/Artisan commands.
-2. Mulai M15 Absensi QR dengan desain migration additive.
-3. Hubungkan M15 ke M14 meeting attendees bila absensi rapat menjadi use case pertama.
-4. Tambahkan tests sebelum menganggap M15 selesai.
-5. Setelah M15 selesai, update bagian `Verifikasi Terakhir`, `Post-MVP Modules`, dan commit dengan pesan `feat: add qr attendance module`.
+2. Mulai M16 Sertifikat Digital dengan desain migration additive.
+3. Tambahkan tests untuk unique certificate number, signed verification URL, dan tenant-scoped verification sebelum M16 ditandai selesai.
+4. Setelah M16 selesai, update bagian `Verifikasi Terakhir`, `Post-MVP Modules`, dan commit dengan pesan `feat: add digital certificate module`.
 
 ## Riwayat Commit Penting
 

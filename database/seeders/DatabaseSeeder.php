@@ -47,6 +47,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedProposalDrafts($now);
         $this->seedLpjChecklist($now);
         $this->seedMeetings($now);
+        $this->seedAttendance($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
     }
@@ -538,6 +539,96 @@ final class DatabaseSeeder extends Seeder
         );
     }
 
+    private function seedAttendance($now): void
+    {
+        foreach ([
+            [
+                'title' => 'Absensi Technical Meeting Seminar Karier',
+                'meeting' => 'Technical Meeting Seminar Karier',
+                'starts_at' => '2026-05-26 15:15:00',
+                'ends_at' => '2026-05-26 17:15:00',
+                'status' => 'open',
+                'creator' => 'sekretaris@prokerin.test',
+            ],
+            [
+                'title' => 'Absensi Evaluasi Proposal dan RAB',
+                'meeting' => 'Evaluasi Proposal dan RAB',
+                'starts_at' => '2026-05-14 18:45:00',
+                'ends_at' => '2026-05-14 20:30:00',
+                'status' => 'closed',
+                'creator' => 'admin@prokerin.test',
+            ],
+        ] as $session) {
+            DB::table('attendance_sessions')->updateOrInsert(
+                [
+                    'organization_id' => $this->organizationId('bem-fakultas-teknologi'),
+                    'title' => $session['title'],
+                ],
+                [
+                    'project_id' => $this->projectId('seminar-karier-digital'),
+                    'meeting_id' => $this->meetingId($session['meeting']),
+                    'created_by_user_id' => $this->userId($session['creator']),
+                    'starts_at' => $session['starts_at'],
+                    'ends_at' => $session['ends_at'],
+                    'status' => $session['status'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+
+        foreach ([
+            [
+                'session' => 'Absensi Technical Meeting Seminar Karier',
+                'token' => 'prokerin-m15-technical-meeting-token',
+                'expires_at' => $now->copy()->addDays(7),
+            ],
+            [
+                'session' => 'Absensi Evaluasi Proposal dan RAB',
+                'token' => 'prokerin-m15-expired-evaluation-token',
+                'expires_at' => $now->copy()->subDay(),
+            ],
+        ] as $token) {
+            DB::table('attendance_qr_tokens')->updateOrInsert(
+                ['token_hash' => hash('sha256', $token['token'])],
+                [
+                    'attendance_session_id' => $this->attendanceSessionId($token['session']),
+                    'expires_at' => $token['expires_at'],
+                    'revoked_at' => null,
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ],
+            );
+        }
+
+        $manualAttendeeId = $this->meetingAttendeeId('Technical Meeting Seminar Karier', 'sekretaris@prokerin.test');
+
+        DB::table('attendance_records')->updateOrInsert(
+            [
+                'attendance_session_id' => $this->attendanceSessionId('Absensi Technical Meeting Seminar Karier'),
+                'meeting_attendee_id' => $manualAttendeeId,
+            ],
+            [
+                'user_id' => $this->userId('sekretaris@prokerin.test'),
+                'attendee_name' => 'Salsa Kirana',
+                'attendee_email' => 'sekretaris@prokerin.test',
+                'check_in_method' => 'manual',
+                'checked_in_at' => '2026-05-26 15:20:00',
+                'status' => 'present',
+                'notes' => 'Seed manual fallback untuk demo M15.',
+                'updated_at' => $now,
+                'created_at' => $now,
+            ],
+        );
+
+        DB::table('meeting_attendees')
+            ->where('id', $manualAttendeeId)
+            ->update([
+                'attendance_status' => 'present',
+                'updated_at' => $now,
+            ]);
+    }
+
     private function seedNotificationRules($now): void
     {
         foreach ((new GetDefaultNotificationRulesAction)->execute() as $rule) {
@@ -632,5 +723,18 @@ final class DatabaseSeeder extends Seeder
     private function meetingId(string $title): int
     {
         return (int) DB::table('meetings')->where('title', $title)->value('id');
+    }
+
+    private function attendanceSessionId(string $title): int
+    {
+        return (int) DB::table('attendance_sessions')->where('title', $title)->value('id');
+    }
+
+    private function meetingAttendeeId(string $meetingTitle, string $email): int
+    {
+        return (int) DB::table('meeting_attendees')
+            ->where('meeting_id', $this->meetingId($meetingTitle))
+            ->where('user_id', $this->userId($email))
+            ->value('id');
     }
 }
