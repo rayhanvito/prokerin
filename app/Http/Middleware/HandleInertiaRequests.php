@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Actions\Dashboard\SidebarMenuAction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
+use Lab404\Impersonate\Services\ImpersonateManager;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -63,6 +65,30 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn (): ?string => $this->sessionString($request, 'status'),
                 'aiSuggestion' => fn (): ?array => $this->sessionArray($request, 'aiSuggestion'),
             ],
+            'impersonating' => $this->impersonationContext(),
+        ];
+    }
+
+    /**
+     * @return array{active: bool, impersonator: ?string, leaveUrl: string}|null
+     */
+    private function impersonationContext(): ?array
+    {
+        $manager = app(ImpersonateManager::class);
+
+        if (! $manager->isImpersonating()) {
+            return null;
+        }
+
+        $impersonatorId = $manager->getImpersonatorId();
+        $impersonator = $impersonatorId === null
+            ? null
+            : User::query()->find($impersonatorId);
+
+        return [
+            'active' => true,
+            'impersonator' => $impersonator instanceof User ? (string) $impersonator->name : null,
+            'leaveUrl' => route('impersonate.stop', absolute: false),
         ];
     }
 

@@ -169,4 +169,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::impersonate();
+    Route::post('/impersonate/stop-from-banner', [\App\Http\Controllers\StopImpersonationController::class, 'store'])
+        ->name('impersonate.stop');
+});
+
 require __DIR__.'/auth.php';

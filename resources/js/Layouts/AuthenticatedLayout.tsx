@@ -1,6 +1,7 @@
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
 import FlashBanner from '@/Components/Prokerin/FlashBanner';
+import ImpersonationBanner from '@/Components/Prokerin/ImpersonationBanner';
 import VihoHeader from '@/Components/Viho/VihoHeader';
 import VihoSidebar from '@/Components/Viho/VihoSidebar';
 
@@ -13,6 +14,7 @@ export default function Authenticated({
 
     return (
         <div className="min-h-screen bg-[#f5f7fb] font-sans text-[#242934]">
+            <ImpersonationBanner />
             <VihoSidebar />
 
             <div className="lg:pl-[255px]">

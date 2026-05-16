@@ -5,6 +5,12 @@ export interface User {
     email_verified_at?: string;
 }
 
+export interface ImpersonationContext {
+    active: boolean;
+    impersonator: string | null;
+    leaveUrl: string;
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -25,4 +31,5 @@ export type PageProps<
         status?: string;
         aiSuggestion?: Record<string, unknown>;
     };
+    impersonating: ImpersonationContext | null;
 };
