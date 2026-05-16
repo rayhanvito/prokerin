@@ -71,6 +71,53 @@ final class DashboardVariantRoutingTest extends TestCase
                 ->missing('payload.priorityProjects.1'));
     }
 
+    public function test_leadership_dashboard_kpis_match_organization_data(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $organizationId = $this->organizationId('bem-fakultas-teknologi');
+        $activeProjects = DB::table('projects')
+            ->where('organization_id', $organizationId)
+            ->whereNotIn('status', ['completed', 'archived'])
+            ->count();
+        $members = DB::table('organization_members')
+            ->where('organization_id', $organizationId)
+            ->count();
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Dashboard/Index')
+                ->where('payload.kpiMetrics.0.label', 'Proker Aktif')
+                ->where('payload.kpiMetrics.0.value', $activeProjects)
+                ->where('payload.kpiMetrics.2.label', 'Total Anggota')
+                ->where('payload.kpiMetrics.2.value', $members));
+    }
+
+    public function test_treasurer_dashboard_remaining_budget_matches_database_totals(): void
+    {
+        $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
+        $organizationId = $this->organizationId('bem-fakultas-teknologi');
+        $rabTotal = (int) DB::table('budget_lines')
+            ->join('projects', 'projects.id', '=', 'budget_lines.project_id')
+            ->where('projects.organization_id', $organizationId)
+            ->sum('budget_lines.planned_amount');
+        $realizedTotal = (int) DB::table('budget_lines')
+            ->join('projects', 'projects.id', '=', 'budget_lines.project_id')
+            ->where('projects.organization_id', $organizationId)
+            ->sum('budget_lines.realized_amount');
+        $remainingBudget = 'Rp '.number_format(max(0, $rabTotal - $realizedTotal), 0, ',', '.');
+
+        $this->actingAs($treasurer)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Dashboard/Index')
+                ->where('dashboardVariant', 'bendahara')
+                ->where('payload.kpiMetrics.2.label', 'Sisa Anggaran')
+                ->where('payload.kpiMetrics.2.value', $remainingBudget));
+    }
+
     private function assertDashboardVariant(string $email, string $variant): void
     {
         $user = User::query()->where('email', $email)->firstOrFail();
@@ -82,5 +129,10 @@ final class DashboardVariantRoutingTest extends TestCase
                 ->component('Dashboard/Index')
                 ->where('dashboardVariant', $variant)
                 ->has('payload.kpiMetrics'));
+    }
+
+    private function organizationId(string $slug): int
+    {
+        return (int) DB::table('organizations')->where('slug', $slug)->value('id');
     }
 }

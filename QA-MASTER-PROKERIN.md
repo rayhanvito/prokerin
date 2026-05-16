@@ -352,9 +352,9 @@ Expected baseline: **256+ passed, 1287+ assertions** (add new tests as SA01 comp
 
 | # | Test Case | Steps | Expected | Status |
 |---|-----------|-------|----------|--------|
-| 14.3.1 | Proker count | Create 3 active proker | KPI shows 3 | `[ ]` |
-| 14.3.2 | Member count | 5 members in org | KPI shows 5 | `[ ]` |
-| 14.3.3 | Budget remaining | RAB 10M, approved realization 3M | KPI shows Rp7.000.000 | `[ ]` |
+| 14.3.1 | Proker count | Create 3 active proker | KPI shows 3 | `[P]` |
+| 14.3.2 | Member count | 5 members in org | KPI shows 5 | `[P]` |
+| 14.3.3 | Budget remaining | RAB 10M, approved realization 3M | KPI shows Rp7.000.000 | `[P]` |
 | 14.3.4 | Cross-org isolation | Owner of org A | Sees ONLY org A data on dashboard | `[P]` |
 
 ---
@@ -612,7 +612,7 @@ At T=2: Owner dashboard shows 0 pending approvals
 |------|------|--------|
 | F5.1 | Approval queue count accurate | `[ ]` |
 | F5.2 | Sidebar badge count accurate | `[ ]` |
-| F5.3 | Finance remaining budget updates after approval | `[ ]` |
+| F5.3 | Finance remaining budget updates after approval | `[P]` |
 
 ### Flow 6 — Cross-Org Data Isolation (Most Critical)
 
