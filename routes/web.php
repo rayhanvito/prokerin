@@ -30,6 +30,9 @@ use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\HandoverPackageExportController;
 use App\Http\Controllers\HandoverPackageStatusController;
 use App\Http\Controllers\HandoverPackageTransitionController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InventoryLoanController;
+use App\Http\Controllers\InventoryQrController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LetterBulkIssueController;
 use App\Http\Controllers\LetterController;
@@ -197,6 +200,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/folders', [WorkspacePageController::class, 'documentFolders'])->name('folders');
         Route::get('/upload-center', [WorkspacePageController::class, 'uploadCenter'])->name('upload-center');
         Route::get('/{document}/download', [DocumentDownloadController::class, 'show'])->name('download');
+    });
+
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [InventoryController::class, 'create'])->name('create');
+        Route::post('/', [InventoryController::class, 'store'])->name('store');
+        Route::get('/qr/{token}', [InventoryQrController::class, 'show'])->name('qr.show');
+        Route::patch('/loans/{loan}/approve', [InventoryLoanController::class, 'approve'])->name('loans.approve');
+        Route::patch('/loans/{loan}/return', [InventoryLoanController::class, 'return'])->name('loans.return');
+        Route::get('/{item}', [InventoryController::class, 'show'])->name('show');
+        Route::get('/{item}/edit', [InventoryController::class, 'edit'])->name('edit');
+        Route::patch('/{item}', [InventoryController::class, 'update'])->name('update');
+        Route::delete('/{item}', [InventoryController::class, 'destroy'])->name('destroy');
+        Route::post('/{item}/loans', [InventoryLoanController::class, 'store'])->name('loans.store');
     });
 
     Route::prefix('letters')->name('letters.')->group(function () {

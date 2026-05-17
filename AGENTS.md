@@ -1,624 +1,743 @@
-# AGENTS.md — Prokerin
+# AGENTS.md - Prokerin Blueprint and Development Rules
+
+This file is the technical blueprint and guardrail for Prokerin. Every AI agent and developer must read this file before changing code. For product explanation, feature list, user flows, setup, and status, read `README.md`.
+
+Root markdown policy:
+
+- Only `README.md` and `AGENTS.md` are allowed as root project documentation.
+- Do not create extra root `.md` files such as roadmap, feature status, QA plan, sprint plan, or architecture notes unless the project owner explicitly asks.
+- If project status or feature documentation changes, update `README.md`.
+- If architecture, code rules, or development guardrails change, update `AGENTS.md`.
 
 ---
 
-## 1. Project Overview
+## 1. Project Identity
 
-- **Name**        : Prokerin
-- **Description** : Web App / PWA SaaS for student organizations to manage program kerja (proker) — from planning, proposal, timeline, task, RAB, execution, documentation, to LPJ and board handover.
-- **Goal**        : Eliminate the 7 chaos areas of student organizations: late proker, slow proposals, untracked tasks, messy finances, scattered documentation, delayed LPJ, and poor handover.
-- **Target Users**: Student organization boards (BEM, HIMA, UKM), event committees, and campus communities — primarily in Java (Surabaya, Malang, Yogyakarta, Bandung).
-- **Version**     : v0.1.0
-- **Status**      : Active Development — MVP Phase
+Name: Prokerin
 
----
+Product: Web App/PWA SaaS for Indonesian student organizations to manage program kerja (proker) from planning to handover.
 
-## 2. Tech Stack
+Target users:
 
-- **Language**        : PHP 8.4+
-- **Framework**       : Latest Laravel currently installed in this project (Laravel 13.x at scaffold time)
-- **Frontend**        : React (via Inertia.js) — NOT a standalone SPA
-- **Bridge**          : Inertia.js — connects Laravel routes directly to React pages
-- **Styling**         : Tailwind CSS (project scaffold currently uses Breeze/Vite Tailwind config; upgrade deliberately, not casually)
-- **UI Components**   : shadcn/ui (Radix UI primitives)
-- **Database**        : MySQL 8.x for local MVP development (port `8889` in the current local `.env`)
-- **ORM**             : Eloquent (Laravel)
-- **Auth**            : Laravel Breeze + Google OAuth (Socialite)
-- **Authorization**   : Spatie Laravel Permission
-- **Cache & Queue**   : Redis (Laravel Cache + Queue)
-- **Object Storage**  : S3-compatible (Cloudflare R2 / MinIO / AWS S3)
-- **Admin Panel**     : Filament PHP
-- **Export PDF**      : Browsershot (preferred) / DomPDF fallback
-- **Export DOCX**     : PHPWord
-- **Package Manager** : Composer (PHP) + npm (JS assets)
-- **Deployment**      : VPS — Nginx + PHP-FPM + Supervisor
+- BEM
+- HIMA
+- UKM
+- Event committees
+- Campus communities
+- Campus-level admins for B2B dashboard, currently hibernated until paying customer signal
+
+Core promise:
+
+Prokerin reduces student organization chaos by centralizing proker planning, proposal, task, RAB, finance realization, documentation, meeting minutes, attendance, certificates, LPJ, handover, letters, microsites, calendar sync, notifications, search, and inventory.
+
+Current status:
+
+- MVP and active Post-MVP feature modules are code-complete.
+- Some modules are maintenance/frozen/hibernate by product decision.
+- Ongoing work should focus on launch QA, bug fixes, hardening, landing polish, and production readiness unless the owner explicitly approves new feature scope.
 
 ---
 
-## 3. Commands
+## 2. Source of Truth
+
+Use these as source of truth:
+
+1. Tests: executable behavior truth.
+2. Database migrations: persistence truth.
+3. Routes/controllers/actions: app behavior truth.
+4. `README.md`: product, setup, feature status, user flows, usage documentation.
+5. `AGENTS.md`: development rules and architecture guardrails.
+
+Do not depend on deleted legacy docs. Their relevant contents have been consolidated into README and AGENTS.
+
+---
+
+## 3. Architecture
+
+Architecture style: Modular Monolith.
+
+Rules:
+
+- Keep one Laravel monolith.
+- Do not split into microservices.
+- Do not create a standalone React SPA.
+- Do not introduce a separate REST API layer for core app flows.
+- Use Laravel web routes + Inertia rendering.
+- Use JSON endpoints only for small AJAX-only interactions such as search, notification state, or subscriptions.
+
+Layering:
+
+```text
+Request
+-> FormRequest authorization + validation
+-> Controller
+-> Action / Domain service
+-> Model / DB query
+-> Inertia response / redirect / small JSON response
+```
+
+Controllers must stay thin:
+
+- Accept FormRequest/Request.
+- Call Action.
+- Return redirect, Inertia render, download, or JSON.
+- No business workflow in controller.
+- No direct complex DB logic in controller unless truly tiny and existing local pattern uses it.
+
+Business logic belongs in:
+
+- `app/Actions`
+- `app/Domain`
+- dedicated service/value object/DTO when useful
+
+Models should not become service objects. Keep model logic minimal.
+
+---
+
+## 4. Tech Stack Rules
+
+Backend:
+
+- PHP 8.4+
+- Laravel currently installed in this project
+- Eloquent/query builder
+- Redis for cache and queue
+- Filament for internal admin
+- Laravel Reverb for realtime
+- WebPush package for browser push
+- S3-compatible private storage for uploads
+
+Frontend:
+
+- React + TypeScript
+- Inertia.js
+- Tailwind CSS
+- shadcn/ui/Radix primitives
+- lucide-react icons
+- Vite
+
+Package managers:
+
+- PHP packages: Composer only.
+- JS packages: npm only.
+- Never install PHP packages with npm.
+- Never install JS packages with Composer.
+
+---
+
+## 5. Commands
+
+Use PHP 8.4 prefix on local macOS if shell still points to another PHP:
 
 ```bash
-# Development
-php artisan serve              # Start Laravel dev server
-npm run dev                    # Start Vite (asset bundler) — run alongside artisan serve
-
-# Build
-npm run build                  # Build frontend assets for production
-
-# Code Quality
-./vendor/bin/pint              # Laravel Pint — format PHP code
-npm run lint                   # ESLint for JS/TS/JSX
-
-# Testing
-php artisan test               # Run all tests (PHPUnit / Pest)
-php artisan test --filter=Unit # Run unit tests only
-php artisan test --filter=Feature # Run feature tests only
-
-# Database
-php artisan migrate            # Run pending migrations
-php artisan migrate:fresh --seed  # Fresh DB with seeders (dev only)
-php artisan db:seed            # Seed data without dropping tables
-
-# Queue
-php artisan queue:work         # Start queue worker (dev)
-php artisan queue:listen       # Alternative — auto-reloads on code change
-
-# Storage
-php artisan storage:link       # Create public storage symlink
-
-# Admin Panel
-php artisan filament:make-resource [Name]  # Scaffold Filament resource
+PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH
 ```
 
-> Current local macOS note: shell default may still point to PHP 8.3. Until Homebrew PHP is relinked to 8.4, prefix every Composer/Artisan command with `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH`.
-> Never use `npm` for PHP packages — always use `composer`.
-> Never run `migrate:fresh` or `db:seed` on production.
-> Always run `php artisan optimize:clear` after pulling changes to staging/production.
+Development:
+
+```bash
+php artisan serve
+npm run dev
+php artisan queue:work
+php artisan reverb:start
+```
+
+Verification:
+
+```bash
+PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test
+npm run lint
+npm run build
+PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test
+```
+
+Database:
+
+```bash
+php artisan migrate
+php artisan db:seed
+php artisan migrate:fresh --seed
+```
+
+Production/staging warnings:
+
+- Never run `migrate:fresh` on staging/production.
+- Never run seeders on staging/production without explicit deployment plan.
+- Run `php artisan optimize:clear` after pulling changes to staging/production.
+- Use `php artisan migrate --force` for production migrations.
 
 ---
 
-## 4. Project Structure
+## 6. Directory Rules
 
-**Architecture**: Modular Monolith — domain modules inside a single Laravel app. Do NOT split into microservices.
+Allowed placement:
 
-```
-prokerin/                    # Single monolith project folder; keep app code and docs here.
-├── app/
-│   ├── Domain/                  # Core business logic — one folder per domain
-│   │   ├── Organization/        # Organization management
-│   │   ├── Membership/          # Members, roles, invitations
-│   │   ├── Project/             # Proker / event management
-│   │   ├── Task/                # Tasks, subtasks, assignments
-│   │   ├── Finance/             # RAB, transactions, approval
-│   │   ├── Proposal/            # Proposal generation
-│   │   ├── Report/              # LPJ generation
-│   │   ├── Document/            # File management
-│   │   └── Notification/        # Notification triggers & delivery
-│   ├── Actions/                 # Single-responsibility action classes
-│   ├── Http/
-│   │   ├── Controllers/         # Thin controllers — delegate to Actions
-│   │   ├── Middleware/
-│   │   └── Requests/            # Form request validation classes
-│   ├── Models/                  # Eloquent models
-│   ├── Policies/                # Authorization policies (one per model)
-│   ├── Jobs/                    # Queue jobs
-│   ├── Notifications/           # Laravel notification classes
-│   ├── DTOs/                    # Data Transfer Objects
-│   └── Support/                 # Helpers, traits, base classes
-├── resources/
-│   ├── js/
-│   │   ├── Pages/               # Inertia page components (one per route)
-│   │   ├── Components/          # Shared React components
-│   │   │   ├── ui/              # shadcn/ui base components
-│   │   │   └── [domain]/        # Domain-specific components
-│   │   ├── Layouts/             # App layouts (AppLayout, AuthLayout)
-│   │   ├── hooks/               # Custom React hooks
-│   │   ├── lib/                 # Utilities, helpers, cn()
-│   │   └── types/               # TypeScript types and interfaces
-│   └── views/
-│       └── app.blade.php        # Single Blade entry point for Inertia
-├── database/
-│   ├── migrations/
-│   └── seeders/
-├── routes/
-│   └── web.php                  # All routes (Inertia uses web routes, not API routes)
-├── tests/
-│   ├── Unit/
-│   └── Feature/
-└── config/
-```
+- Inertia page: `resources/js/Pages/[Domain]/[PageName].tsx`
+- Shared React component: `resources/js/Components/[Domain]/[Component].tsx`
+- shadcn/ui primitive: `resources/js/Components/ui/`
+- Viho-derived shell/card/sidebar/header: `resources/js/Components/Viho/`
+- Hook: `resources/js/hooks/useName.ts`
+- Utility: `resources/js/lib/name.ts`
+- Type definitions: `resources/js/types/`
+- PHP action: `app/Actions/[Domain]/[ActionName].php`
+- Domain enum/value object: `app/Domain/[Domain]/`
+- Model: `app/Models/`
+- Controller: `app/Http/Controllers/`
+- Form request: `app/Http/Requests/`
+- Job: `app/Jobs/`
+- Notification: `app/Notifications/`
+- Policy: `app/Policies/`
+- Seeder: `database/seeders/`
+- Migration: `database/migrations/`
 
-**File placement rules:**
+Do not:
 
-- New Inertia page → `resources/js/Pages/[Domain]/[PageName].tsx`
-- Shared React component → `resources/js/Components/[domain]/`
-- Viho-derived app shell/component → `resources/js/Components/Viho/`
-- Viho-derived menu/data → `resources/js/Data/vihoMenu.ts`
-- Viho copied assets → `public/vendor/viho/`
-- shadcn/ui primitive → `resources/js/Components/ui/` (auto-generated, don't hand-edit)
-- Business logic → `app/Actions/[ActionName].php` or `app/Domain/[Domain]/`
-- Eloquent model → `app/Models/`
-- Policy → `app/Policies/[ModelName]Policy.php`
-- Queue job → `app/Jobs/`
-- Form validation → `app/Http/Requests/`
-- Do NOT put business logic inside Controllers
-- Do NOT create new top-level folders without confirmation
-- Do NOT place application code outside `prokerin/`; external template folders are reference-only.
-- Do NOT import from `../Viho-*` at runtime. Copy needed assets/patterns into `prokerin/` first.
+- Create new top-level folders without confirmation.
+- Place app code outside the project.
+- Import runtime code from external template folders.
+- Modify shadcn/ui generated base components directly unless explicitly required.
+- Put business logic inside controllers.
 
 ---
 
-## 5. Naming Conventions
+## 7. Naming Conventions
 
-```
-# PHP — Files & Classes
-- Model           : PascalCase singular      → Organization, ProjectTemplate
-- Controller      : PascalCase + Controller  → ProjectController
-- Action          : PascalCase + Action      → CreateProjectFromTemplateAction
-- Policy          : PascalCase + Policy      → ProjectPolicy
-- Job             : PascalCase               → SendTaskDeadlineReminder
-- Migration       : snake_case timestamped   → 2026_01_01_create_projects_table
-- Seeder          : PascalCase + Seeder      → OrganizationSeeder
+PHP:
 
-# PHP — Inside Code
-- Variables       : camelCase               → $projectLead, $budgetTotal
-- Constants       : UPPER_SNAKE             → MAX_FILE_SIZE_MB
-- Methods         : camelCase               → getProjectProgress(), assignPic()
-- Blade templates : kebab-case              → project-detail.blade.php
+- Class/file: PascalCase.
+- Model: singular PascalCase, e.g. `Organization`.
+- Controller: `NameController`.
+- Action: `VerbNounAction`.
+- Policy: `ModelPolicy`.
+- Job: descriptive PascalCase.
+- Variables/methods: camelCase.
+- Constants: UPPER_SNAKE.
+- Always add `declare(strict_types=1);` to PHP files.
 
-# JS/TS — Files & Folders
-- Inertia Page    : PascalCase.tsx          → ProjectDetail.tsx, CreateProker.tsx
-- React Component : PascalCase.tsx          → TaskCard.tsx, BudgetTable.tsx
-- Hook            : camelCase, use prefix   → useProjectProgress.ts
-- Utility/Helper  : camelCase.ts            → formatCurrency.ts, cn.ts
-- TypeScript type : PascalCase.ts           → project.ts, member.ts
-- Folder          : kebab-case              → task-management/, rab-finance/
+TypeScript/React:
 
-# JS/TS — Inside Code
-- Variables       : camelCase               → projectLead, isLoading
-- Constants       : UPPER_SNAKE             → MAX_FILE_SIZE, TASK_STATUSES
-- Functions       : camelCase               → calculateProgress(), formatRupiah()
-- Types/Interfaces: PascalCase              → Project, OrganizationMember
-- Enums           : PascalCase              → TaskStatus, ProjectStatus
-- CSS Classes     : kebab-case (Tailwind)   → use utility classes directly
+- Page/component file: PascalCase.tsx.
+- Hook: camelCase with `use` prefix.
+- Utility: camelCase.ts.
+- Types/interfaces: PascalCase.
+- Variables/functions: camelCase.
+- Constants: UPPER_SNAKE.
+- Avoid `any`; use explicit types or `unknown`.
 
-# Database
-- Tables          : snake_case plural       → organizations, project_members
-- Columns         : snake_case              → project_lead_id, event_start_date
-- Foreign keys    : [table_singular]_id     → organization_id, project_id
-- Pivot tables    : alphabetical_order      → project_member (not member_project)
+Database:
 
-# Git Branch
-- Feature         : feat/[feature-name]     → feat/proposal-generator
-- Bug fix         : fix/[bug-name]          → fix/rab-total-calculation
-- Hotfix          : hotfix/[name]
-- Refactor        : refactor/[name]
-- Chore           : chore/[name]            → chore/upgrade-laravel-12
-```
+- Tables: snake_case plural.
+- Columns: snake_case.
+- Foreign keys: singular table name + `_id`.
+- Pivot tables: alphabetical where applicable.
+- Add indexes for tenant keys, foreign keys, statuses, and common filters.
+
+Git:
+
+- Feature branch: `feat/name`.
+- Fix branch: `fix/name`.
+- Refactor branch: `refactor/name`.
+- Chore branch: `chore/name`.
+- Commit format: `feat: description`, `fix: description`, `docs: description`, `db: description`, etc.
 
 ---
 
-## 6. Code Conventions
+## 8. Multi-Tenancy Rules
 
-```
-# General Approach
-- Follow SOLID principles — especially Single Responsibility
-- Keep controllers thin: validate input → call Action → return Inertia response
-- Business logic lives in Actions or Domain services — never in controllers or models
-- DRY: extract reusable logic into shared Actions or traits
-- Write readable code over clever/compact code
+Prokerin is multi-tenant by `organization_id`.
 
-# PHP
-- Strict types: always add declare(strict_types=1) at top of PHP files
-- Type hints: always type-hint parameters and return types
-- No mixed or untyped return unless absolutely unavoidable
-- Use readonly properties and enums where appropriate (PHP 8.4+)
-- Use Laravel's built-in helpers (collect(), rescue(), filled(), blank(), etc.)
-- Always use Form Request classes for validation — never validate in controllers directly
+Mandatory:
 
-# TypeScript
-- Strict mode enabled in tsconfig.json
-- No use of 'any' type — use 'unknown' if type is truly dynamic
-- Always define explicit return types for functions
-- Use 'interface' for object shapes, 'type' for unions and intersections
-- Define Inertia page props types in resources/js/types/
+- Every organization data query must be scoped to the authenticated user's organization.
+- Derive organization from active session/membership, not request body.
+- Respect users with multiple organizations.
+- Respect project-level membership where relevant.
+- Cross-tenant data access must fail.
+- Tests must cover cross-tenant guard for sensitive flows.
 
-# Inertia.js Pattern
-- Use Inertia's Link component instead of <a> for internal navigation
-- Pass data from controllers to pages via Inertia::render() only
-- Use Inertia shared data (HandleInertiaRequests middleware) for global data (auth, flash)
-- Avoid building a separate REST API — all data flows through Inertia web routes
+Common sources:
 
-# Import Order (JS/TS)
-1. External libraries (React, Inertia, etc.)
-2. Internal absolute (@/components, @/lib, etc.)
-3. Internal relative (./Component, ../utils)
-4. Types and interfaces
-5. Assets and styles
+- Session key: `active_organization_id`
+- Org membership table: `organization_members`
+- Project membership table: `project_members`
+- Helper/action patterns: `GetActiveOrganizationContextAction`, role helpers, policies, FormRequest authorization.
 
-# Error Handling
-- Always wrap async operations in try-catch
-- Never let exceptions bubble unhandled
-- Use Laravel's exception handler for API-level errors
-- Show user-friendly error messages via Inertia flash or toast
+Never:
+
+- Trust `organization_id` from client.
+- Trust role from client.
+- Return raw unscoped Eloquent models to Inertia.
+- Join related data without tenant constraints.
+
+---
+
+## 9. Authorization Rules
+
+Authorization should happen before mutation.
+
+Preferred layers:
+
+1. FormRequest `authorize()` for HTTP input.
+2. Policy for model-level rules.
+3. Action guard for workflow/tenant-specific authorization.
+4. Spatie permission/role checks for role-level gates.
+
+Controllers should not contain manual role logic except tiny local pattern exceptions already established.
+
+Role names are stable:
+
+- `super_admin`
+- `organization_owner`
+- `organization_admin`
+- `project_lead`
+- `secretary`
+- `treasurer`
+- `division_coordinator`
+- `member`
+- `viewer`
+
+Do not rename role strings without updating all references, seeders, tests, and UI.
+
+---
+
+## 10. Data Flow and Inertia Rules
+
+Core app:
+
+- Use Inertia pages.
+- Pass page data from controllers via `Inertia::render()`.
+- Use `Link` from `@inertiajs/react` for internal navigation.
+- Use `useForm()` for mutations.
+- Use redirects + flash messages for standard mutations.
+- Use `router.visit`, `router.reload`, or small JSON endpoints only where the UX needs it.
+
+Avoid:
+
+- Fetching core page data in `useEffect`.
+- Building duplicate REST resources.
+- Manual full page anchors for internal app routes.
+- Returning raw Eloquent models with sensitive fields.
+
+Small JSON endpoints are acceptable for:
+
+- Global search.
+- Notification read/recent.
+- Web push subscribe/unsubscribe.
+- Export job polling if implemented.
+
+JSON shape for new endpoints when applicable:
+
+```json
+{ "success": true, "data": {}, "message": "..." }
 ```
 
 ---
 
-## 7. Component Rules
+## 11. PHP Rules
 
-```
-# React Component Order
-1. Imports
-2. TypeScript types / interface for props
-3. Component definition
-4. Hooks (useState, useEffect, custom hooks)
-5. Handlers and local functions
-6. Return JSX
-7. Export
+Always:
 
-# Props Rules
-- Always define explicit TypeScript types for props
-- Use default values for optional props
-- Maximum 8 props per component — extract sub-components if more needed
-- Pass Inertia page props using the usePage() hook, not drilling from layout
+- Use `declare(strict_types=1);`.
+- Type parameters and return types.
+- Prefer readonly constructor properties where suitable.
+- Prefer enums for stable domain states.
+- Use FormRequest validation.
+- Use `config()` instead of `env()` outside config files.
+- Use Laravel helpers when they improve readability.
+- Keep actions single-responsibility.
 
-# Component Decomposition
-- Extract to a separate file if used in more than one place
-- Can be co-located in the same file if only used within one parent component
-- Keep page components (Pages/) focused on layout and data wiring
-- Move complex logic to hooks (hooks/) or utilities (lib/)
+Avoid:
 
-# Inertia Pages
-- Always type the page props: import { PageProps } from '@/types'
-- Use useForm() from @inertiajs/react for all form handling
-- Prefer Inertia's router.visit() or Link over manual fetch for navigation
-```
+- Untyped return values.
+- `mixed` unless unavoidable.
+- Business logic in controllers/models.
+- Raw SQL destructive statements.
+- Heavy sync work inside request lifecycle.
+- Swallowing exceptions without user-safe feedback/logging.
 
 ---
 
-## 8. Styling Rules
+## 12. TypeScript and React Rules
 
-```
-# Approach
-- Tailwind utility classes directly in JSX — no separate CSS files for component styles unless defining global tokens/base styles
-- Do NOT use inline style except for truly dynamic values (e.g., width from JS calculation)
-- Do NOT use !important
-- Use cn() (from lib/utils.ts) for conditional class merging — never string concatenation
+Always:
 
-# Visual Direction — Viho Admin Theme
-- The UI should visually follow Viho: compact SaaS admin shell, fixed left sidebar, white header, soft page background, flat 4px cards/buttons, subtle shadows, dense operational dashboard layout.
-- Use copied Viho assets from `public/vendor/viho/` for logo/avatar/folder imagery when appropriate.
-- Prefer Viho-derived components in `resources/js/Components/Viho/` for app shell, cards, dashboard panels, side navigation, and header controls.
-- Do not copy full Viho demo modules wholesale. Port only the needed component pattern into TypeScript + Inertia + Tailwind.
-- Do not use React Router, Reactstrap, Bootstrap SCSS, or Viho localStorage auth patterns in Prokerin. Convert navigation to Inertia `Link` and auth data to Inertia page props.
-- Viho colors are the default visual baseline: primary `#24695c`, secondary `#ba895d`, success `#1b4c43`, danger `#d22d3d`, page background `#f5f7fb`, borders `#e6edef`, body text `#242934`, muted text `#59667a` / `#717171`.
-- Avoid purple/indigo SaaS styling unless there is a specific product reason; Prokerin should stay close to Viho's green/brown/admin palette.
+- Define explicit prop types.
+- Define function return types for non-trivial functions.
+- Use `interface` for object shapes.
+- Use `type` for unions/intersections.
+- Use `cn()` for conditional class names.
+- Use Inertia `useForm()` for forms.
+- Use lucide-react icons when an icon exists.
+- Keep page components focused on layout/data wiring.
 
-# Tailwind Class Order (enforced by Prettier plugin)
-layout → spacing → sizing → color → typography → border → shadow → state → animation
+Avoid:
 
-# Responsive Design
-- Mobile-first approach
-- Breakpoints: sm (640px) / md (768px) / lg (1024px) / xl (1280px) / 2xl (1536px)
-- Test every new component at sm and lg breakpoints minimum
+- `any`.
+- Inline styles unless truly dynamic.
+- String concatenation for class names.
+- Large components with too many concerns.
+- Client-side fetch for initial page data.
+- LocalStorage auth/session patterns.
+- React Router.
+- Reactstrap/Bootstrap runtime patterns from Viho templates.
 
-# Dark Mode
-- Support dark mode using Tailwind's dark: prefix
-- Always test new components in dark mode before marking done
-- Use CSS variables defined in the app's design tokens for semantic colors
+Component order:
 
-# shadcn/ui
-- Use shadcn components from resources/js/Components/ui/ as base
-- Do NOT modify shadcn/ui files directly — extend via wrapper components
-- Use the cn() helper for variant class overrides
-- When adding a new shadcn component, run: npx shadcn@latest add [component]
-
-# Design Tokens
-- Use semantic color variables (--primary, --muted, --destructive, etc.) defined in globals.css
-- Never hardcode hex color values
-- Spacing and typography follow Tailwind's default scale
-- Until formal CSS variables are introduced, Viho hex tokens may be used in Tailwind arbitrary values to preserve the theme accurately.
-```
+1. Imports.
+2. Types/interfaces.
+3. Component.
+4. Hooks.
+5. Handlers/helpers.
+6. JSX.
+7. Export.
 
 ---
 
-## 9. API & Data Fetching Rules
+## 13. Styling and UI Rules
 
-```
-# Inertia-First Approach
-- This is NOT a REST API project — data flows through Laravel web routes + Inertia
-- All page data is passed via Inertia::render() in controllers
-- For server-side mutations: use Inertia forms (useForm) with POST/PUT/PATCH/DELETE
-- For real-time or reactive data: use Inertia's reload() or router.reload()
+Visual baseline: Viho-inspired compact admin SaaS.
 
-# When to Use Client-Side Fetch (Axios)
-- AJAX-only actions that don't require a full page reload (e.g., mark notification read)
-- Polling for live status updates (e.g., export job progress)
-- All Axios requests must include CSRF token (Laravel handles this via axios defaults)
+Design language:
 
-# Response Format (for any JSON endpoint)
-{ success: boolean, data: T | null, message: string }
+- Fixed/sidebar admin shell.
+- White header.
+- Soft page background.
+- Flat 4px cards/buttons.
+- Subtle shadows.
+- Dense operational layout.
+- Professional, practical, not marketing-heavy inside app.
 
-# Error Handling
-- Server validation errors are automatically handled by Inertia (form.errors)
-- Use Laravel's validation and let Inertia surface errors to the form
-- Use flash messages via session for success/info feedback
-- Never expose stack traces or DB errors to the client in production
+Core palette:
 
-# File Uploads
-- Use Inertia's useForm with files — set forceFormData: true
-- Always validate MIME type and file size on the server (not just client)
-- Store in S3-compatible storage — never in public/ directly
-- Generate signed URLs for file download — never expose raw S3 paths
+- Primary: `#24695c`
+- Secondary/accent: `#ba895d`
+- Success/dark green: `#1b4c43`
+- Danger: `#d22d3d`
+- Page background: `#f5f7fb`
+- Border: `#e6edef`
+- Body text: `#242934`
+- Muted text: `#59667a`, `#717171`
 
-# Environment
-- All external URLs and credentials in .env — never hardcoded
-- Use config() helper to access env values in PHP (not env() directly outside config files)
-```
+Rules:
 
----
+- Use Tailwind utility classes.
+- Do not use `!important`.
+- Do not hand-edit shadcn/ui primitives.
+- Use Viho components for app shell/cards/status where appropriate.
+- Use mobile-first responsive design.
+- Test new components at mobile and desktop.
+- Avoid purple/indigo generic SaaS styling unless explicitly required.
+- Avoid oversized marketing hero patterns inside operational app screens.
 
-## 10. Multi-Tenancy & Authorization Rules
-
-```
-# Multi-Tenant Model
-- All data is scoped by organization_id
-- Every query involving org data MUST be scoped to the authenticated user's organization
-- Use Eloquent global scopes or explicit where('organization_id', ...) — never forget this
-
-# Authorization
-- Use Laravel Policies for every model action (view, create, update, delete)
-- Register all policies in AuthServiceProvider
-- Use $this->authorize() in controllers — never do manual permission checks in controllers
-- Use Spatie Laravel Permission for role-based permissions (hasRole, hasPermissionTo)
-- Permission check order: Policy (model-level) → Spatie (role-level)
-
-# Roles (never change role names without updating all references)
-- super_admin
-- organization_owner
-- organization_admin
-- project_lead
-- secretary
-- treasurer
-- division_coordinator
-- member
-- viewer
-
-# Key Rules
-- A user can belong to multiple organizations with different roles in each
-- Project-level roles are scoped to that project (project_members table)
-- Org-level roles are scoped to the organization (organization_members table)
-- Never trust client-side role data — always check via Policy/Spatie on the server
-```
+Landing pages can be more editorial, but must stay on-brand and performant.
 
 ---
 
-## 11. Performance Rules
+## 14. Storage and File Rules
 
-```
-# Database
-- Always eager-load relationships to avoid N+1 queries
-  Correct: Project::with(['divisions', 'members', 'tasks'])->find($id)
-  Wrong  : foreach ($projects as $p) { $p->tasks; }  // N+1
-- Use database indexes on all foreign keys and frequently queried columns
-- Paginate large result sets — never return unlimited records to frontend
-- Use Redis cache for expensive calculations (e.g., project progress percentage)
+Uploads:
 
-# Queue
-- All heavy operations must run in the queue: PDF export, DOCX export, email sending
-- Never run exports or email sending synchronously in a request
-- Use job chains for multi-step operations (generate doc → upload to S3 → notify user)
+- Validate MIME and size server-side.
+- Store in S3-compatible/private storage.
+- Do not store user upload files directly in `public/`.
+- Download via signed or authorized server route.
+- Never expose raw S3 paths to frontend.
 
-# Frontend
-- Use dynamic import (lazy loading) for heavy page components
-- Use React.memo sparingly — profile first, optimize second
-- Avoid unnecessary re-renders: check useCallback and useMemo usage
-- Import only what you need from libraries (tree-shaking)
+Generated exports:
 
-# Assets
-- All images go through S3 / CDN — never serve from the app server
-- Use Vite's asset optimization for bundling
-- Avoid loading large JS libraries just for small utilities
-```
+- PDF/DOCX generation should run in queue when heavy.
+- Store output path privately.
+- Expose download route after authorization.
+
+Public assets:
+
+- App icons, manifest, service worker, landing OG image, and vendor visual assets may live in `public/`.
+- Do not place sensitive user data in `public/`.
 
 ---
 
-## 12. Git Rules
+## 15. Queue, Scheduler, and Realtime Rules
 
-Every time Codex finishes a meaningful change, commit to git before moving to the next task. This enables easy diff and rollback.
+Heavy work should be queued:
 
-```
-# Commit Message Format
-feat     : [description of new feature]
-fix      : [description of bug fixed]
-refactor : [description of refactor]
-style    : [styling or formatting change]
-docs     : [documentation change]
-test     : [test added or changed]
-chore    : [config or tooling change]
-db       : [migration or seeder change]
+- PDF export.
+- DOCX export.
+- Email sending.
+- Web push.
+- Deadline reminders.
+- Overdue loan checks.
 
-# Examples
-feat: add proposal generator with auto-fill from project data
-feat: implement RAB vs realization comparison view
-fix: resolve project progress percentage not updating after task done
-fix: scope organization query to authenticated user — prevent data leak
-refactor: extract budget calculation into CalculateBudgetTotalAction
-db: add transactions table with approval flow columns
-chore: configure Supervisor for queue workers
+Scheduler:
 
-# Additional Rules
-- Never commit .env, .env.local, or any file containing secrets
-- Never commit storage/ contents or vendor/ directory
-- One commit per logical change — do not mix unrelated changes
-- Always run php artisan test before committing on feature branches
-```
+- Put scheduled jobs in `routes/console.php` unless project structure changes.
+- Existing examples include kepanitiaan auto archive and inventory overdue checks.
+
+Realtime:
+
+- Use Laravel Reverb.
+- Use private channels for user-specific notifications.
+- Use Echo client.
+- Keep fallback endpoint for recent notifications.
+
+Web push:
+
+- Use service worker push/click handlers.
+- VAPID keys must be env/config only.
 
 ---
 
-## 13. Features
+## 16. Module Status Guardrails
 
-Feature status is maintained in `features.md`. Any AI/agent that needs to continue Prokerin feature work MUST read `features.md` first before deciding what to build, test, or mark complete.
+Active feature modules are complete. New work should not randomly add scope.
 
-Rules for feature tracking:
+Complete core modules:
 
-- Do not duplicate detailed feature status in `AGENTS.md`.
-- Keep `features.md` as the single source of truth for completed work, partial work, pending work, verification results, and next actions.
-- Update `features.md` whenever a module status changes, a test/build result changes, a migration is added, or a Post-MVP module moves forward.
-- Before starting new feature work, check `features.md` sections `Ringkasan Status`, `Verifikasi Terakhir`, target module breakdown, and `Next Action`.
-- Before marking a feature `[x]`, make sure it has code, route/UI or backend integration as applicable, tests, and a recorded verification result in `features.md`.
+- Auth/account
+- Organization
+- Member/role
+- Proker
+- Template proker
+- Task/timeline
+- RAB/finance
+- Proposal generator
+- Document management
+- LPJ generator
+- Dashboard
+- Notifications
+- Filament admin
+- Rapat/notulen
+- Absensi QR
+- Web push
+- Realtime notification
+- Onboarding
+- Rich text editor
+- Kepanitiaan mode
+- Public microsite
+- Surat menyurat
+- Global search
+- Calendar sync
+- Inventory
 
+Maintenance/frozen/hibernate:
 
-## 14. Testing
+- Certificate: maintenance only.
+- Multi-level approval: maintenance only.
+- Handover: partial/maintenance, bug fixes allowed.
+- Payment/ticketing: beta/pro-tier opt-in only.
+- AI assistant: frozen expansion.
+- Campus dashboard: hibernate until paying customer.
 
-```
-# Testing Approach
-- Framework   : Pest PHP (preferred) or PHPUnit
-- Focus       : Feature tests for core workflows, Unit tests for business logic
-- No E2E yet  : Manual QA for now — Playwright/Dusk in post-MVP phase
+Deferred/dropped:
 
-# What to Test (Priority Order)
-1. All Action classes (business logic) — unit tests
-2. Authorization/Policy — every role × every action
-3. Core feature flows — feature tests (create org, create proker, generate LPJ, etc.)
-4. Budget calculations and project progress calculations
-5. Multi-tenancy scope — ensure users cannot access other orgs' data
-
-# What NOT to Test
-- Simple Eloquent accessors/mutators with no logic
-- Filament admin panel internals (tested by Filament team)
-- Third-party library behavior
-
-# Test Naming Convention (Pest style)
-it('allows project lead to create a task', function () { ... });
-it('prevents member from accessing organization finance', function () { ... });
-it('calculates project progress correctly when all tasks done', function () { ... });
-
-# Test Pattern (AAA)
-- Arrange : set up models, auth user, seed needed data
-- Act     : call the action or make the HTTP request
-- Assert  : check response, database state, or thrown exception
-
-# Coverage Target
-- Minimum : 70% for Actions and Policies
-- Priority : Authorization > Business Logic > API endpoints > UI components
-```
+- Tier Momentum modules such as activity feed, generic approval, personal my day, sponsorship pipeline, and member skill tracker are not active.
+- Re-evaluate only after public launch and real feedback.
 
 ---
 
-## 15. Do Not
+## 17. Feature Development Workflow
 
-If any instruction or prompt is ambiguous, ASK FIRST before writing code. Do not assume and proceed.
+Before starting:
 
-```
-# Structure & Files
-- Do NOT create new top-level folders without confirmation
-- Do NOT delete any file without confirmation
-- Do NOT move or rename files without confirmation
-- Do NOT modify shadcn/ui base components in Components/ui/ directly
-- Do NOT put business logic in Controllers — use Actions
+1. Read README and AGENTS.
+2. Check current tests.
+3. Inspect existing code patterns.
+4. Identify tenant and authorization boundaries.
+5. Keep scope narrow.
 
-# PHP Code
-- Do NOT use env() directly in application code — use config() only
-- Do NOT hardcode credentials, URLs, or keys anywhere in code
-- Do NOT run raw DB::statement() that drops or truncates tables without confirmation
-- Do NOT use Eloquent without scoping to the correct organization_id
-- Do NOT skip Form Request validation — always validate via Request classes
-- Do NOT put heavy operations in the HTTP request cycle — use queue jobs
+Implementation order for new module:
 
-# TypeScript / React
-- Do NOT use 'any' type
-- Do NOT fetch data inside useEffect — use Inertia's data passing or reload()
-- Do NOT build a REST API layer — this project uses Inertia (web routes only)
-- Do NOT use inline styles for anything achievable with Tailwind utility classes
-- Do NOT manually join CSS class strings — always use cn() helper
-- Do NOT bring Viho's standalone SPA dependencies into runtime unless there is a confirmed need. Port needed components into the local Inertia architecture.
+1. Migration.
+2. Enum/value object.
+3. Model if needed.
+4. Action.
+5. FormRequest.
+6. Controller.
+7. Route.
+8. Payload action for Inertia page.
+9. React page/component.
+10. Tests.
+11. README/AGENTS updates if status/rules changed.
 
-# Database
-- Do NOT run migrate:fresh or any destructive command on staging or production
-- Migration creation is approved for MVP persistence work as of 2026-05-16; keep migrations additive, non-destructive, and scoped to Prokerin MVP modules.
-- Do NOT expose database credentials anywhere in frontend code
-- Do NOT return raw Eloquent model data to Inertia without using API Resources or explicit array
+Before marking done:
 
-# Security
-- Do NOT expose raw S3 file paths — use signed URLs
-- Do NOT skip authorization checks — every controller method must call $this->authorize()
-- Do NOT skip MIME type validation on file uploads
-- Do NOT trust client-submitted organization_id or role — always derive from session/auth
-
-# Scope Creep
-- Do NOT implement post-MVP features before MVP modules are complete
-- Do NOT add AI features, QR absensi, or payment gateway during MVP phase
-- Do NOT build native mobile app during MVP — PWA only
-```
+- Targeted tests pass.
+- Full test suite pass unless explicitly blocked.
+- `npm run lint` pass.
+- `npm run build` pass.
+- `./vendor/bin/pint --test` pass.
+- Manual/browser/device QA recorded in README if relevant.
 
 ---
 
-## 16. Environment Variables
+## 18. Testing Rules
 
-```
-# Setup
-- Copy .env.example to .env for local development
-- Never commit .env to the repository — it is in .gitignore
-- Always add new env variables to .env.example (with empty or example values)
+Framework:
 
-# Application
-APP_NAME=Prokerin
-APP_ENV=local                   # local / staging / production
-APP_KEY=                        # Generated by php artisan key:generate
-APP_URL=http://localhost:8000
+- PHPUnit/Pest according to current project setup.
+- Prefer feature tests for workflows.
+- Prefer unit tests for pure actions/value objects.
 
-# Database
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=8889
-DB_DATABASE=prokerin
-DB_USERNAME=root
-DB_PASSWORD=
+Priority:
 
-# Redis
-REDIS_HOST=127.0.0.1
-REDIS_PASSWORD=null
-REDIS_PORT=6379
+1. Authorization and tenant isolation.
+2. Business logic actions.
+3. Core user workflows.
+4. Finance/progress calculations.
+5. Export and queue behavior.
+6. UI payload shape.
 
-# Queue & Cache
-CACHE_DRIVER=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
+Required for new risky work:
 
-# Object Storage (S3-compatible)
-AWS_ACCESS_KEY_ID=              # Server-only — NEVER expose to client
-AWS_SECRET_ACCESS_KEY=          # Server-only — NEVER expose to client
-AWS_DEFAULT_REGION=auto
-AWS_BUCKET=prokerin
-AWS_ENDPOINT=                   # e.g., https://[account].r2.cloudflarestorage.com
-AWS_USE_PATH_STYLE_ENDPOINT=true
+- Happy path.
+- Forbidden role.
+- Cross-tenant denial.
+- Validation errors.
+- State transition.
 
-# Mail
-MAIL_MAILER=smtp
-MAIL_HOST=
-MAIL_PORT=587
-MAIL_USERNAME=
-MAIL_PASSWORD=                  # Server-only — NEVER expose to client
-MAIL_FROM_ADDRESS=hello@prokerin.id
-MAIL_FROM_NAME=Prokerin
+Do not over-test:
 
-# Google OAuth
-GOOGLE_CLIENT_ID=               # Obtain from Google Cloud Console
-GOOGLE_CLIENT_SECRET=           # Server-only — NEVER expose to client
-GOOGLE_REDIRECT_URI=            # e.g., https://prokerin.id/auth/google/callback
-
-# WhatsApp (post-MVP)
-# WHATSAPP_API_URL=
-# WHATSAPP_API_TOKEN=           # Server-only
-
-# Payment Gateway (post-MVP)
-# MIDTRANS_SERVER_KEY=          # Server-only — NEVER expose to client
-# MIDTRANS_CLIENT_KEY=          # Public key — safe for client
-# MIDTRANS_IS_PRODUCTION=false
-```
+- Third-party package internals.
+- Simple getters/casts with no logic.
+- Filament internals.
 
 ---
 
-_Update this file whenever: a new module is started, tech stack changes, new conventions are agreed upon, or a post-MVP feature moves to active development. Accurate AGENTS.md = better Codex output._
+## 19. Security Rules
+
+Never:
+
+- Commit `.env` or secrets.
+- Expose credentials to frontend.
+- Expose raw storage paths.
+- Trust client role, tenant, or ownership fields.
+- Skip authorization for mutations.
+- Return stack traces in production.
+- Store payment/secret tokens in frontend.
+- Hardcode API keys.
+
+Always:
+
+- Use config/env boundary.
+- Use CSRF-protected web routes.
+- Validate upload MIME/size.
+- Use signed/authorized downloads.
+- Add rate limiting for public/sensitive endpoints where needed.
+- Keep impersonation secure and auditable.
+
+---
+
+## 20. Performance Rules
+
+Database:
+
+- Avoid N+1 queries.
+- Eager load when using Eloquent relationships.
+- Add indexes for foreign keys, status filters, tokens, and tenant filters.
+- Paginate or limit large datasets.
+
+Frontend:
+
+- Avoid heavy libraries for tiny utilities.
+- Use dynamic import for heavy components when useful.
+- Do not optimize prematurely with memo everywhere.
+- Keep landing pages performant.
+
+Backend:
+
+- Use cache for expensive stable payloads when appropriate.
+- Use queues for heavy work.
+- Avoid synchronous export/email operations.
+
+---
+
+## 21. Documentation Rules
+
+Only two root docs:
+
+- `README.md`
+- `AGENTS.md`
+
+When feature status changes:
+
+- Update README module/status sections.
+- Update README flow if user behavior changes.
+- Update AGENTS only if development rules/architecture change.
+
+Do not add:
+
+- `features.md`
+- `POST-MVP-ROADMAP.md`
+- `BUG-FIX-PLAN.md`
+- `LANDING PAGE PLAN.md`
+- `SUPER-ADMIN-V2-PLAN.md`
+- Any new root markdown planning file
+
+If temporary planning is needed, keep it outside root or ask the owner first.
+
+---
+
+## 22. Git Rules
+
+Commit after meaningful completed changes.
+
+Commit examples:
+
+```text
+feat: add inventory asset management
+fix: prevent cross-tenant finance access
+docs: consolidate project documentation
+refactor: extract proposal draft sanitizer
+test: cover inventory loan return flow
+db: add calendar sync token
+```
+
+Do not:
+
+- Revert unrelated user changes.
+- Commit unrelated dirty work.
+- Use destructive git commands unless explicitly requested.
+- Commit generated secrets or local environment files.
+
+If worktree contains unrelated changes, ignore them or stage only your files.
+
+---
+
+## 23. Production Readiness Checklist
+
+Before production launch:
+
+- Full test suite green.
+- Pint green.
+- TypeScript green.
+- Frontend build green.
+- Migrations tested on staging.
+- Queue worker supervised.
+- Reverb supervised.
+- Scheduler configured.
+- Storage credentials configured.
+- Mail configured.
+- VAPID configured if web push enabled.
+- Google OAuth redirect configured.
+- HTTPS enabled.
+- Public microsite OG checked.
+- QR scanner checked on Android Chrome and iOS Safari.
+- Web push checked on supported browsers.
+- Calendar feed checked in real calendar clients.
+- Export PDF/DOCX visually checked.
+- Backup strategy confirmed.
+
+---
+
+## 24. When Unsure
+
+Ask before changing code if:
+
+- The change would introduce a new product module.
+- The change touches frozen/maintenance/hibernate modules beyond bug fix.
+- The change requires deleting/moving/renaming files not explicitly requested.
+- The change changes tenant/authorization model.
+- The change adds a new external service.
+- The change creates new root documentation.
+- The change may run destructive database commands.
+
+Otherwise, follow existing patterns, keep changes scoped, test thoroughly, and preserve Prokerin's architecture.

@@ -145,6 +145,7 @@ final readonly class SidebarMenuAction
                 $this->item('Proposal', route('reports.proposal-editor', absolute: false), 'FileText', 'approval_count'),
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck', 'approval_count'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Inventaris', route('inventory.index', absolute: false), 'PackageSearch'),
                 $this->item('Surat Menyurat', route('letters.index', absolute: false), 'Mail'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
                 $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
@@ -172,6 +173,7 @@ final readonly class SidebarMenuAction
                 $this->item('Proposal', route('reports.proposal-editor', absolute: false), 'FileText'),
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Inventaris', route('inventory.index', absolute: false), 'PackageSearch'),
                 $this->item('Surat Menyurat', route('letters.index', absolute: false), 'Mail'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
                 $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
@@ -225,6 +227,7 @@ final readonly class SidebarMenuAction
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
                 $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Inventaris', route('inventory.index', absolute: false), 'PackageSearch'),
             ]),
         ];
     }
@@ -241,6 +244,7 @@ final readonly class SidebarMenuAction
                 $this->item('Proker', route('proker.index', absolute: false), 'FolderKanban'),
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Inventaris', route('inventory.index', absolute: false), 'PackageSearch'),
             ]),
         ];
     }
