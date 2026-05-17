@@ -147,10 +147,10 @@ Prioritas backend adalah menjaga controller tipis, query tenant aman, validasi e
   - Target cleanup: maintenance-only; jangan ekspansi fitur.
   - Test: campus dashboard tests jika ada.
 
-- [ ] `app/Actions/Workspace/GetDocumentUploadCenterPayloadAction.php`
+- [x] `app/Actions/Workspace/GetDocumentUploadCenterPayloadAction.php`
   - Alasan: document payload + filters + storage visibility.
-  - Target cleanup: rapikan filter/query builder; jaga signed/private path.
-  - Test: document upload tests.
+  - Refactor: pecah payload builder menjadi `documents()`, `projects()`, dan visibility filter helper agar aturan public/private/restricted/committee lebih eksplisit.
+  - Verifikasi: targeted document upload tests pass (`8 passed`, `48 assertions`).
 
 - [ ] `app/Actions/Workspace/GetLpjChecklistPayloadAction.php`
   - Alasan: LPJ metrics dan checklist query banyak.
@@ -579,4 +579,5 @@ Gunakan daftar ini setelah P1/P2 selesai atau saat ada bug di domain terkait.
 ## 9. Checklist Update Log
 
 - [x] 2026-05-17: Clean-code batch 2 selesai: WorkspacePageController active org helper, Profile delete FormRequest, Auth registration/password/reset FormRequests. Verifikasi full gate pass: Pint, lint, build, `551 passed`, `2981 assertions`.
+- [x] 2026-05-17: Clean-code batch 3 selesai: Document upload center payload dipecah menjadi helper query/visibility. Verifikasi targeted document upload pass (`8 passed`, `48 assertions`).
 - [x] 2026-05-17: Initial clean-code checklist dibuat berdasarkan audit file size, validation/controller patterns, payload/action density, dan frontend page complexity.

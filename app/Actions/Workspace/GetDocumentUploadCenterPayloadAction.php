@@ -6,6 +6,7 @@ namespace App\Actions\Workspace;
 
 use App\Domain\Document\DocumentVisibility;
 use App\Support\Roles;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 final readonly class GetDocumentUploadCenterPayloadAction
@@ -20,39 +21,26 @@ final readonly class GetDocumentUploadCenterPayloadAction
     public function execute(int $actorUserId, ?int $preferredOrganizationId = null): array
     {
         $context = $this->activeOrganizationContext->execute($actorUserId, $preferredOrganizationId);
-        $canViewPrivate = in_array($context->role, Roles::ORGANIZATION_MANAGERS, true);
-        $canViewRestricted = in_array($context->role, Roles::FINANCE_VIEWERS, true);
-        $canViewCommittee = in_array($context->role, Roles::SECRETARY_AND_UP, true);
 
+        return [
+            'documents' => $this->documents($context->organizationId, $actorUserId, $context->role),
+            'projects' => $this->projects($context->organizationId),
+        ];
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, folder: string, owner: string, visibility: string, status: string, downloadHref: string}>
+     */
+    private function documents(int $organizationId, int $actorUserId, string $role): array
+    {
         $documents = DB::table('documents')
             ->leftJoin('users', 'users.id', '=', 'documents.owner_user_id')
             ->leftJoin('project_members', function ($join) use ($actorUserId): void {
                 $join->on('project_members.project_id', '=', 'documents.project_id')
                     ->where('project_members.user_id', $actorUserId);
             })
-            ->where('documents.organization_id', $context->organizationId)
-            ->where(function ($query) use ($actorUserId, $canViewCommittee, $canViewPrivate, $canViewRestricted): void {
-                $query
-                    ->where('documents.owner_user_id', $actorUserId)
-                    ->orWhere('documents.visibility', DocumentVisibility::Public->value)
-                    ->orWhere(function ($committeeQuery): void {
-                        $committeeQuery
-                            ->where('documents.visibility', DocumentVisibility::Committee->value)
-                            ->whereNotNull('project_members.id');
-                    });
-
-                if ($canViewPrivate) {
-                    $query->orWhere('documents.visibility', DocumentVisibility::Private->value);
-                }
-
-                if ($canViewRestricted) {
-                    $query->orWhere('documents.visibility', DocumentVisibility::Restricted->value);
-                }
-
-                if ($canViewCommittee) {
-                    $query->orWhere('documents.visibility', DocumentVisibility::Committee->value);
-                }
-            })
+            ->where('documents.organization_id', $organizationId)
+            ->where(fn ($query) => $this->applyVisibilityFilter($query, $actorUserId, $role))
             ->select([
                 'documents.id',
                 'documents.name',
@@ -75,8 +63,40 @@ final readonly class GetDocumentUploadCenterPayloadAction
             ])
             ->all();
 
-        $projects = DB::table('projects')
-            ->where('organization_id', $context->organizationId)
+        return $documents;
+    }
+
+    private function applyVisibilityFilter(Builder $query, int $actorUserId, string $role): void
+    {
+        $query
+            ->where('documents.owner_user_id', $actorUserId)
+            ->orWhere('documents.visibility', DocumentVisibility::Public->value)
+            ->orWhere(function ($committeeQuery): void {
+                $committeeQuery
+                    ->where('documents.visibility', DocumentVisibility::Committee->value)
+                    ->whereNotNull('project_members.id');
+            });
+
+        if (in_array($role, Roles::ORGANIZATION_MANAGERS, true)) {
+            $query->orWhere('documents.visibility', DocumentVisibility::Private->value);
+        }
+
+        if (in_array($role, Roles::FINANCE_VIEWERS, true)) {
+            $query->orWhere('documents.visibility', DocumentVisibility::Restricted->value);
+        }
+
+        if (in_array($role, Roles::SECRETARY_AND_UP, true)) {
+            $query->orWhere('documents.visibility', DocumentVisibility::Committee->value);
+        }
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function projects(int $organizationId): array
+    {
+        return DB::table('projects')
+            ->where('organization_id', $organizationId)
             ->where('status', '!=', 'archived')
             ->orderBy('name')
             ->get(['id', 'name'])
@@ -85,10 +105,5 @@ final readonly class GetDocumentUploadCenterPayloadAction
                 'name' => (string) $project->name,
             ])
             ->all();
-
-        return [
-            'documents' => $documents,
-            'projects' => $projects,
-        ];
     }
 }
