@@ -25,6 +25,23 @@ final class Roles
 
     public const FINANCE_MANAGERS = ['organization_owner', 'organization_admin', 'treasurer'];
 
+    public const ATTENDANCE_VIEWERS = [
+        'organization_owner',
+        'organization_admin',
+        'secretary',
+        'project_lead',
+        'division_coordinator',
+        'member',
+    ];
+
+    public const CERTIFICATE_VIEWERS = [
+        'organization_owner',
+        'organization_admin',
+        'secretary',
+        'project_lead',
+        'member',
+    ];
+
     public const SECRETARY_AND_UP = ['organization_owner', 'organization_admin', 'secretary'];
 
     public const PROJECT_LEADERSHIP = [

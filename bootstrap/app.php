@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\EnsureAttendanceAccess;
+use App\Http\Middleware\EnsureCertificateAccess;
 use App\Http\Middleware\EnsureFinanceAccess;
 use App\Http\Middleware\EnsureImpersonationFresh;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetSecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             EnsureImpersonationFresh::class,
+            SetSecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
@@ -27,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'attendance' => EnsureAttendanceAccess::class,
+            'certificates' => EnsureCertificateAccess::class,
             'finance' => EnsureFinanceAccess::class,
         ]);
     })

@@ -192,16 +192,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/registrations/{project}/export-pdf', [EventRegistrationPdfExportController::class, 'store'])->name('registrations.export-pdf');
         Route::patch('/registrations/{project}/settings', [EventRegistrationSettingsController::class, 'update'])->name('registrations.settings.update');
     });
-    Route::prefix('attendance')->name('attendance.')->group(function () {
+    Route::prefix('attendance')->middleware('attendance')->name('attendance.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'attendanceIndex'])->name('index');
-        Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])->name('check-in.store');
+        Route::post('/check-in', [AttendanceQrCheckInController::class, 'store'])
+            ->withoutMiddleware('attendance')
+            ->name('check-in.store');
         Route::post('/sessions/{session}/manual-check-in', [ManualAttendanceController::class, 'store'])->name('manual.store');
         Route::post('/sessions/{session}/qr-tokens', [AttendanceQrTokenController::class, 'store'])->name('qr-tokens.store');
         Route::delete('/qr-tokens/{token}', [AttendanceQrTokenController::class, 'destroy'])->name('qr-tokens.destroy');
         Route::get('/qr-image', [AttendanceQrImageController::class, 'show'])->name('qr-image.show');
         Route::get('/sessions/{session}/export.csv', [AttendanceExportController::class, 'show'])->name('export.csv');
     });
-    Route::prefix('certificates')->name('certificates.')->group(function () {
+    Route::prefix('certificates')->middleware('certificates')->name('certificates.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'certificatesIndex'])->name('index');
         Route::get('/templates', [WorkspacePageController::class, 'certificateTemplates'])->name('templates');
         Route::post('/templates', [CertificateTemplateController::class, 'store'])->name('templates.store');
@@ -209,7 +211,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/templates/{template}', [CertificateTemplateController::class, 'update'])->name('templates.update');
         Route::get('/issue', [WorkspacePageController::class, 'certificateIssue'])->name('issue');
         Route::post('/issue', [CertificateIssueController::class, 'store'])->name('issue.store');
-        Route::get('/{certificateNumber}/download', [CertificateDownloadController::class, 'show'])->name('download');
+        Route::get('/{certificateNumber}/download', [CertificateDownloadController::class, 'show'])
+            ->withoutMiddleware('certificates')
+            ->name('download');
     });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
     Route::get('/notifications/recent', [NotificationRecentController::class, 'show'])->name('notifications.recent');

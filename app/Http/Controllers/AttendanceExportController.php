@@ -66,7 +66,7 @@ final class AttendanceExportController extends Controller
             'Cache-Control' => 'private, no-store, max-age=0',
         ];
 
-        $csv = "name,email,method,checked_in_at,status,notes\r\n";
+        $csv = "\xEF\xBB\xBF"."name,email,method,checked_in_at,status,notes\r\n";
 
         foreach ($records as $record) {
             $csv .= sprintf(

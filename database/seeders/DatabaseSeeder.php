@@ -59,6 +59,7 @@ final class DatabaseSeeder extends Seeder
         $this->seedTicketTiers($now);
         $this->seedNotificationRules($now);
         $this->seedDocumentExports($now);
+        $this->call(FeatureFlagSeeder::class);
     }
 
     private function seedUsers($now): void

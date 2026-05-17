@@ -155,6 +155,19 @@ final class QrAttendanceTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_attendance_csv_export_includes_utf8_bom(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+
+        $response = $this->actingAs($owner)
+            ->get(route('attendance.export.csv', [
+                'session' => $this->attendanceSessionId('Absensi Technical Meeting Seminar Karier'),
+            ]))
+            ->assertOk();
+
+        $this->assertSame("\xEF\xBB\xBF", substr((string) $response->getContent(), 0, 3));
+    }
+
     private function attendanceSessionId(string $title): int
     {
         return (int) DB::table('attendance_sessions')->where('title', $title)->value('id');
