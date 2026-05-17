@@ -18,7 +18,6 @@ final class BulkIssueParticipationCertificatesAction
 
     /**
      * @param  array<int, int>  $recipientUserIds
-     *
      * @return array<int, int>
      *
      * @throws AuthorizationException

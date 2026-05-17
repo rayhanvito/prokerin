@@ -724,7 +724,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.3 M39 · Surat Menyurat Generator (Birokrasi Kampus)
 
-**Status:** Belum ada. **Killer feature spesifik untuk ormawa Indonesia.**
+**Status:** ✅ Implemented 2026-05-17. **Killer feature spesifik untuk ormawa Indonesia.**
 
 #### Tujuan
 - Auto-generate surat resmi (peminjaman ruang, perizinan kegiatan, surat tugas, dll) dengan kop surat institusional dan numbering otomatis.
@@ -856,18 +856,22 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Pattern `B.{seq}/BEM-FT/{roman_month}/{year}` dengan input → output benar.
 
 #### Checklist
-- [ ] 3 migrations (templates, letters, sequences).
-- [ ] Enum LetterType + LetterStatus.
-- [ ] Action create/update template + draft/submit/sign/send/bulk + generate number/PDF.
-- [ ] Form Requests.
-- [ ] Controllers + Routes.
-- [ ] React pages (Index, Templates, Create wizard, Show, Templates editor).
-- [ ] Sidebar menu.
-- [ ] Seeder 6 template default.
-- [ ] Tests.
+- [x] 3 migrations (templates, letters, sequences).
+- [x] Enum LetterType + LetterStatus.
+- [x] Action create/update template + draft/submit/sign/send/bulk + generate number/PDF.
+- [x] Form Requests.
+- [x] Controllers + Routes.
+- [x] React pages (Index, Templates, Create wizard, Show, Templates editor).
+- [x] Sidebar menu.
+- [x] Seeder 6 template default.
+- [x] Tests.
 
 #### Verification
 - Owner buat template "Surat Permohonan Peminjaman Ruang" → secretary draft surat dengan project Seminar Karier → preview render benar → submit → owner sign → PDF di-generate → download → format profesional.
+- 2026-05-17 automated gates:
+  - `php artisan test tests/Unit/LetterNumberPatternTest.php tests/Feature/LetterGeneratorTest.php --stop-on-failure` → 7 passed / 41 assertions.
+  - `php artisan test` → 533 passed / 2897 assertions.
+  - `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass.
 - Bulk issue participation certificate untuk 5 panitia → 5 surat keterangan dibuat.
 
 **Why this is a killer feature:** ormawa Indonesia tidak punya alternatif tools untuk auto-generate surat dengan kop institusional + numbering otomatis. Demo "12 surat dalam 3 menit" akan jadi viral.
@@ -1135,7 +1139,7 @@ Modul yang baru dibangun harus integrate dengan yang lama:
 ### Tier GROWTH (bulan 4-6)
 - [x] **M30** · Kepanitiaan Mode
 - [x] **M31** · Public Proker Microsite
-- [ ] **M39** · Surat Menyurat Generator (killer feature)
+- [x] **M39** · Surat Menyurat Generator (killer feature)
 - [ ] **M29** · Global Search (Cmd+K)
 - [ ] **M43** · Calendar Sync (.ics)
 - [ ] **M40** · Inventory & Asset Management

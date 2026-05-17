@@ -10,7 +10,7 @@
 
 - **Versi:** v0.1.0 (MVP + Post-MVP Wave 1 progress)
 - **Verifikasi terakhir:** 2026-05-17
-- **Test suite:** **526 passed, 2856 assertions** (`php artisan test`, durasi ~36 detik)
+- **Test suite:** **533 passed, 2897 assertions** (`php artisan test`, durasi ~46 detik)
 - **Build frontend:** `npm run build` ✅ pass
 - **PHP code style:** `./vendor/bin/pint --test` ✅ pass
 - **TypeScript:** `npm run lint` (`tsc --noEmit`) ✅ pass
@@ -19,9 +19,9 @@
 |---|---:|---:|---:|---:|
 | MVP (M01–M16) | 16 | 15 | 1 (M16) | 0 |
 | Post-MVP Wave 1 — Tier IMMEDIATE | 5 | 5 | 0 | 0 |
-| Post-MVP Tier GROWTH | 6 | 2 | 0 | 4 |
+| Post-MVP Tier GROWTH | 6 | 3 | 0 | 3 |
 | Modul existing FROZEN/Maintenance | 5 | 5 | 0 | 0 |
-| **Total tracked** | **32** | **27** | **1** | **4** |
+| **Total tracked** | **32** | **28** | **1** | **3** |
 
 > **Tier MOMENTUM dihapus dari roadmap aktif (2026-05-17).** Modul M45 My Day, M46 Sponsorship Pipeline, M47 Member Skill, M41 Activity Feed, dan M42 Generic Approval ditunda untuk prioritas deploy MVP. Akan di-re-evaluate pasca-deploy berdasarkan feedback user nyata.
 
@@ -31,13 +31,13 @@
 
 | Gate | Komando | Hasil |
 |---|---|---|
-| Test suite | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` | 526 passed / 2856 assertions / 36.70s |
+| Test suite | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` | 533 passed / 2897 assertions / 45.93s |
 | PHP style | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` | ✅ pass |
 | Frontend build | `npm run build` | ✅ pass |
 | TypeScript | `npm run lint` (`tsc --noEmit`) | ✅ pass |
 | Vitest harness | `npx vitest --run` | ✅ harness ready (no test files yet) |
 
-Migration terakhir di-apply: `2026_05_17_000014_create_proker_microsite_tables.php`.
+Migration terakhir di-apply: `2026_05_17_000015_create_letter_generator_tables.php`.
 
 ---
 
@@ -82,13 +82,13 @@ Source spec: `POST-MVP-ROADMAP.md` §2. Tier ini selesai dalam window 10–12 mi
 
 ## Post-MVP Tier GROWTH (bulan 4-6)
 
-M30 dan M31 selesai; sisa modul belum dikerjakan. Source spec: `POST-MVP-ROADMAP.md` §3. Estimasi 8–10 minggu solo dev untuk seluruh tier.
+M30, M31, dan M39 selesai; sisa modul belum dikerjakan. Source spec: `POST-MVP-ROADMAP.md` §3. Estimasi 8–10 minggu solo dev untuk seluruh tier.
 
 | ID | Modul | Status | Catatan |
 |---|---|---|---|
 | M30 | Kepanitiaan Mode (ad-hoc committee, lifecycle 3-6 bulan, auto-archive 90 hari) | ✅ | 2026-05-17 — migration `mode + event_date + auto_archive_at`, enum `OrganizationMode`, `OrganizationModeGate`, `CreateKepanitiaanAction`, daily `AutoArchiveKepanitiaanJob`, controller guards, sidebar filtering, setup form, and `KepanitiaanDashboard/Index`. Targeted: `KepanitiaanModeTest` 4 passed / 28 assertions. Full suite: 520 passed / 2811 assertions. |
 | M31 | Public Proker Microsite (halaman publik per proker, OG meta, gallery) | ✅ | 2026-05-17 — migration `proker_microsites` + `proker_microsite_gallery`, public route `/e/{orgSlug}/{prokerSlug}`, authenticated settings page, publish/unpublish, banner/gallery upload, gallery reorder/delete, cache layer, registration CTA integration, and Proker detail link. Targeted: `MicrositeTest` 6 passed / 45 assertions. Full suite: 526 passed / 2856 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. WhatsApp/social OG preview remains launch-QA. |
-| M39 | Surat Menyurat Generator (template, sequencing nomor, sign, send, bulk) | 🔲 | 3 migrations (templates, letters, sequences), enum `LetterType` + `LetterStatus`, 6 template default seeder. |
+| M39 | Surat Menyurat Generator (template, sequencing nomor, sign, send, bulk) | ✅ | 2026-05-17 — migration `create_letter_generator_tables`, enum `LetterType` + `LetterStatus`, CRUD template, draft/submit/sign/send/bulk actions, DomPDF generation to `letters/{org_id}/{letter_id}.pdf`, Inertia pages `Letters/{Index,Templates,Create,Show}`, sidebar menu, and 6 default templates. Targeted: `LetterNumberPatternTest` + `LetterGeneratorTest` 7 passed / 41 assertions. Full suite: 533 passed / 2897 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. Visual PDF polish/download smoke remains launch-QA. |
 | M29 | Global Search (Cmd+K) — Laravel Scout | 🔲 | 5 model searchable: Project, Task, Document, Meeting, ProposalDraft. Tenant scope + visibility test wajib. |
 | M43 | Calendar Sync (.ics Feed) | 🔲 | `users.calendar_sync_token`, route public `/calendar/{token}.ics`, `BuildIcsFeedAction`. |
 | M40 | Inventory & Asset Management (loan, return, integrasi M19 Handover) | 🔲 | 2 migrations + enum, integrasi M19 (snapshot) + M27 (QR scan redirect). |
@@ -150,6 +150,7 @@ Spec di `SUPER-ADMIN-V2-PLAN.md` (root). Filament admin enhancement.
 
 | Tanggal | Migration | Modul terkait |
 |---|---|---|
+| 2026-05-17 | `create_letter_generator_tables` | M39 Surat Menyurat Generator |
 | 2026-05-17 | `create_proker_microsite_tables` | M31 Public Proker Microsite |
 | 2026-05-17 | `add_kepanitiaan_mode_to_organizations_table` | M30 Kepanitiaan Mode |
 | 2026-05-17 | `add_step_tracking_to_organizations_onboarding` | M28 Onboarding |
@@ -186,7 +187,7 @@ Spec di `SUPER-ADMIN-V2-PLAN.md` (root). Filament admin enhancement.
 
 1. **Run launch-device QA for Tier IMMEDIATE** — native Chrome Android + Safari iOS camera scan, OS web push permission/notification, and two-browser Reverb smoke with `php artisan reverb:start`.
 2. **Resume `landing-polish` spec** — lanjut dari task 1.3 (`Update ProblemSection.tsx`). 60 leaf task tersisa, terorganisir dalam 18 wave DAG. Lihat `.kiro/specs/landing-polish/tasks.md`.
-3. **Continue Tier GROWTH** dengan M39 Surat Menyurat Generator setelah launch-device QA / landing-polish checkpoint berikutnya.
+3. **Continue Tier GROWTH** dengan M29 Global Search (Cmd+K) setelah launch-device QA / landing-polish checkpoint berikutnya.
 
 ---
 
