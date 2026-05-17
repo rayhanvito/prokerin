@@ -25,6 +25,8 @@ final class Organization extends Model
         'plan_tier',
         'internal_notes',
         'onboarding_completed_at',
+        'onboarding_step',
+        'onboarding_skipped',
     ];
 
     /**
@@ -34,6 +36,8 @@ final class Organization extends Model
     {
         return [
             'plan_tier' => PlanTier::class,
+            'onboarding_completed_at' => 'datetime',
+            'onboarding_skipped' => 'boolean',
         ];
     }
 

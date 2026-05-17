@@ -22,8 +22,12 @@ export interface OnboardingContext {
     show: boolean;
     organizationId: number | null;
     organizationName: string | null;
+    currentStep: number;
+    completedSteps: number[];
     steps: OnboardingStep[];
     completeUrl: string;
+    stepCompleteUrl: string;
+    skipUrl: string;
 }
 
 export interface NotificationDropdownItem {

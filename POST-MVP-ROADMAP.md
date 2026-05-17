@@ -308,18 +308,20 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Auto-detect existing data: kalau owner sudah punya 1 period sebelum mount, step 1 ditandai complete.
 
 #### Checklist
-- [ ] Migration onboarding columns.
-- [ ] `GetOnboardingStatusAction`, `CompleteOnboardingStepAction`, `SkipOnboardingAction`.
-- [ ] `HandleInertiaRequests` share onboarding state.
-- [ ] Routes complete + skip.
-- [ ] `OnboardingWizard` modal + 5 step components.
-- [ ] Auto-detect existing data per step.
-- [ ] Test feature wizard flow.
+- [x] Migration onboarding columns.
+- [x] `GetOnboardingStatusAction`, `CompleteOnboardingStepAction`, `SkipOnboardingAction`.
+- [x] `HandleInertiaRequests` share onboarding state.
+- [x] Routes complete + skip.
+- [x] `OnboardingWizard` modal + 5 step components.
+- [x] Auto-detect existing data per step.
+- [x] Test feature wizard flow.
 
 #### Verification
 - Register org baru → login → wizard muncul.
 - Lengkapi 5 step → wizard menutup, tidak muncul lagi setelah refresh.
 - Skip → wizard menutup permanently.
+- 2026-05-17: Existing onboarding upgraded to M28 step tracking. Added `onboarding_step` and `onboarding_skipped`, step-complete and skip actions/routes, richer shared onboarding state, modal step navigation, per-step completion, permanent skip, and auto-detect tests. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Onboarding/OnboardingWizardTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **12 passed, 223 assertions**. Formatter gate pass for touched PHP files. Frontend type gate `npm run lint` pass after preserving the local Vitest setup with a compatible plugin cast.
+- Final gate: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **508 passed, 2763 assertions**.
 
 ---
 

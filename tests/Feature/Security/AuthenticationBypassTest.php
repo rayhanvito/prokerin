@@ -94,6 +94,8 @@ final class AuthenticationBypassTest extends TestCase
             ['delete', '/webpush/subscribe'],
             ['patch', '/approval-workflows/1/decision'],
             ['patch', '/approval-workflows/1/delegate'],
+            ['post', '/onboarding/steps/1/complete'],
+            ['post', '/onboarding/skip'],
             ['post', '/onboarding/complete'],
         ] as [$method, $path]) {
             $this->{$method}($path)->assertRedirect('/login');

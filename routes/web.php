@@ -239,6 +239,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::post('/onboarding/steps/{step}/complete', [OnboardingController::class, 'completeStep'])
+        ->whereNumber('step')
+        ->name('onboarding.steps.complete');
+    Route::post('/onboarding/skip', [OnboardingController::class, 'skip'])->name('onboarding.skip');
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
 
     Route::post('/document-exports/{documentExport}/retry', [DocumentExportRetryController::class, 'store'])
