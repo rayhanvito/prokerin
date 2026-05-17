@@ -35,24 +35,7 @@ final readonly class GetLpjChecklistPayloadAction
             ->first();
 
         if ($project === null) {
-            return [
-                'project' => [
-                    'id' => null,
-                    'status' => null,
-                    'canSubmit' => false,
-                    'canApprove' => false,
-                    'canExport' => false,
-                ],
-                'checklistItems' => [],
-                'readiness' => $this->readiness->execute([])->toArray(),
-                'executionSummary' => [
-                    'completedTasks' => 0,
-                    'totalTasks' => 0,
-                    'realizedBudget' => 0,
-                    'attendanceCount' => 0,
-                ],
-                'workflowTimeline' => $this->emptyWorkflowTimeline(),
-            ];
+            return $this->emptyPayload();
         }
 
         $checklistRows = DB::table('lpj_checklist_items')
@@ -69,28 +52,9 @@ final readonly class GetLpjChecklistPayloadAction
             ->all();
 
         $readiness = $this->readiness->execute($items);
-        $role = (string) $project->role;
 
         return [
-            'project' => [
-                'id' => (int) $project->id,
-                'status' => (string) $project->status,
-                'canSubmit' => $readiness->isReadyForReview
-                    && (string) $project->status === 'running'
-                    && in_array($role, [
-                        OrganizationRole::Owner->value,
-                        OrganizationRole::Admin->value,
-                        OrganizationRole::Secretary->value,
-                    ], true),
-                'canApprove' => (string) $project->status === 'lpj_review'
-                    && in_array($role, [OrganizationRole::Owner->value, OrganizationRole::Admin->value], true),
-                'canExport' => (string) $project->status === 'completed'
-                    && in_array($role, [
-                        OrganizationRole::Owner->value,
-                        OrganizationRole::Admin->value,
-                        OrganizationRole::Secretary->value,
-                    ], true),
-            ],
+            'project' => $this->projectPayload($project, $readiness->isReadyForReview),
             'checklistItems' => $checklistRows
                 ->map(static fn (object $item): array => [
                     'id' => (int) $item->id,
@@ -103,6 +67,61 @@ final readonly class GetLpjChecklistPayloadAction
             'executionSummary' => $this->executionSummary((int) $project->id),
             'workflowTimeline' => $this->workflowTimeline->execute($actorUserId, 'project', (int) $project->id),
         ];
+    }
+
+    /**
+     * @return array{project: array{id: int|null, status: string|null, canSubmit: bool, canApprove: bool, canExport: bool}, checklistItems: array<int, array{id: int, title: string, isComplete: bool, isRequired: bool}>, readiness: array<string, mixed>, executionSummary: array{completedTasks: int, totalTasks: int, realizedBudget: int, attendanceCount: int}, workflowTimeline: array<string, mixed>}
+     */
+    private function emptyPayload(): array
+    {
+        return [
+            'project' => [
+                'id' => null,
+                'status' => null,
+                'canSubmit' => false,
+                'canApprove' => false,
+                'canExport' => false,
+            ],
+            'checklistItems' => [],
+            'readiness' => $this->readiness->execute([])->toArray(),
+            'executionSummary' => [
+                'completedTasks' => 0,
+                'totalTasks' => 0,
+                'realizedBudget' => 0,
+                'attendanceCount' => 0,
+            ],
+            'workflowTimeline' => $this->emptyWorkflowTimeline(),
+        ];
+    }
+
+    /**
+     * @return array{id: int, status: string, canSubmit: bool, canApprove: bool, canExport: bool}
+     */
+    private function projectPayload(object $project, bool $isReadyForReview): array
+    {
+        $role = (string) $project->role;
+        $status = (string) $project->status;
+
+        return [
+            'id' => (int) $project->id,
+            'status' => $status,
+            'canSubmit' => $isReadyForReview
+                && $status === 'running'
+                && $this->canManageLpj($role),
+            'canApprove' => $status === 'lpj_review'
+                && in_array($role, [OrganizationRole::Owner->value, OrganizationRole::Admin->value], true),
+            'canExport' => $status === 'completed'
+                && $this->canManageLpj($role),
+        ];
+    }
+
+    private function canManageLpj(string $role): bool
+    {
+        return in_array($role, [
+            OrganizationRole::Owner->value,
+            OrganizationRole::Admin->value,
+            OrganizationRole::Secretary->value,
+        ], true);
     }
 
     /**

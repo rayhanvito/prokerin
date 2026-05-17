@@ -152,10 +152,10 @@ Prioritas backend adalah menjaga controller tipis, query tenant aman, validasi e
   - Refactor: pecah payload builder menjadi `documents()`, `projects()`, dan visibility filter helper agar aturan public/private/restricted/committee lebih eksplisit.
   - Verifikasi: targeted document upload tests pass (`8 passed`, `48 assertions`).
 
-- [ ] `app/Actions/Workspace/GetLpjChecklistPayloadAction.php`
+- [x] `app/Actions/Workspace/GetLpjChecklistPayloadAction.php`
   - Alasan: LPJ metrics dan checklist query banyak.
-  - Target cleanup: ekstrak metrics builder.
-  - Test: LPJ checklist/approval tests.
+  - Refactor: ekstrak empty payload, project permission payload, dan reusable `canManageLpj()` agar main flow lebih pendek.
+  - Verifikasi: targeted LPJ/readiness tests pass (`10 passed`, `29 assertions`).
 
 - [ ] `app/Actions/EventRegistration/RegisterPublicEventAction.php`
   - Alasan: public registration + payment order creation sensitif.
@@ -580,4 +580,5 @@ Gunakan daftar ini setelah P1/P2 selesai atau saat ada bug di domain terkait.
 
 - [x] 2026-05-17: Clean-code batch 2 selesai: WorkspacePageController active org helper, Profile delete FormRequest, Auth registration/password/reset FormRequests. Verifikasi full gate pass: Pint, lint, build, `551 passed`, `2981 assertions`.
 - [x] 2026-05-17: Clean-code batch 3 selesai: Document upload center payload dipecah menjadi helper query/visibility. Verifikasi targeted document upload pass (`8 passed`, `48 assertions`).
+- [x] 2026-05-17: Clean-code batch 4 selesai: LPJ checklist payload dipecah menjadi helper empty payload dan permission payload. Verifikasi targeted LPJ/readiness pass (`10 passed`, `29 assertions`).
 - [x] 2026-05-17: Initial clean-code checklist dibuat berdasarkan audit file size, validation/controller patterns, payload/action density, dan frontend page complexity.
