@@ -3,15 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
+import { landingNavigationItems } from '@/Data/landingNavigation';
+
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
 }
-
-const navItems = [
-    { label: 'Fitur', href: route('landing.features') },
-    { label: 'Harga', href: route('landing.pricing') },
-];
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -91,25 +88,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         </button>
                     </div>
                     <nav className="mt-10 space-y-3">
-                        {navItems.map((item) => (
-                            item.href === null ? (
-                                <span
-                                    key={item.label}
-                                    aria-disabled="true"
-                                    className="block cursor-not-allowed rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#59667a]/50"
-                                >
-                                    {item.label}
-                                </span>
-                            ) : (
-                                <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    onClick={onClose}
-                                    className="block rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#242934]"
-                                >
-                                    {item.label}
-                                </Link>
-                            )
+                        {landingNavigationItems.map((item) => (
+                            <Link
+                                key={item.label}
+                                href={item.href}
+                                onClick={onClose}
+                                className="block rounded-2xl bg-[#f5f7fb] px-5 py-4 text-base font-semibold text-[#242934]"
+                            >
+                                {item.label}
+                            </Link>
                         ))}
                     </nav>
                     <div className="mt-8 grid gap-3">

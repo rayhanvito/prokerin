@@ -3,12 +3,8 @@ import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import MobileMenu from '@/Components/Landing/MobileMenu';
+import { landingNavigationItems } from '@/Data/landingNavigation';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-    { label: 'Fitur', href: route('landing.features') },
-    { label: 'Harga', href: route('landing.pricing') },
-];
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -48,34 +44,19 @@ export default function Navbar() {
                     </Link>
 
                     <nav className="hidden items-center gap-8 md:flex">
-                        {navItems.map((item) => (
-                            item.href === null ? (
-                                <span
-                                    key={item.label}
-                                    aria-disabled="true"
-                                    className={cn(
-                                        'cursor-not-allowed text-sm font-semibold',
-                                        isScrolled
-                                            ? 'text-[#59667a]/50'
-                                            : 'text-white/40',
-                                    )}
-                                >
-                                    {item.label}
-                                </span>
-                            ) : (
-                                <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    className={cn(
-                                        'text-sm font-semibold transition-colors',
-                                        isScrolled
-                                            ? 'text-[#59667a] hover:text-[#24695c]'
-                                            : 'text-white/80 hover:text-white',
-                                    )}
-                                >
-                                    {item.label}
-                                </Link>
-                            )
+                        {landingNavigationItems.map((item) => (
+                            <Link
+                                key={item.label}
+                                href={item.href}
+                                className={cn(
+                                    'text-sm font-semibold transition-colors',
+                                    isScrolled
+                                        ? 'text-[#59667a] hover:text-[#24695c]'
+                                        : 'text-white/80 hover:text-white',
+                                )}
+                            >
+                                {item.label}
+                            </Link>
                         ))}
                     </nav>
 
