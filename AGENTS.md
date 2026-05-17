@@ -4,10 +4,11 @@ This file is the technical blueprint and guardrail for Prokerin. Every AI agent 
 
 Root markdown policy:
 
-- Only `README.md` and `AGENTS.md` are allowed as root project documentation.
+- Only `README.md`, `AGENTS.md`, and `CLEAN-CODE-CHECKLIST.md` are allowed as root project documentation.
 - Do not create extra root `.md` files such as roadmap, feature status, QA plan, sprint plan, or architecture notes unless the project owner explicitly asks.
 - If project status or feature documentation changes, update `README.md`.
 - If architecture, code rules, or development guardrails change, update `AGENTS.md`.
+- If clean-code targets or completion status changes, update `CLEAN-CODE-CHECKLIST.md`.
 
 ---
 
@@ -652,10 +653,11 @@ Backend:
 
 ## 21. Documentation Rules
 
-Only two root docs:
+Approved root docs:
 
 - `README.md`
 - `AGENTS.md`
+- `CLEAN-CODE-CHECKLIST.md`
 
 When feature status changes:
 
@@ -702,7 +704,7 @@ Non-negotiable constraints:
 - Do not convert Inertia flows into REST/API flows.
 - Do not put business logic in controllers or React pages.
 - Do not modify shadcn/ui base components directly.
-- Do not create new root markdown files.
+- Do not create new root markdown files beyond owner-approved docs.
 - Do not touch frozen/maintenance modules except for clear bug fixes or low-risk cleanup.
 
 Clean code priorities:
