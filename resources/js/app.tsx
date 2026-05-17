@@ -31,7 +31,7 @@ createInertiaApp({
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
         navigator.serviceWorker
-            .register('/sw.js')
+            .register('/service-worker.js')
             .catch(() => {
                 // Fail silently; SW is non-critical.
             });

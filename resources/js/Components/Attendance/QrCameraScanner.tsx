@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Camera, CameraOff, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface Props {
     open: boolean;
@@ -16,6 +17,7 @@ export default function QrCameraScanner({ open, onClose }: Props) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const scannerRef = useRef<unknown>(null);
     const cooldownRef = useRef<number | null>(null);
+    const isSubmittingRef = useRef(false);
     const [state, setState] = useState<ScanState>({
         status: 'idle',
         message: null,
@@ -75,6 +77,7 @@ export default function QrCameraScanner({ open, onClose }: Props) {
 
         return () => {
             cancelled = true;
+            isSubmittingRef.current = false;
 
             const scanner = scannerRef.current as
                 | { stop: () => Promise<void>; clear: () => void }
@@ -101,30 +104,37 @@ export default function QrCameraScanner({ open, onClose }: Props) {
     }, [open]);
 
     const handleDecode = (token: string) => {
-        if (state.status === 'submitting') {
+        if (isSubmittingRef.current) {
             return;
         }
 
+        isSubmittingRef.current = true;
         setState({ status: 'submitting', message: 'Mengirim check-in...' });
 
         router.post(
             route('attendance.check-in.store'),
-            { token },
+            { token, method: 'qr_camera' },
             {
                 preserveScroll: true,
                 onSuccess: () => {
+                    toast.success('Check-in tercatat.');
                     setState({
                         status: 'scanning',
                         message: 'Check-in tercatat. Siap scan berikutnya.',
                     });
+                    cooldownRef.current = window.setTimeout(() => {
+                        isSubmittingRef.current = false;
+                    }, 2000);
                 },
                 onError: () => {
+                    toast.error('Token tidak valid atau sudah expired.');
                     setState({
                         status: 'error',
                         message:
                             'Token tidak valid atau sudah expired. Coba lagi.',
                     });
                     cooldownRef.current = window.setTimeout(() => {
+                        isSubmittingRef.current = false;
                         setState({
                             status: 'scanning',
                             message:
@@ -159,10 +169,9 @@ export default function QrCameraScanner({ open, onClose }: Props) {
                 </div>
 
                 <div
-                    id="prokerin-qr-reader"
-                    ref={containerRef}
-                    className="mt-4 overflow-hidden rounded-[4px] bg-black"
-                    style={{ minHeight: 240 }}
+                id="prokerin-qr-reader"
+                ref={containerRef}
+                    className="mt-4 min-h-[240px] overflow-hidden rounded-[4px] bg-black"
                 />
 
                 <p
@@ -179,6 +188,14 @@ export default function QrCameraScanner({ open, onClose }: Props) {
                         {state.message}
                     </p>
                 )}
+
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-[4px] bg-[#f5f7fb] px-3 py-2 text-sm font-semibold text-[#24695c] ring-1 ring-[#e6edef] hover:bg-white"
+                >
+                    Pakai Manual Code
+                </button>
             </div>
         </div>
     );

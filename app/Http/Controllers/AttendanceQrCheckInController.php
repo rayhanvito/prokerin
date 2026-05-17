@@ -15,6 +15,7 @@ final class AttendanceQrCheckInController extends Controller
         $result = $checkIn->execute(
             token: (string) $request->validated('token'),
             userId: (int) $request->user()->id,
+            method: (string) ($request->validated('method') ?? 'qr'),
         );
 
         $flashKey = $result['status'] === 'checked_in' ? 'success' : 'error';

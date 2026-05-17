@@ -55,7 +55,7 @@ final class GetQrAttendancePayloadAction
 
         $recordCounts = DB::table('attendance_records')
             ->whereIn('attendance_session_id', $sessionIds)
-            ->selectRaw('attendance_session_id, count(*) as present_count, sum(case when check_in_method = ? then 1 else 0 end) as qr_count, sum(case when check_in_method = ? then 1 else 0 end) as manual_count', ['qr', 'manual'])
+            ->selectRaw('attendance_session_id, count(*) as present_count, sum(case when check_in_method in (?, ?) then 1 else 0 end) as qr_count, sum(case when check_in_method = ? then 1 else 0 end) as manual_count', ['qr', 'qr_camera', 'manual'])
             ->groupBy('attendance_session_id')
             ->get()
             ->keyBy('attendance_session_id');

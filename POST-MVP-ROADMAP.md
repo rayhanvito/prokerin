@@ -181,18 +181,19 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 - Manual smoke (mobile browser): buka `/attendance` di iPhone Safari, klik Scan QR, izinkan kamera, scan QR → success toast.
 
 #### Checklist
-- [ ] PWA manifest + icons + service worker.
-- [ ] `Components/Attendance/QrCameraScanner.tsx` dengan continuous mode + fallback.
-- [ ] `attendance.check-in.store` terima parameter `method`, audit field di DB.
-- [ ] Update `Pages/Attendance/Index.tsx` dengan tombol Scan QR + modal.
-- [ ] Test feature `QrCameraCheckInTest`.
+- [x] PWA manifest + icons + service worker.
+- [x] `Components/Attendance/QrCameraScanner.tsx` dengan continuous mode + fallback.
+- [x] `attendance.check-in.store` terima parameter `method`, audit field di DB.
+- [x] Update `Pages/Attendance/Index.tsx` dengan tombol Scan QR + modal.
+- [x] Test feature `QrCameraCheckInTest`.
 - [ ] Manual smoke mobile browser (Chrome Android + Safari iOS).
-- [ ] Update `features.md` M15 section: tandai sub-fitur "Camera Scanner PWA" sebagai complete.
+- [ ] Update `features.md` M15 section: tandai sub-fitur "Camera Scanner PWA" sebagai complete. (`features.md` belum ada di repo.)
 
 #### Verification
 - `php artisan test tests/Feature/QrCameraCheckInTest.php` pass.
 - Full regression hijau, jumlah test naik.
 - Browser smoke mobile: install PWA → open dari home screen → scan QR → check-in sukses.
+- 2026-05-17: PWA manifest updated ke PNG icons, `public/service-worker.js` added, service worker registration switched to `/service-worker.js`, camera scanner posts `method=qr_camera`, backend stores `check_in_method=qr_camera`, QR metrics count `qr` + `qr_camera`, and `QrCameraCheckInTest` added. Targeted attendance regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/QrCameraCheckInTest.php tests/Feature/QrAttendanceTest.php tests/Feature/AttendanceQrManagementTest.php --stop-on-failure` -> **20 passed, 92 assertions**. Manual mobile smoke not run in this environment.
 
 ---
 

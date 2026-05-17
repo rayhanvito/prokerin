@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class CheckInAttendanceQrRequest extends FormRequest
 {
@@ -20,6 +21,7 @@ final class CheckInAttendanceQrRequest extends FormRequest
     {
         return [
             'token' => ['required', 'string', 'min:16', 'max:120'],
+            'method' => ['nullable', 'string', Rule::in(['qr', 'qr_camera'])],
         ];
     }
 }

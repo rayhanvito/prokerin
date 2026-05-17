@@ -12,8 +12,12 @@ final class CheckInAttendanceQrAction
     /**
      * @return array{status: string, message: string, attendanceRecordId: int|null}
      */
-    public function execute(string $token, int $userId, ?Carbon $checkedInAt = null): array
-    {
+    public function execute(
+        string $token,
+        int $userId,
+        ?Carbon $checkedInAt = null,
+        string $method = 'qr',
+    ): array {
         $checkedInAt ??= now();
         $tokenHash = hash('sha256', $token);
 
@@ -93,7 +97,7 @@ final class CheckInAttendanceQrAction
             'meeting_attendee_id' => $meetingAttendee?->id,
             'attendee_name' => (string) $user->name,
             'attendee_email' => (string) $user->email,
-            'check_in_method' => 'qr',
+            'check_in_method' => $this->normalizeMethod($method),
             'checked_in_at' => $checkedInAt,
             'status' => 'present',
             'created_at' => $checkedInAt,
@@ -121,5 +125,10 @@ final class CheckInAttendanceQrAction
             'message' => 'Absensi berhasil dicatat.',
             'attendanceRecordId' => (int) $recordId,
         ];
+    }
+
+    private function normalizeMethod(string $method): string
+    {
+        return $method === 'qr_camera' ? 'qr_camera' : 'qr';
     }
 }
