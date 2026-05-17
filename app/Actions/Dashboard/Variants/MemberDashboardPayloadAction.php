@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Dashboard\Variants;
 
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -13,21 +14,8 @@ final class MemberDashboardPayloadAction
     public function execute(int $actorUserId, int $organizationId): array
     {
         return Cache::remember("dashboard:member:{$organizationId}:{$actorUserId}", 300, function () use ($actorUserId, $organizationId): array {
-            $nearestDeadline = DB::table('project_tasks')
-                ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
-                ->where('projects.organization_id', $organizationId)
-                ->where('project_tasks.pic_user_id', $actorUserId)
-                ->where('project_tasks.status', '!=', 'done')
-                ->orderBy('project_tasks.due_at')
-                ->value('project_tasks.due_at');
-
             return [
-                'kpiMetrics' => [
-                    ['label' => 'Task Aktif Saya', 'value' => DB::table('project_tasks')->join('projects', 'projects.id', '=', 'project_tasks.project_id')->where('projects.organization_id', $organizationId)->where('project_tasks.pic_user_id', $actorUserId)->where('project_tasks.status', '!=', 'done')->count()],
-                    ['label' => 'Task Selesai Bulan Ini', 'value' => DB::table('project_tasks')->join('projects', 'projects.id', '=', 'project_tasks.project_id')->where('projects.organization_id', $organizationId)->where('project_tasks.pic_user_id', $actorUserId)->where('project_tasks.status', 'done')->whereMonth('project_tasks.updated_at', now()->month)->count()],
-                    ['label' => 'Proker yang Aku Ikuti', 'value' => DB::table('project_members')->join('projects', 'projects.id', '=', 'project_members.project_id')->where('projects.organization_id', $organizationId)->where('project_members.user_id', $actorUserId)->count()],
-                    ['label' => 'Deadline Terdekat', 'value' => $nearestDeadline === null ? '-' : (string) $nearestDeadline],
-                ],
+                'kpiMetrics' => $this->kpiMetrics($actorUserId, $organizationId),
                 'myTasks' => $this->myTasks($actorUserId, $organizationId),
                 'myProjects' => $this->myProjects($actorUserId, $organizationId),
                 'recentNotifications' => $this->recentNotifications($actorUserId),
@@ -35,12 +23,44 @@ final class MemberDashboardPayloadAction
         });
     }
 
+    /**
+     * @return array<int, array{label: string, value: int|string}>
+     */
+    private function kpiMetrics(int $actorUserId, int $organizationId): array
+    {
+        $nearestDeadline = $this->assignedTaskQuery($actorUserId, $organizationId)
+            ->where('project_tasks.status', '!=', 'done')
+            ->orderBy('project_tasks.due_at')
+            ->value('project_tasks.due_at');
+
+        return [
+            [
+                'label' => 'Task Aktif Saya',
+                'value' => $this->assignedTaskQuery($actorUserId, $organizationId)
+                    ->where('project_tasks.status', '!=', 'done')
+                    ->count(),
+            ],
+            [
+                'label' => 'Task Selesai Bulan Ini',
+                'value' => $this->assignedTaskQuery($actorUserId, $organizationId)
+                    ->where('project_tasks.status', 'done')
+                    ->whereMonth('project_tasks.updated_at', now()->month)
+                    ->count(),
+            ],
+            [
+                'label' => 'Proker yang Aku Ikuti',
+                'value' => $this->memberProjectQuery($actorUserId, $organizationId)->count(),
+            ],
+            [
+                'label' => 'Deadline Terdekat',
+                'value' => $nearestDeadline === null ? '-' : (string) $nearestDeadline,
+            ],
+        ];
+    }
+
     private function myTasks(int $actorUserId, int $organizationId): array
     {
-        return DB::table('project_tasks')
-            ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
-            ->where('projects.organization_id', $organizationId)
-            ->where('project_tasks.pic_user_id', $actorUserId)
+        return $this->assignedTaskQuery($actorUserId, $organizationId)
             ->orderBy('project_tasks.due_at')
             ->limit(10)
             ->get(['project_tasks.id', 'project_tasks.title', 'project_tasks.status', 'project_tasks.due_at', 'projects.name as project_name'])
@@ -56,11 +76,8 @@ final class MemberDashboardPayloadAction
 
     private function myProjects(int $actorUserId, int $organizationId): array
     {
-        return DB::table('project_members')
-            ->join('projects', 'projects.id', '=', 'project_members.project_id')
+        return $this->memberProjectQuery($actorUserId, $organizationId)
             ->leftJoin('users', 'users.id', '=', 'projects.project_lead_id')
-            ->where('projects.organization_id', $organizationId)
-            ->where('project_members.user_id', $actorUserId)
             ->orderBy('projects.name')
             ->get(['projects.id', 'projects.slug', 'projects.name', 'projects.status', 'projects.progress', 'projects.ends_at', 'users.name as lead_name'])
             ->map(static fn (object $project): array => [
@@ -73,6 +90,22 @@ final class MemberDashboardPayloadAction
                 'projectLead' => (string) ($project->lead_name ?? 'Belum ditentukan'),
             ])
             ->all();
+    }
+
+    private function assignedTaskQuery(int $actorUserId, int $organizationId): Builder
+    {
+        return DB::table('project_tasks')
+            ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+            ->where('projects.organization_id', $organizationId)
+            ->where('project_tasks.pic_user_id', $actorUserId);
+    }
+
+    private function memberProjectQuery(int $actorUserId, int $organizationId): Builder
+    {
+        return DB::table('project_members')
+            ->join('projects', 'projects.id', '=', 'project_members.project_id')
+            ->where('projects.organization_id', $organizationId)
+            ->where('project_members.user_id', $actorUserId);
     }
 
     private function recentNotifications(int $actorUserId): array

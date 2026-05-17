@@ -189,10 +189,10 @@ Prioritas backend adalah menjaga controller tipis, query tenant aman, validasi e
   - Target cleanup: ekstrak project scope resolver.
   - Test: dashboard variant tests.
 
-- [ ] `app/Actions/Dashboard/Variants/MemberDashboardPayloadAction.php`
+- [x] `app/Actions/Dashboard/Variants/MemberDashboardPayloadAction.php`
   - Alasan: query panjang satu baris dan role-specific task list.
-  - Target cleanup: pecah query line, ekstrak helper.
-  - Test: dashboard role/member tests.
+  - Refactor: ekstrak KPI metrics, assigned task query, dan member project query agar raw query tidak berulang dan tidak satu baris panjang.
+  - Verifikasi: targeted dashboard routing/role tests pass (`10 passed`, `163 assertions`).
 
 ### 3.4 Support And Middleware
 
@@ -581,4 +581,5 @@ Gunakan daftar ini setelah P1/P2 selesai atau saat ada bug di domain terkait.
 - [x] 2026-05-17: Clean-code batch 2 selesai: WorkspacePageController active org helper, Profile delete FormRequest, Auth registration/password/reset FormRequests. Verifikasi full gate pass: Pint, lint, build, `551 passed`, `2981 assertions`.
 - [x] 2026-05-17: Clean-code batch 3 selesai: Document upload center payload dipecah menjadi helper query/visibility. Verifikasi targeted document upload pass (`8 passed`, `48 assertions`).
 - [x] 2026-05-17: Clean-code batch 4 selesai: LPJ checklist payload dipecah menjadi helper empty payload dan permission payload. Verifikasi targeted LPJ/readiness pass (`10 passed`, `29 assertions`).
+- [x] 2026-05-17: Clean-code batch 5 selesai: member dashboard variant KPI/query helper diekstrak. Verifikasi targeted dashboard routing/role pass (`10 passed`, `163 assertions`).
 - [x] 2026-05-17: Initial clean-code checklist dibuat berdasarkan audit file size, validation/controller patterns, payload/action density, dan frontend page complexity.
