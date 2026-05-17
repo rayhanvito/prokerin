@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 
 import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
+import RichTextEditor from '@/Components/Editor/RichTextEditor';
+import RichTextRenderer from '@/Components/Editor/RichTextRenderer';
 import InputError from '@/Components/InputError';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
@@ -15,6 +17,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { humanizeStatus } from '@/lib/format';
 import type { PageProps } from '@/types';
 import type { ProposalDraft } from '@/types/prokerin';
+import { normalizeTiptap } from '@/types/rich-text';
+import type { TiptapJson } from '@/types/rich-text';
 import { Head, useForm, usePage } from '@inertiajs/react';
 
 interface ProposalEditorProps {
@@ -22,7 +26,10 @@ interface ProposalEditorProps {
 }
 
 interface ProposalDraftForm {
-    sections: ProposalDraft['sections'];
+    sections: Array<{
+        heading: string;
+        body: TiptapJson;
+    }>;
 }
 
 interface ProposalAiSuggestion {
@@ -39,7 +46,10 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
         proposalDraft.id,
     );
     const draftForm = useForm<ProposalDraftForm>({
-        sections: proposalDraft.sections,
+        sections: proposalDraft.sections.map((section) => ({
+            heading: section.heading,
+            body: normalizeTiptap(section.body),
+        })),
     });
     const aiForm = useForm();
     const submitForm = useForm();
@@ -47,7 +57,7 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
         decision: 'approve',
     });
 
-    const updateSectionBody = (index: number, body: string): void => {
+    const updateSectionBody = (index: number, body: TiptapJson): void => {
         draftForm.setData(
             'sections',
             draftForm.data.sections.map((section, sectionIndex) =>
@@ -87,7 +97,13 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
             return;
         }
 
-        draftForm.setData('sections', aiSuggestion.sections);
+        draftForm.setData(
+            'sections',
+            aiSuggestion.sections.map((section) => ({
+                heading: section.heading,
+                body: normalizeTiptap(section.body),
+            })),
+        );
     };
 
     const submitForApproval = (): void => {
@@ -275,9 +291,13 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                             <p className="text-sm font-semibold text-[#242934]">
                                                 {section.heading}
                                             </p>
-                                            <p className="mt-1 text-sm leading-6 text-[#59667a]">
-                                                {section.body}
-                                            </p>
+                                            <div className="mt-1">
+                                                <RichTextRenderer
+                                                    value={normalizeTiptap(
+                                                        section.body,
+                                                    )}
+                                                />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -289,16 +309,13 @@ export default function ProposalEditor({ proposalDraft }: ProposalEditorProps) {
                                     <span className="text-sm font-semibold text-[#242934]">
                                         {section.heading}
                                     </span>
-                                    <textarea
+                                    <RichTextEditor
                                         value={section.body}
-                                        disabled={!proposalDraft.canEdit}
-                                        rows={index < 2 ? 5 : 3}
-                                        className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm leading-7 text-[#59667a] shadow-none focus:border-[#24695c] focus:ring-[#24695c] disabled:bg-white"
-                                        onChange={(event) =>
-                                            updateSectionBody(
-                                                index,
-                                                event.target.value,
-                                            )
+                                        readOnly={!proposalDraft.canEdit}
+                                        maxChars={5000}
+                                        placeholder={`Tulis ${section.heading.toLowerCase()}...`}
+                                        onChange={(body) =>
+                                            updateSectionBody(index, body)
                                         }
                                     />
                                     <InputError

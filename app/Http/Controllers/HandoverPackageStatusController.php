@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Handover\UpdateHandoverPackageStatusAction;
 use App\Http\Requests\UpdateHandoverPackageStatusRequest;
+use App\Support\OrganizationModeGate;
 use Illuminate\Http\RedirectResponse;
 
 final class HandoverPackageStatusController extends Controller
@@ -15,6 +16,8 @@ final class HandoverPackageStatusController extends Controller
         int $package,
         UpdateHandoverPackageStatusAction $updateHandoverPackageStatus,
     ): RedirectResponse {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUseHandover(), 403);
+
         $updateHandoverPackageStatus->execute(
             actorUserId: (int) $request->user()->id,
             handoverPackageId: $package,

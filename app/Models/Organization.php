@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Domain\Organization\Enums\OrganizationMode;
 use App\Domain\Organization\Enums\PlanTier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +24,9 @@ final class Organization extends Model
         'logo_path',
         'status',
         'plan_tier',
+        'mode',
+        'event_date',
+        'auto_archive_at',
         'internal_notes',
         'onboarding_completed_at',
         'onboarding_step',
@@ -36,6 +40,9 @@ final class Organization extends Model
     {
         return [
             'plan_tier' => PlanTier::class,
+            'mode' => OrganizationMode::class,
+            'event_date' => 'date',
+            'auto_archive_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
             'onboarding_skipped' => 'boolean',
         ];

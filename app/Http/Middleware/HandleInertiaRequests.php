@@ -50,10 +50,16 @@ class HandleInertiaRequests extends Middleware
                     'name' => $organization['name'],
                     'period' => $organization['period'],
                     'role' => $organization['role'],
+                    'mode' => $organization['mode'],
+                    'eventDate' => $organization['eventDate'],
+                    'autoArchiveAt' => $organization['autoArchiveAt'],
                 ] : [
                     'name' => $campus['name'] ?? 'Belum ada organisasi',
                     'period' => $campus['domain'] ?? '-',
                     'role' => $campus === null ? 'viewer' : 'campus_admin',
+                    'mode' => 'organization',
+                    'eventDate' => null,
+                    'autoArchiveAt' => null,
                 ],
                 'webPush' => [
                     'enabled' => filled(config('webpush.vapid.public_key')),
@@ -163,7 +169,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{id: int, name: string, period: string, role: string}|null
+     * @return array{id: int, name: string, period: string, role: string, mode: string, eventDate: ?string, autoArchiveAt: ?string}|null
      */
     private function activeOrganization(Request $request, int $userId): ?array
     {
@@ -175,6 +181,9 @@ class HandleInertiaRequests extends Middleware
             ->first([
                 'organizations.id',
                 'organizations.name',
+                'organizations.mode',
+                'organizations.event_date',
+                'organizations.auto_archive_at',
                 'organization_members.role',
                 'organization_periods.name as period_name',
             ]);
@@ -185,6 +194,9 @@ class HandleInertiaRequests extends Middleware
                 ->first([
                     'organizations.id',
                     'organizations.name',
+                    'organizations.mode',
+                    'organizations.event_date',
+                    'organizations.auto_archive_at',
                     'organization_members.role',
                     'organization_periods.name as period_name',
                 ]);
@@ -203,6 +215,9 @@ class HandleInertiaRequests extends Middleware
                 ->first([
                     'organizations.id',
                     'organizations.name',
+                    'organizations.mode',
+                    'organizations.event_date',
+                    'organizations.auto_archive_at',
                     'project_members.role',
                     'organization_periods.name as period_name',
                 ]);
@@ -215,8 +230,11 @@ class HandleInertiaRequests extends Middleware
         return [
             'id' => (int) $organization->id,
             'name' => (string) $organization->name,
-            'period' => (string) ($organization->period_name ?? '-'),
+            'period' => (string) ($organization->period_name ?? ($organization->event_date === null ? '-' : 'Event '.$organization->event_date)),
             'role' => (string) $organization->role,
+            'mode' => (string) ($organization->mode ?? 'organization'),
+            'eventDate' => $organization->event_date === null ? null : (string) $organization->event_date,
+            'autoArchiveAt' => $organization->auto_archive_at === null ? null : (string) $organization->auto_archive_at,
         ];
     }
 

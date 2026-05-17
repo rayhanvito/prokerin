@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Listeners\BroadcastDatabaseNotification;
 use App\Support\WhatsApp\HttpWhatsAppProvider;
 use App\Support\WhatsApp\WhatsAppProvider;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
@@ -28,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
         $this->configureLoginTracking();
+        $this->configureNotificationBroadcasting();
     }
 
     private function configureLoginTracking(): void
@@ -37,6 +40,11 @@ class AppServiceProvider extends ServiceProvider
                 'last_login_at' => now(),
             ])->save();
         });
+    }
+
+    private function configureNotificationBroadcasting(): void
+    {
+        Event::listen(NotificationSent::class, BroadcastDatabaseNotification::class);
     }
 
     private function configureRateLimiters(): void

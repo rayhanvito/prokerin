@@ -1,13 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { PlayCircle } from 'lucide-react';
-import { useState } from 'react';
-
-import DemoVideoModal from '@/Components/Landing/DemoVideoModal';
 
 export default function HeroSection() {
-    const [isDemoOpen, setIsDemoOpen] = useState(false);
-
     return (
         <section className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#1b4c43_0%,#24695c_50%,#2d7a6a_100%)] px-4 pt-28 text-white sm:px-6 lg:px-8">
             <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,#fff_1px,transparent_0)] [background-size:28px_28px]" />
@@ -17,9 +11,9 @@ export default function HeroSection() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                        className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white"
                     >
-                        ✨ Platform proker terlengkap untuk ormawa Indonesia
+                        Khusus Organisasi Kampus Indonesia
                     </motion.div>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
@@ -27,10 +21,8 @@ export default function HeroSection() {
                         transition={{ delay: 0.1, duration: 0.5 }}
                         className="mt-7 font-['Plus_Jakarta_Sans'] text-5xl font-extrabold leading-tight md:text-6xl lg:text-7xl"
                     >
-                        Kelola Proker Organisasi
-                        <span className="block text-[#f5d5b7]">
-                            Tanpa Chaos, Tanpa Drama
-                        </span>
+                        Kelola Proker, Proposal & LPJ{' '}
+                        <span className="text-[#ba895d]">Tanpa Ribet</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -38,9 +30,9 @@ export default function HeroSection() {
                         transition={{ delay: 0.2, duration: 0.5 }}
                         className="mt-6 max-w-xl text-lg leading-8 text-white/80 md:text-xl"
                     >
-                        Dari perencanaan proker, proposal, RAB, absensi rapat,
-                        sampai LPJ — semua terintegrasi. Dirancang khusus untuk
-                        BEM, HIMA, dan UKM di Indonesia.
+                        Prokerin menyatukan proker, task, RAB, proposal, hingga
+                        LPJ dalam satu platform — bukan 10 grup WhatsApp dan 5
+                        Google Doc.
                     </motion.p>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -49,19 +41,19 @@ export default function HeroSection() {
                         className="mt-8 flex flex-col gap-3 sm:flex-row"
                     >
                         <Link
-                            href={route('register')}
+                            href="/register"
+                            onClick={() => {}}
                             className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-semibold text-[#24695c] shadow-lg transition hover:bg-gray-50"
                         >
-                            Mulai Gratis Sekarang →
+                            Mulai Gratis Sekarang
                         </Link>
-                        <button
-                            type="button"
-                            onClick={() => setIsDemoOpen(true)}
+                        <Link
+                            href="/features"
                             className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 px-8 py-4 text-base font-semibold text-white transition hover:bg-white/10"
                         >
-                            <PlayCircle className="h-5 w-5" />
-                            Lihat Demo
-                        </button>
+                            Lihat Fitur Lengkap
+                        </Link>
+                        {/* DemoVideoModal diaktifkan saat video demo tersedia */}
                     </motion.div>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -69,8 +61,8 @@ export default function HeroSection() {
                         transition={{ delay: 0.4, duration: 0.5 }}
                         className="mt-5 text-sm text-white/60"
                     >
-                        🔒 Gratis untuk 1 organisasi · Tidak perlu kartu kredit
-                        · Setup dalam 5 menit
+                        Gratis untuk 5 anggota pertama. Tidak perlu kartu
+                        kredit.
                     </motion.p>
                 </div>
 
@@ -84,10 +76,6 @@ export default function HeroSection() {
                     <DashboardMockup />
                 </motion.div>
             </div>
-            <DemoVideoModal
-                isOpen={isDemoOpen}
-                onClose={() => setIsDemoOpen(false)}
-            />
         </section>
     );
 }

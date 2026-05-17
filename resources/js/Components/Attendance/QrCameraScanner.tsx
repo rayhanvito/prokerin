@@ -18,6 +18,7 @@ export default function QrCameraScanner({ open, onClose }: Props) {
     const scannerRef = useRef<unknown>(null);
     const cooldownRef = useRef<number | null>(null);
     const isSubmittingRef = useRef(false);
+    const isRunningRef = useRef(false);
     const [state, setState] = useState<ScanState>({
         status: 'idle',
         message: null,
@@ -59,12 +60,21 @@ export default function QrCameraScanner({ open, onClose }: Props) {
                 );
 
                 if (!cancelled) {
+                    isRunningRef.current = true;
                     setState({
                         status: 'scanning',
                         message: 'Arahkan kamera ke QR code peserta.',
                     });
+                    return;
                 }
+
+                await scanner.stop().catch(() => undefined);
+                scanner.clear();
             } catch (error) {
+                if (cancelled) {
+                    return;
+                }
+
                 const reason =
                     error instanceof Error
                         ? error.message
@@ -84,16 +94,22 @@ export default function QrCameraScanner({ open, onClose }: Props) {
                 | null;
 
             if (scanner) {
-                scanner
-                    .stop()
-                    .catch(() => undefined)
-                    .finally(() => {
-                        try {
-                            scanner.clear();
-                        } catch {
-                            // noop
-                        }
-                    });
+                const clearScanner = () => {
+                    try {
+                        scanner.clear();
+                    } catch {
+                        // noop
+                    }
+
+                    scannerRef.current = null;
+                    isRunningRef.current = false;
+                };
+
+                if (isRunningRef.current) {
+                    scanner.stop().catch(() => undefined).finally(clearScanner);
+                } else {
+                    clearScanner();
+                }
             }
 
             if (cooldownRef.current !== null) {
@@ -169,8 +185,8 @@ export default function QrCameraScanner({ open, onClose }: Props) {
                 </div>
 
                 <div
-                id="prokerin-qr-reader"
-                ref={containerRef}
+                    id="prokerin-qr-reader"
+                    ref={containerRef}
                     className="mt-4 min-h-[240px] overflow-hidden rounded-[4px] bg-black"
                 />
 

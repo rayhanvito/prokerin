@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Dashboard\DashboardPayloadAction;
 use App\Actions\Dashboard\DashboardRoleResolverAction;
+use App\Actions\Dashboard\KepanitiaanDashboardPayloadAction;
 use App\Actions\EventRegistration\GetEventRegistrationManagementPayloadAction;
 use App\Actions\Project\GetProjectDetailPayloadAction;
 use App\Actions\Workspace\GetAdminPanelPayloadAction;
@@ -38,6 +39,7 @@ use App\Actions\Workspace\GetTaskAssignmentsPayloadAction;
 use App\Actions\Workspace\GetTaskCalendarPayloadAction;
 use App\Actions\Workspace\GetTaskKanbanPayloadAction;
 use App\Actions\Workspace\GetTaskOverviewPayloadAction;
+use App\Support\OrganizationModeGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +52,7 @@ final class WorkspacePageController extends Controller
         Request $request,
         DashboardRoleResolverAction $roleResolver,
         DashboardPayloadAction $dashboardPayload,
+        KepanitiaanDashboardPayloadAction $kepanitiaanDashboardPayload,
     ): Response|RedirectResponse {
         $user = $request->user();
 
@@ -64,20 +67,15 @@ final class WorkspacePageController extends Controller
             }
         }
 
-        $organizationId = (int) DB::table('organization_members')
-            ->where('user_id', $user?->id)
-            ->orderBy('id')
-            ->value('organization_id');
-
-        if ($organizationId === 0) {
-            $organizationId = (int) DB::table('project_members')
-                ->join('projects', 'projects.id', '=', 'project_members.project_id')
-                ->where('project_members.user_id', $user?->id)
-                ->orderBy('project_members.id')
-                ->value('projects.organization_id');
-        }
+        $organizationId = $this->activeOrganizationId($request);
 
         abort_if($organizationId === 0, 403);
+
+        if (OrganizationModeGate::forOrganization($organizationId)->isKepanitiaan()) {
+            return Inertia::render('KepanitiaanDashboard/Index', [
+                'payload' => $kepanitiaanDashboardPayload->execute($organizationId),
+            ]);
+        }
 
         $variant = $roleResolver->execute($user, $organizationId);
 
@@ -146,6 +144,8 @@ final class WorkspacePageController extends Controller
 
     public function organizationPeriods(Request $request, GetOrganizationPeriodsPayloadAction $periods): Response
     {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUsePeriods(), 403);
+
         $activeOrganizationId = $request->session()->get('active_organization_id');
 
         return Inertia::render('Organization/Periods', $periods->execute(
@@ -167,6 +167,8 @@ final class WorkspacePageController extends Controller
 
     public function organizationHandover(Request $request, GetHandoverPayloadAction $handover): Response
     {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUseHandover(), 403);
+
         return Inertia::render('Organization/Handover', $handover->execute((int) $request->user()->id));
     }
 
@@ -343,8 +345,10 @@ final class WorkspacePageController extends Controller
         ));
     }
 
-    public function memberRoles(GetRolePermissionPayloadAction $rolePermissionMatrix): Response
+    public function memberRoles(Request $request, GetRolePermissionPayloadAction $rolePermissionMatrix): Response
     {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUseRoleMatrix(), 403);
+
         return Inertia::render('Members/Roles', [
             'rolePermissions' => $rolePermissionMatrix->execute(),
         ]);
@@ -414,6 +418,9 @@ final class WorkspacePageController extends Controller
                 'organizations.name',
                 'organizations.description',
                 'organizations.logo_path',
+                'organizations.mode',
+                'organizations.event_date',
+                'organizations.auto_archive_at',
                 'organization_members.role',
                 'organization_periods.name as period_name',
                 'organization_periods.starts_at',
@@ -437,6 +444,9 @@ final class WorkspacePageController extends Controller
             'name' => (string) $organization->name,
             'description' => (string) ($organization->description ?? ''),
             'type' => 'BEM / Executive Board',
+            'mode' => (string) ($organization->mode ?? 'organization'),
+            'eventDate' => $organization->event_date === null ? null : (string) $organization->event_date,
+            'autoArchiveAt' => $organization->auto_archive_at === null ? null : (string) $organization->auto_archive_at,
             'periodName' => (string) ($organization->period_name ?? 'Belum ada periode aktif'),
             'periodStart' => (string) ($organization->starts_at ?? '-'),
             'periodEnd' => (string) ($organization->ends_at ?? '-'),
@@ -446,5 +456,35 @@ final class WorkspacePageController extends Controller
                 ->count(),
             'canManage' => in_array((string) $organization->role, ['organization_owner', 'organization_admin'], true),
         ];
+    }
+
+    private function activeOrganizationId(Request $request): int
+    {
+        $user = $request->user();
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+
+        $organizationId = DB::table('organization_members')
+            ->where('user_id', $user?->id)
+            ->when(is_numeric($activeOrganizationId), static function ($query) use ($activeOrganizationId): void {
+                $query->where('organization_id', (int) $activeOrganizationId);
+            })
+            ->orderBy('id')
+            ->value('organization_id');
+
+        if ($organizationId !== null) {
+            return (int) $organizationId;
+        }
+
+        if (is_numeric($activeOrganizationId)) {
+            $request->session()->forget('active_organization_id');
+        }
+
+        $fallbackId = DB::table('project_members')
+            ->join('projects', 'projects.id', '=', 'project_members.project_id')
+            ->where('project_members.user_id', $user?->id)
+            ->orderBy('project_members.id')
+            ->value('projects.organization_id');
+
+        return $fallbackId === null ? 0 : (int) $fallbackId;
     }
 }

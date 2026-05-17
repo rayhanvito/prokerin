@@ -1,4 +1,4 @@
-import { Building2, ImagePlus, Save, ShieldCheck } from 'lucide-react';
+import { Building2, CalendarDays, ImagePlus, Save, ShieldCheck } from 'lucide-react';
 import { FormEventHandler, useRef } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -12,6 +12,9 @@ interface OrganizationSetupPayload {
     name: string;
     description: string;
     type: string;
+    mode: 'organization' | 'kepanitiaan';
+    eventDate: string | null;
+    autoArchiveAt: string | null;
     periodName: string;
     periodStart: string;
     periodEnd: string;
@@ -35,6 +38,15 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
         name: organization?.name ?? '',
         description: organization?.description ?? '',
     });
+    const kepanitiaanForm = useForm<{
+        name: string;
+        event_date: string;
+        description: string;
+    }>({
+        name: '',
+        event_date: '',
+        description: '',
+    });
 
     const submitLogo: FormEventHandler = (event) => {
         event.preventDefault();
@@ -57,6 +69,15 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
 
         profileForm.patch(route('organization.update'), {
             preserveScroll: true,
+        });
+    };
+
+    const submitKepanitiaan: FormEventHandler = (event) => {
+        event.preventDefault();
+
+        kepanitiaanForm.post(route('organization.kepanitiaan.store'), {
+            preserveScroll: true,
+            onSuccess: () => kepanitiaanForm.reset(),
         });
     };
 
@@ -234,6 +255,83 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                 </VihoCard>
 
                 <div className="space-y-6">
+                    <VihoCard
+                        title="Buat Workspace Kepanitiaan"
+                        subtitle="Mode ringkas untuk event satu kali tanpa periode kepengurusan dan handover."
+                    >
+                        <form className="space-y-5" onSubmit={submitKepanitiaan}>
+                            <FormField
+                                label="Nama Kepanitiaan"
+                                htmlFor="kepanitiaan-name"
+                                required
+                                error={kepanitiaanForm.errors.name}
+                            >
+                                <input
+                                    id="kepanitiaan-name"
+                                    type="text"
+                                    value={kepanitiaanForm.data.name}
+                                    onChange={(event) =>
+                                        kepanitiaanForm.setData(
+                                            'name',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Tanggal Event"
+                                htmlFor="kepanitiaan-event-date"
+                                required
+                                error={kepanitiaanForm.errors.event_date}
+                            >
+                                <input
+                                    id="kepanitiaan-event-date"
+                                    type="date"
+                                    value={kepanitiaanForm.data.event_date}
+                                    onChange={(event) =>
+                                        kepanitiaanForm.setData(
+                                            'event_date',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
+                                />
+                            </FormField>
+
+                            <FormField
+                                label="Deskripsi Singkat"
+                                htmlFor="kepanitiaan-description"
+                                error={kepanitiaanForm.errors.description}
+                            >
+                                <textarea
+                                    id="kepanitiaan-description"
+                                    value={kepanitiaanForm.data.description}
+                                    onChange={(event) =>
+                                        kepanitiaanForm.setData(
+                                            'description',
+                                            event.target.value,
+                                        )
+                                    }
+                                    rows={3}
+                                    className="block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
+                                />
+                            </FormField>
+
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={kepanitiaanForm.processing}
+                                    className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1b4c43] disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                                >
+                                    <CalendarDays className="h-4 w-4" />
+                                    Buat Kepanitiaan
+                                </button>
+                            </div>
+                        </form>
+                    </VihoCard>
+
                     <VihoCard title="Organization Scope">
                         <div className="flex gap-4">
                             <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[4px] bg-[rgba(36,105,92,0.1)] text-[#24695c]">
@@ -263,7 +361,10 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                             'Belum ada organisasi aktif'}
                                     </p>
                                     <p className="mt-1 text-sm text-[#717171]">
-                                        Periode {organization?.periodName ?? '-'} ·{' '}
+                                        {organization?.mode === 'kepanitiaan'
+                                            ? `Event ${organization.eventDate ?? '-'}`
+                                            : `Periode ${organization?.periodName ?? '-'}`}{' '}
+                                        ·{' '}
                                         {organization?.memberCount ?? 0} anggota
                                     </p>
                                 </div>

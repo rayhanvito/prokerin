@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\Handover\InitiateHandoverPackageAction;
+use App\Support\OrganizationModeGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -12,6 +13,8 @@ final class HandoverPackageController extends Controller
 {
     public function store(Request $request, InitiateHandoverPackageAction $initiateHandoverPackage): RedirectResponse
     {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUseHandover(), 403);
+
         $initiateHandoverPackage->execute((int) $request->user()->id);
 
         return back()->with('success', 'Paket handover berhasil disiapkan.');

@@ -45,7 +45,7 @@ final class UpdateProposalDraftSectionsRequest extends FormRequest
         return [
             'sections' => ['required', 'array', 'min:1', 'max:12'],
             'sections.*.heading' => ['required', 'string', 'max:120'],
-            'sections.*.body' => ['required', 'string', 'max:5000'],
+            'sections.*.body' => ['required'],
         ];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\Handover\QueueHandoverPackageExportAction;
+use App\Support\OrganizationModeGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -15,6 +16,8 @@ final class HandoverPackageExportController extends Controller
         int $package,
         QueueHandoverPackageExportAction $queueHandoverPackageExport,
     ): RedirectResponse {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUseHandover(), 403);
+
         $queueHandoverPackageExport->execute(
             actorUserId: (int) $request->user()->id,
             handoverPackageId: $package,

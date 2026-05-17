@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Actions\Proposal;
 
+use App\Actions\RichText\SanitizeRichTextAction;
 use App\Domain\Project\ProjectRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class UpdateProposalDraftSectionsAction
+final readonly class UpdateProposalDraftSectionsAction
 {
+    public function __construct(private SanitizeRichTextAction $sanitizeRichText) {}
+
     /**
-     * @param  array<int, array{heading: string, body: string}>  $sections
+     * @param  array<int, array{heading: string, body: string|array<string, mixed>}>  $sections
      *
      * @throws ValidationException
      */
@@ -53,10 +56,27 @@ final class UpdateProposalDraftSectionsAction
         DB::table('proposal_drafts')
             ->where('id', $proposalDraftId)
             ->update([
-                'sections' => json_encode($sections),
+                'sections' => json_encode($this->sanitizeSections($sections)),
                 'status' => 'draft',
                 'updated_at' => now(),
             ]);
+    }
+
+    /**
+     * @param  array<int, array{heading: string, body: string|array<string, mixed>}>  $sections
+     * @return array<int, array{heading: string, body: array<string, mixed>}>
+     */
+    private function sanitizeSections(array $sections): array
+    {
+        return array_map(
+            fn (array $section): array => [
+                'heading' => trim($section['heading']),
+                'body' => is_array($section['body'])
+                    ? $this->sanitizeRichText->execute($section['body'])
+                    : $this->sanitizeRichText->fromPlainText($section['body']),
+            ],
+            $sections,
+        );
     }
 
     private function isEditable(string $draftStatus, string $projectStatus): bool

@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Actions\DocumentExport;
 
+use App\Actions\RichText\RenderTiptapHtmlAction;
 use Dompdf\Dompdf;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\PhpWord;
 
-final class GenerateDocumentExportContentAction
+final readonly class GenerateDocumentExportContentAction
 {
+    public function __construct(private RenderTiptapHtmlAction $renderRichText) {}
+
     public function execute(object $export): string
     {
         $document = $this->buildDocument($export);
@@ -23,7 +26,7 @@ final class GenerateDocumentExportContentAction
     }
 
     /**
-     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}
+     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string|array<string, mixed>}>}
      */
     private function buildDocument(object $export): array
     {
@@ -313,7 +316,7 @@ final class GenerateDocumentExportContentAction
     }
 
     /**
-     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}
+     * @return array{title: string, subtitle: string, sections: array<int, array{title: string, body: string|array<string, mixed>}>}
      */
     private function proposalDocument(object $export, ?object $project): array
     {
@@ -325,8 +328,8 @@ final class GenerateDocumentExportContentAction
         $sections = collect(json_decode((string) ($draft->sections ?? '[]'), true))
             ->filter(static fn (mixed $section): bool => is_array($section))
             ->map(static fn (array $section): array => [
-                'title' => (string) ($section['title'] ?? 'Bagian Proposal'),
-                'body' => (string) ($section['body'] ?? ''),
+                'title' => (string) ($section['heading'] ?? $section['title'] ?? 'Bagian Proposal'),
+                'body' => is_array($section['body'] ?? null) ? $section['body'] : (string) ($section['body'] ?? ''),
             ])
             ->values()
             ->all();
@@ -451,7 +454,7 @@ final class GenerateDocumentExportContentAction
     }
 
     /**
-     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}  $document
+     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string|array<string, mixed>}>}  $document
      */
     private function toDocx(array $document): string
     {
@@ -463,7 +466,7 @@ final class GenerateDocumentExportContentAction
         foreach ($document['sections'] as $item) {
             $section->addTitle($item['title'], 2);
 
-            foreach (explode(PHP_EOL, $item['body']) as $line) {
+            foreach (explode(PHP_EOL, $this->sectionPlainText($item['body'])) as $line) {
                 $section->addText($line === '' ? ' ' : $line);
             }
         }
@@ -478,7 +481,7 @@ final class GenerateDocumentExportContentAction
     }
 
     /**
-     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}  $document
+     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string|array<string, mixed>}>}  $document
      */
     private function toPlainText(array $document): string
     {
@@ -486,22 +489,22 @@ final class GenerateDocumentExportContentAction
             $document['title'],
             $document['subtitle'],
             ...array_map(
-                static fn (array $section): string => $section['title'].PHP_EOL.$section['body'],
+                fn (array $section): string => $section['title'].PHP_EOL.$this->sectionPlainText($section['body']),
                 $document['sections'],
             ),
         ]);
     }
 
     /**
-     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string}>}  $document
+     * @param  array{title: string, subtitle: string, sections: array<int, array{title: string, body: string|array<string, mixed>}>}  $document
      */
     private function toHtml(array $document): string
     {
         $sections = array_map(
-            static fn (array $section): string => sprintf(
-                '<h2>%s</h2><p>%s</p>',
+            fn (array $section): string => sprintf(
+                '<h2>%s</h2><div>%s</div>',
                 e($section['title']),
-                nl2br(e($section['body'])),
+                $this->sectionHtml($section['body']),
             ),
             $document['sections'],
         );
@@ -512,5 +515,23 @@ final class GenerateDocumentExportContentAction
             e($document['subtitle']),
             implode('', $sections),
         );
+    }
+
+    /**
+     * @param  string|array<string, mixed>  $body
+     */
+    private function sectionHtml(string|array $body): string
+    {
+        return is_array($body)
+            ? $this->renderRichText->execute($body)
+            : '<p>'.nl2br(e($body)).'</p>';
+    }
+
+    /**
+     * @param  string|array<string, mixed>  $body
+     */
+    private function sectionPlainText(string|array $body): string
+    {
+        return is_array($body) ? $this->renderRichText->toPlainText($body) : $body;
     }
 }

@@ -1,3 +1,5 @@
+import type { TiptapJson } from './rich-text';
+
 export type ProjectStatus =
     | 'draft'
     | 'proposal_review'
@@ -152,7 +154,7 @@ export interface ProposalDraft {
     canDecide: boolean;
     sections: Array<{
         heading: string;
-        body: string;
+        body: string | TiptapJson;
     }>;
     workflowTimeline: ApprovalWorkflowTimeline;
 }

@@ -28,6 +28,10 @@ use App\Http\Controllers\HandoverPackageExportController;
 use App\Http\Controllers\HandoverPackageStatusController;
 use App\Http\Controllers\HandoverPackageTransitionController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LetterBulkIssueController;
+use App\Http\Controllers\LetterController;
+use App\Http\Controllers\LetterDownloadController;
+use App\Http\Controllers\LetterTemplateController;
 use App\Http\Controllers\LpjAiSummaryController;
 use App\Http\Controllers\LpjApprovalDecisionController;
 use App\Http\Controllers\LpjChecklistItemController;
@@ -39,6 +43,11 @@ use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MeetingMinutesController;
 use App\Http\Controllers\MeetingMinutesExportController;
 use App\Http\Controllers\MeetingWhatsAppAlertController;
+use App\Http\Controllers\MicrositeAssetController;
+use App\Http\Controllers\MicrositeController;
+use App\Http\Controllers\MicrositeGalleryOrderController;
+use App\Http\Controllers\MicrositePublishController;
+use App\Http\Controllers\MicrositeSettingsController;
 use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\NotificationReadController;
 use App\Http\Controllers\NotificationRecentController;
@@ -73,6 +82,7 @@ Route::get('/pricing', [LandingController::class, 'pricing'])->name('landing.pri
 Route::get('/verify/{token}', [CertificateVerificationController::class, 'show'])
     ->middleware('throttle:certificate-verify')
     ->name('certificates.verify');
+Route::get('/e/{orgSlug}/{prokerSlug}', [MicrositeController::class, 'show'])->name('microsites.show');
 Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
 Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
 Route::post('/payments/midtrans/webhook', [MidtransWebhookController::class, 'store'])->name('payments.midtrans.webhook');
@@ -91,6 +101,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/templates', [WorkspacePageController::class, 'prokerTemplates'])->name('templates');
         Route::post('/templates/{template}/generate', [ProjectTemplateGenerationController::class, 'store'])->name('templates.generate');
         Route::get('/status-flow', [WorkspacePageController::class, 'prokerStatusFlow'])->name('status-flow');
+        Route::get('/{project}/microsite', [MicrositeSettingsController::class, 'edit'])->name('microsite.edit');
+        Route::patch('/{project}/microsite', [MicrositeSettingsController::class, 'update'])->name('microsite.update');
+        Route::post('/{project}/microsite/banner', [MicrositeAssetController::class, 'banner'])->name('microsite.banner.store');
+        Route::post('/{project}/microsite/gallery', [MicrositeAssetController::class, 'gallery'])->name('microsite.gallery.store');
+        Route::delete('/{project}/microsite/gallery/{item}', [MicrositeAssetController::class, 'destroyGalleryItem'])->name('microsite.gallery.destroy');
+        Route::patch('/{project}/microsite/gallery/reorder', [MicrositeGalleryOrderController::class, 'update'])->name('microsite.gallery.reorder');
+        Route::post('/{project}/microsite/publish', [MicrositePublishController::class, 'publish'])->name('microsite.publish');
+        Route::post('/{project}/microsite/unpublish', [MicrositePublishController::class, 'unpublish'])->name('microsite.unpublish');
         Route::get('/{project}/edit', [WorkspacePageController::class, 'prokerEdit'])->name('edit');
         Route::post('/{project}/members', [ProjectMemberController::class, 'store'])->name('members.store');
         Route::delete('/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('members.destroy');
@@ -103,6 +121,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('organization')->name('organization.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'organizationSetup'])->name('setup');
         Route::post('/', [OrganizationController::class, 'store'])->name('store');
+        Route::post('/kepanitiaan', [OrganizationController::class, 'storeKepanitiaan'])->name('kepanitiaan.store');
         Route::patch('/', [OrganizationController::class, 'update'])->name('update');
         Route::post('/logo', [OrganizationLogoController::class, 'store'])->name('logo.store');
         Route::get('/switcher', [WorkspacePageController::class, 'organizationSwitcher'])->name('switcher');
@@ -172,6 +191,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/folders', [WorkspacePageController::class, 'documentFolders'])->name('folders');
         Route::get('/upload-center', [WorkspacePageController::class, 'uploadCenter'])->name('upload-center');
         Route::get('/{document}/download', [DocumentDownloadController::class, 'show'])->name('download');
+    });
+
+    Route::prefix('letters')->name('letters.')->group(function () {
+        Route::get('/', [LetterController::class, 'index'])->name('index');
+        Route::get('/create', [LetterController::class, 'create'])->name('create');
+        Route::post('/', [LetterController::class, 'store'])->name('store');
+        Route::get('/templates', [LetterTemplateController::class, 'index'])->name('templates.index');
+        Route::post('/templates', [LetterTemplateController::class, 'store'])->name('templates.store');
+        Route::patch('/templates/{template}', [LetterTemplateController::class, 'update'])->name('templates.update');
+        Route::delete('/templates/{template}', [LetterTemplateController::class, 'destroy'])->name('templates.destroy');
+        Route::post('/bulk-issue-participation/{project}', [LetterBulkIssueController::class, 'store'])->name('bulk-issue-participation.store');
+        Route::get('/{letter}', [LetterController::class, 'show'])->name('show');
+        Route::post('/{letter}/submit', [LetterController::class, 'submit'])->name('submit');
+        Route::post('/{letter}/sign', [LetterController::class, 'sign'])->name('sign');
+        Route::post('/{letter}/mark-sent', [LetterController::class, 'markSent'])->name('mark-sent');
+        Route::get('/{letter}/download', [LetterDownloadController::class, 'show'])->name('download');
     });
 
     Route::prefix('members')->name('members.')->group(function () {

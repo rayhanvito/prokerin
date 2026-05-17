@@ -1,987 +1,944 @@
-# LANDING-CMS-PLAN.md — Prokerin
-## Status: DIBATALKAN — Diganti dengan Landing Polish Plan
-
-> **Keputusan 2026-05-17 (founder/PO)**: Pengembangan Landing CMS (LCMS01) **dihentikan**. Alasan: belum ada tim marketing non-teknis yang akan menggunakan CMS, frekuensi update landing rendah (≤1x/bulan), dan effort 8 hari kerja tidak sebanding dengan benefit selama belum ada momentum marketing.
->
-> **Yang dikerjakan sebagai gantinya**: polish landing page yang sudah hardcoded — copy, visual, responsive, SEO, analytics, dan optional feature-flag-based A/B test. Lihat **Section A** di bawah untuk plan baru ini.
->
-> **Section asli (CMS plan)**: tetap dipertahankan dari Section 0 ke bawah sebagai referensi. **JANGAN dieksekusi**. Kalau di masa depan tim marketing ada dan butuh CMS, plan asli bisa dihidupkan lagi.
+# PROKERIN — Landing Polish Prompt
+## Untuk: Claude Opus (claude-opus-4-5) via Claude Code
+## Status Plan: AKTIF (Landing Polish · menggantikan LCMS01 yang dibatalkan 2026-05-17)
 
 ---
 
-## Section A — Landing Polish Plan (RENCANA AKTIF)
+## INSTRUKSI UNTUK AGENT
 
-> Plan ini ringan: tidak ada migration, tidak ada Filament resource, tidak ada cache layer baru. Semua perubahan langsung di file React + asset + meta tag.
+Kamu adalah senior full-stack engineer yang bekerja di codebase **Prokerin** — aplikasi manajemen program kerja (proker) untuk organisasi kampus Indonesia. Stack: **Laravel 11 + Inertia.js + React (TypeScript) + Tailwind CSS + Shadcn/UI**.
 
-### A.1 Tujuan
+Tugasmu: eksekusi **Landing Polish Plan** untuk menyempurnakan landing page yang sudah ada. **Tidak ada migration database, tidak ada Filament resource baru, tidak ada cache layer baru.** Semua perubahan di file React, asset, meta tag, dan analytics.
 
-Sempurnakan landing page existing supaya:
-1. Copy konsisten, tidak ada placeholder, tone match brand Prokerin (admin-feel, terpercaya, kampus-friendly).
-2. Visual rapih di semua viewport (mobile 375px, tablet 768px, desktop 1280px+).
-3. SEO siap (meta, OG, structured data, sitemap, robots).
-4. Analytics tracking event utama (CTA click, scroll depth, video play).
-5. Performance score Lighthouse ≥ 90 mobile.
-6. A/B test ringan via feature flag yang sudah ada (`FeatureFlag::isEnabled`) untuk hero variant — opsional, defer kalau belum perlu.
+Baca seluruh prompt ini sebelum mulai. Eksekusi secara berurutan sesuai sprint. Setelah tiap sprint selesai, jalankan `npm run build` dan `./vendor/bin/pint --test` untuk verifikasi.
 
-### A.2 Scope Perubahan (Per File)
+---
 
-#### Halaman / Route
-- `routes/web.php` (existing `landing.home`, `landing.features`, `landing.pricing`) — tidak diubah.
-- `app/Http/Controllers/LandingController.php` — tetap `Inertia::render`, hanya tambah `seo` props (lihat A.6).
+## KONTEKS CODEBASE
 
-#### Components/Landing/
-- `Navbar.tsx` — verifikasi link aktif state, mobile drawer, smooth scroll anchor.
-- `HeroSection.tsx` — review headline (max 12 kata), sub-copy (max 25 kata), 1 primary CTA + 1 secondary, trust note di bawah CTA.
-- `SocialProofBar.tsx` — pastikan ada minimal 4 logo institusi (placeholder OK kalau belum nyata, label "Coming soon").
-- `ProblemSection.tsx` — 3-4 problem points, judul kontras, icon konsisten.
-- `FeatureShowcase.tsx` — 6-8 fitur utama, tiap fitur ada icon + 1 kalimat tagline + 1-2 kalimat deskripsi.
-- `HowItWorksSection.tsx` — 3-4 step max, urutan jelas (1 → 4), tiap step ada visual.
-- `TestimonialsSection.tsx` — 3 testimonial. Kalau belum ada testimonial nyata, tampilkan placeholder generic ("Calon mahasiswa berkata...") atau **hapus section** sampai dapat testimoni nyata.
-- `PricingSection.tsx` — 4 tier: Free / Starter / Pro / Campus. Verifikasi feature list konsisten antar tier (yang tidak include strikethrough). CTA per tier mengarah ke `/register?plan=...` atau email kontak untuk Campus.
-- `FaqSection.tsx` — 6-8 FAQ paling sering ditanya (bukan 10+). Kalau lebih, kelompokkan jadi accordion grup.
-- `CtaBanner.tsx` — 1 headline kuat, 1 sub-copy, 1 CTA. Background visual yang berbeda dari hero supaya tidak repetitif.
-- `Footer.tsx` — link sosial real (atau hapus icon kalau belum ada), copyright tahun dinamis (`new Date().getFullYear()`), versi app dari `usePage().props.appVersion`.
-- `DemoVideoModal.tsx` — sediakan video pendek 30-60 detik, atau hapus tombol "Tonton Demo" sampai video siap. Jangan biarkan link ke video kosong / 404.
+### Stack
+- **Backend**: Laravel 11, PHP 8.3+, `declare(strict_types=1)` wajib di semua PHP
+- **Frontend**: Inertia.js + React 18 + TypeScript strict mode
+- **Styling**: Tailwind CSS + Shadcn/UI — jangan modifikasi `resources/js/components/ui/*`
+- **Icons**: `lucide-react` saja untuk landing public — jangan campur dengan heroicons
+- **State**: Hanya React state (`useState`, `useReducer`) — jangan localStorage
+- **Head**: Pakai `<Head>` dari `@inertiajs/react` untuk meta tag
 
-#### Pages/Landing/
-- `Home.tsx`, `Features.tsx`, `Pricing.tsx` — tambah `<Head>` (Inertia head) dengan title + description per page.
+### File Landing yang Relevan
+```
+resources/js/
+├── Pages/Landing/
+│   ├── Home.tsx
+│   ├── Features.tsx
+│   └── Pricing.tsx
+├── Components/Landing/
+│   ├── Navbar.tsx
+│   ├── HeroSection.tsx
+│   ├── SocialProofBar.tsx
+│   ├── ProblemSection.tsx
+│   ├── FeatureShowcase.tsx
+│   ├── HowItWorksSection.tsx
+│   ├── TestimonialsSection.tsx
+│   ├── PricingSection.tsx
+│   ├── FaqSection.tsx
+│   ├── CtaBanner.tsx
+│   ├── Footer.tsx
+│   └── DemoVideoModal.tsx
+└── types/
+    └── index.d.ts (tambah landing types di sini)
 
-### A.3 Checklist Copy Review (per section)
+app/Http/Controllers/LandingController.php
+routes/web.php (tidak diubah)
+public/
+├── og-image.png       (buat/siapkan)
+├── robots.txt         (perbarui)
+└── sitemap.xml        (buat)
+```
 
-> Tester baca tiap section di kondisi lapar (cepat scan), pastikan paham value prop dalam 5 detik.
+### Brand Prokerin
+```
+Warna utama  : #24695c (hijau teal gelap)
+Warna accent : #ba895d (emas/amber)
+Warna gelap  : #1b4c43 (teal lebih gelap)
+Warna danger : #d22d3d (merah)
+Border radius: 4px (card, button — sesuai Viho design system)
+Shadow       : shadow-sm atau shadow (bukan shadow-xl)
+```
 
-- [ ] Hero headline: jelas siapa target user (mahasiswa pengurus organisasi kampus) + value prop utama (1 kalimat)
-- [ ] Hero sub-copy: konkret (sebut "proker", "proposal", "LPJ", "task", "RAB"), bukan abstrak
-- [ ] Hero CTA primary: action verb ("Mulai Gratis", "Coba Sekarang"), bukan generic "Klik Disini"
-- [ ] Hero CTA secondary: low-commitment ("Lihat Demo", "Pelajari Fitur")
-- [ ] Problem section: tone empatik, sebut "kamu" (langsung), bukan "mahasiswa" (jauh)
-- [ ] Feature section: tiap fitur jelas problem-solution-benefit
-- [ ] How It Works: max 4 step, action-oriented ("Buat akun", "Undang panitia", "Track proker", "Selesai")
-- [ ] Pricing: harga jelas, perbedaan tier obvious, tier "Recommended" highlighted
-- [ ] FAQ: jawaban langsung, max 3 kalimat, link ke fitur terkait kalau perlu
-- [ ] CTA banner: urgensi tanpa pressure ("Coba sekarang, gratis selamanya untuk 5 anggota pertama")
-- [ ] Footer: kontak nyata (email, sosial), bukan placeholder
+### Target User Landing
+Mahasiswa pengurus organisasi kampus Indonesia: BEM, HIMA, UKM — yang capek pakai Google Docs, grup WhatsApp, dan Excel untuk manage proker, proposal, RAB, LPJ.
 
-### A.4 Checklist Visual & Layout
+---
 
-- [ ] Logo Prokerin tampil tajam di retina display (SVG preferred)
-- [ ] Color palette konsisten dengan AGENTS.md §8 (#24695c, #ba895d, #1b4c43, #d22d3d)
-- [ ] Tidak ada warna purple/indigo SaaS yang tidak relevan
-- [ ] Spacing antar section konsisten (py-16 atau py-20 pakai Tailwind scale)
-- [ ] Border radius 4px untuk card/button (sesuai Viho)
-- [ ] Shadow halus, tidak heavy (`shadow-sm` atau `shadow`)
-- [ ] Image background hero tidak bikin teks susah dibaca (overlay gelap kalau perlu)
-- [ ] Icon konsisten (semua dari lucide-react, jangan campur dengan heroicons di public landing)
-- [ ] Empty state di setiap section yang isinya placeholder ditandai jelas (`(coming soon)`)
+## SPRINT 1 — COPY & CONTENT FINAL
 
-### A.5 Checklist Responsive (cek viewport: 375 / 768 / 1280 / 1920)
+> **Goal**: Semua copy final, tidak ada `lorem`, `placeholder`, `TODO`, `coming soon` yang tidak disengaja, link dummy, atau button mati.
 
-- [ ] Navbar collapse jadi hamburger di ≤768px, drawer dari kanan/atas
-- [ ] Hero text tidak overflow, CTA full-width di mobile
-- [ ] Grid fitur 1 col mobile, 2 col tablet, 3 col desktop
-- [ ] Pricing tier stack di mobile, side-by-side di desktop
-- [ ] FAQ accordion full-width di mobile
-- [ ] Footer column 1 col mobile, 4 col desktop
-- [ ] Tidak ada horizontal scroll di mobile (cek dengan `body { overflow-x: hidden }` jangan diandalkan, fix root cause)
-- [ ] Touch target tombol min 44x44px di mobile
+### 1.1 Baca Codebase Dulu
 
-### A.6 SEO & Meta Tag
+Sebelum menulis satu baris pun, baca file-file ini:
+```bash
+# Baca semua komponen landing untuk memahami state saat ini
+cat resources/js/Pages/Landing/Home.tsx
+cat resources/js/Pages/Landing/Features.tsx
+cat resources/js/Pages/Landing/Pricing.tsx
+cat resources/js/Components/Landing/HeroSection.tsx
+cat resources/js/Components/Landing/PricingSection.tsx
+cat resources/js/Components/Landing/FaqSection.tsx
+cat resources/js/Components/Landing/Footer.tsx
+cat resources/js/Components/Landing/TestimonialsSection.tsx
+cat resources/js/Components/Landing/DemoVideoModal.tsx
+cat app/Http/Controllers/LandingController.php
+```
 
-Tambah ke setiap page Landing/Home, Features, Pricing pakai `<Head>` Inertia:
+### 1.2 Copy per Section
+
+Update setiap komponen dengan copy berikut. Pertahankan semua JSX/styling yang sudah ada — **hanya ganti string konten**. Kalau ada field yang belum ada di komponen, tambahkan props atau hardcode dengan nilai final berikut.
+
+#### `HeroSection.tsx`
+```
+eyebrow      : "Khusus Organisasi Kampus Indonesia"
+headline     : "Kelola Proker, Proposal & LPJ Tanpa Ribet"
+headlineAccent: "Tanpa Ribet"   ← bagian ini diberi warna accent #ba895d
+subCopy      : "Prokerin menyatukan proker, task, RAB, proposal, hingga LPJ dalam satu platform — bukan 10 grup WhatsApp dan 5 Google Doc."
+primaryCta   : label="Mulai Gratis Sekarang"  href="/register"
+secondaryCta : label="Lihat Fitur Lengkap"    href="/features"
+trustNote    : "Gratis untuk 5 anggota pertama. Tidak perlu kartu kredit."
+```
+
+#### `SocialProofBar.tsx`
+```
+heading: "Dipercaya organisasi dari"
+logos: 4 placeholder institusi — gunakan text placeholder bergaya monogram:
+  - "BEM UI"
+  - "HIMA FTUI"
+  - "UKM Fotografi ITB"
+  - "OSIS SMKN 1 JKT"
+Tambahkan keterangan "(Coming Soon — jadilah yang pertama)" di bawah logo row.
+```
+
+#### `ProblemSection.tsx`
+```
+heading: "Kamu yang ini, ya?"
+intro: "Kalau kamu pernah frustrasi dengan salah satu dari ini, Prokerin dibuat untuk kamu."
+items (3 problem points):
+  1. icon: FileX         | title: "Proposal Revisi Terus"
+     desc: "File proposal ada di email ketua, revisi di WhatsApp, versi final entah di mana. Meeting jam 9, proposal belum fix."
+  2. icon: LayoutDashboard | title: "Task Bocor ke Mana-mana"
+     desc: "Siapa penanggung jawab sewa sound system? Sudah beli konsumsi belum? Tidak ada yang tahu sampai H-1."
+  3. icon: Calculator    | title: "RAB & LPJ Tak Pernah Sinkron"
+     desc: "Budget disetujui 5 juta, ternyata habis 6,2 juta. LPJ pun jadi drama. Tiap tahun terulang."
+```
+
+#### `FeatureShowcase.tsx`
+```
+heading: "Semua yang Kamu Butuhkan, Satu Platform"
+subheading: "Dari proposal sampai LPJ, dari task sampai absensi — semuanya terhubung."
+features (6 item):
+  1. icon: FolderKanban | title: "Manajemen Proker"
+     tagline: "Satu proker, satu tempat."
+     desc: "Buat proker, assign lead, pantau progress — dari draft sampai LPJ selesai."
+  2. icon: CheckSquare  | title: "Task & Kanban"
+     tagline: "Tidak ada task yang jatuh lewat celah."
+     desc: "Kanban drag-and-drop, deadline reminder otomatis, assignment per divisi."
+  3. icon: FileText     | title: "Proposal & LPJ Otomatis"
+     tagline: "Template siap pakai, bukan Google Doc kosong."
+     desc: "Editor proposal terstruktur, export PDF/DOCX, approval multi-level bawaan."
+  4. icon: Wallet       | title: "RAB & Realisasi Keuangan"
+     tagline: "Budget tidak bakar sendiri."
+     desc: "Rencanakan anggaran, upload bukti pengeluaran, lihat grafik RAB vs realisasi real-time."
+  5. icon: QrCode       | title: "Absensi QR Code"
+     tagline: "Scan, hadir, selesai."
+     desc: "Generate QR token per sesi, check-in via smartphone, export CSV langsung."
+  6. icon: Award        | title: "Sertifikat Digital"
+     tagline: "Sertifikat yang bisa diverifikasi, bukan sekadar PDF."
+     desc: "Template kustom, QR verify publik, batch issue untuk ratusan peserta sekaligus."
+```
+
+#### `HowItWorksSection.tsx`
+```
+heading: "Mulai dalam 10 Menit"
+steps (4 langkah):
+  1. "Buat Akun"         desc: "Daftar gratis, buat organisasi, undang pengurus."
+  2. "Setup Proker"      desc: "Pilih template (Seminar/Makrab/Kompetisi), assign lead, set tanggal."
+  3. "Jalankan Bersama"  desc: "Track task, keuangan, dokumen, dan absensi — semua satu layar."
+  4. "Selesai dengan LPJ"desc: "Checklist LPJ otomatis ter-isi dari data proker. Export PDF, submit, done."
+```
+
+#### `TestimonialsSection.tsx`
+```
+KEPUTUSAN: Jika belum ada testimonial nyata di codebase ini, HAPUS section ini sepenuhnya
+dari Home.tsx dan tambahkan komentar:
+  {/* TestimonialsSection ditunda sampai ada testimonial nyata */}
+Jangan tampilkan testimonial palsu/fiktif.
+```
+
+#### `PricingSection.tsx`
+```
+heading: "Harga yang Masuk Akal untuk Mahasiswa"
+sub: "Mulai gratis. Upgrade saat organisasi kamu berkembang."
+tiers (4):
+  FREE:
+    name: "Free"
+    price: "Rp 0"
+    period: "/bulan"
+    desc: "Untuk organisasi kecil yang baru mulai."
+    cta: label="Daftar Gratis" href="/register?plan=free"
+    features: ["Maks. 5 anggota","1 proker aktif","Task management","Dokumen (100MB)"]
+    missing: ["Finance & RAB","Export PDF/DOCX","Sertifikat digital","Absensi QR","Priority support"]
+
+  STARTER:
+    name: "Starter"
+    price: "Rp 49.000"
+    period: "/bulan"
+    desc: "Untuk BEM & HIMA yang serius."
+    highlighted: false
+    cta: label="Mulai Starter" href="/register?plan=starter"
+    features: ["Maks. 25 anggota","5 proker aktif","Semua fitur Free","Finance & RAB","Export PDF/DOCX","Absensi QR"]
+    missing: ["Sertifikat digital","White-label","Priority support"]
+
+  PRO (HIGHLIGHTED):
+    name: "Pro"
+    price: "Rp 99.000"
+    period: "/bulan"
+    desc: "Untuk UKM dan organisasi dengan banyak proker."
+    highlighted: true
+    badge: "Paling Populer"
+    cta: label="Mulai Pro" href="/register?plan=pro"
+    features: ["Anggota tak terbatas","Proker tak terbatas","Semua fitur Starter","Sertifikat digital","Approval workflow multi-level","Notifikasi WhatsApp","Priority support"]
+    missing: []
+
+  CAMPUS:
+    name: "Campus"
+    price: "Hubungi Kami"
+    period: ""
+    desc: "Untuk kampus yang ingin monitor semua organisasi mahasiswanya."
+    cta: label="Hubungi Sales" href="mailto:halo@prokerin.id"
+    features: ["Semua fitur Pro","Dashboard kampus","SSO & integrasi SIAKAD","Onboarding dedicated","SLA & uptime guarantee","Custom contract"]
+    missing: []
+```
+
+#### `FaqSection.tsx`
+```
+Pertahankan max 7 FAQ. Hapus yang berlebihan. Isi final:
+
+Q1: "Apakah Prokerin gratis?"
+A1: "Iya, paket Free selamanya gratis untuk organisasi dengan maks. 5 anggota dan 1 proker aktif. Tidak perlu kartu kredit untuk mulai."
+
+Q2: "Apakah data proker kami aman?"
+A2: "Data disimpan di server Indonesia dengan enkripsi dan backup harian. Setiap organisasi di-isolasi — tidak ada satu pun data org lain yang bisa diakses dari akunmu."
+
+Q3: "Bisa pakai di UKM yang anggotanya 200 orang?"
+A3: "Tentu. Paket Pro tidak membatasi jumlah anggota. Kamu bisa undang seluruh panitia, assign peran berbeda, dan kelola puluhan proker sekaligus."
+
+Q4: "Apakah ada template proposal dan LPJ?"
+A4: "Ada. Prokerin menyediakan template untuk Seminar, Workshop, Kompetisi, dan Makrab — lengkap dengan struktur proposal, checklist LPJ, dan budget line awal yang bisa dikustomisasi."
+
+Q5: "Bagaimana cara migrasi dari Google Docs / spreadsheet?"
+A5: "Kamu tidak perlu migrasi semua konten lama. Mulai dari proker berikutnya — buat proker baru, pilih template, upload dokumen lama sebagai lampiran, lanjut dari sana."
+
+Q6: "Apakah bisa dipakai offline?"
+A6: "Prokerin adalah aplikasi web dan butuh koneksi internet. Tapi halaman yang sudah dibuka tetap bisa dibaca walau koneksi terputus sesaat."
+
+Q7: "Bagaimana cara upgrade atau downgrade paket?"
+A7: "Bisa dilakukan kapan saja dari halaman pengaturan organisasi. Upgrade langsung aktif, downgrade berlaku di akhir periode billing."
+```
+
+#### `CtaBanner.tsx`
+```
+headline: "Mulai Proker Pertamamu Hari Ini"
+sub: "Gratis untuk 5 anggota pertama. Setup 10 menit. Tidak perlu approval IT."
+cta: label="Daftar Sekarang — Gratis" href="/register"
+note: "Sudah punya akun? Masuk di sini." (link ke /login)
+```
+
+#### `Footer.tsx`
+```
+brand: "Prokerin"
+tagline: "Manajemen proker untuk organisasi kampus Indonesia."
+copyright: `© ${new Date().getFullYear()} Prokerin. Dibuat dengan ☕ di Indonesia.`
+appVersion: gunakan `usePage().props.appVersion` atau fallback ke string kosong
+
+Kolom link:
+  Produk: Fitur (/features), Harga (/pricing), Template (/#how-it-works)
+  Perusahaan: Tentang (/about jika ada, atau hapus), Kontak (mailto:halo@prokerin.id)
+  Legal: Kebijakan Privasi (/privacy jika ada), Syarat Penggunaan (/terms jika ada)
+
+Sosial media: HAPUS ikon sosial kalau URL-nya belum nyata. Jangan biarkan link placeholder.
+
+Versi app di footer:
+  {props.appVersion && (
+    <span className="text-xs text-muted-foreground">v{props.appVersion}</span>
+  )}
+```
+
+#### `DemoVideoModal.tsx`
+```
+KEPUTUSAN: Jika URL video belum ada atau kosong:
+  - Sembunyikan tombol "Tonton Demo" dari HeroSection
+  - Atau ganti tombol dengan: href="/features" label="Lihat Fitur Lengkap"
+  - Tambahkan komentar: {/* DemoVideoModal diaktifkan saat video demo tersedia */}
+Jangan tampilkan modal dengan video kosong/404.
+```
+
+#### `Navbar.tsx`
+```
+links:
+  - label: "Fitur"     href: "/features"
+  - label: "Harga"     href: "/pricing"
+  - label: "Masuk"     href: "/login"    (ghost/outline style)
+  - label: "Daftar"    href: "/register" (primary button style)
+
+Mobile: hamburger drawer dari kiri/kanan
+Active state: link aktif ditandai dengan underline atau warna primary
+Smooth scroll: anchor ke /#how-it-works, /#pricing harus jalan di halaman /
+```
+
+### 1.3 Verifikasi Copy
+
+Setelah semua komponen diupdate, jalankan:
+```bash
+# Cari semua sisa placeholder
+grep -r "lorem\|placeholder\|TODO\|FIXME\|coming soon\|your text\|sample\|dummy" \
+  resources/js/Components/Landing/ \
+  resources/js/Pages/Landing/ \
+  --include="*.tsx" --include="*.ts" -i
+
+# ASSERT: zero output
+```
+
+### 1.4 Commit Sprint 1
+```bash
+./vendor/bin/pint --test
+npm run build
+git add resources/js/Components/Landing/ resources/js/Pages/Landing/
+git commit -m "feat(landing): polish copy semua section - sprint 1"
+```
+
+---
+
+## SPRINT 2 — VISUAL, RESPONSIVE & DARK MODE
+
+> **Goal**: Layout sempurna di 4 viewport. Dark mode bersih. Tidak ada horizontal scroll.
+
+### 2.1 Sweep Checklist Visual
+
+Buka setiap komponen Landing, verifikasi dan perbaiki jika perlu:
+
+```
+WARNA & BRAND
+─────────────
+□ Primary color #24695c digunakan konsisten (bukan blue-600, indigo, purple)
+□ Accent #ba895d digunakan untuk highlight, badge "Paling Populer", headline accent
+□ Tidak ada gradient purple atau warna "SaaS generik" yang tidak relevan
+□ Dark mode: semua teks readable (tidak ada hitam di background hitam)
+□ Dark mode: chart/icon visible (bukan white-on-white)
+
+TYPOGRAPHY
+──────────
+□ Heading utama (H1 hero): font-bold text-4xl md:text-5xl lg:text-6xl
+□ Section heading: font-semibold text-2xl md:text-3xl
+□ Body: text-base leading-relaxed
+□ Tidak ada teks < 14px di body
+□ Kontras WCAG AA: min 4.5:1 untuk teks normal
+
+SPACING
+───────
+□ Gap antar section: py-16 atau py-20 (konsisten)
+□ Container: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 (atau sesuai existing)
+□ Card padding: p-6 atau p-8 (konsisten)
+
+KOMPONEN
+────────
+□ Border radius card/button: 4px (sesuai brand, bukan rounded-2xl)
+□ Shadow: shadow-sm atau shadow (bukan shadow-xl berat)
+□ Icon: semua dari lucide-react, ukuran konsisten (h-5 w-5 atau h-6 w-6)
+□ Button primary: bg-[#24695c] text-white hover:bg-[#1b4c43]
+□ Button secondary: border border-[#24695c] text-[#24695c] hover:bg-[#24695c]/10
+```
+
+### 2.2 Responsive Fix
+
+Untuk setiap viewport, pastikan layout ini:
 
 ```tsx
-<Head>
-  <title>Prokerin · Manajemen Proker Organisasi Kampus</title>
-  <meta name="description" content="..." />
-  <meta property="og:title" content="..." />
-  <meta property="og:description" content="..." />
-  <meta property="og:image" content="/og-image.png" />
-  <meta property="og:url" content="https://prokerin.id" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="canonical" href="https://prokerin.id" />
-</Head>
+// NAVBAR
+// Mobile (≤768px): hamburger, semua link dalam drawer
+// Desktop (>768px): link inline
+
+// HERO
+// Mobile: stack vertikal, CTA full-width, text-center atau text-left
+// Desktop: split 60/40 atau centered dengan visual background
+
+// FEATURE GRID
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+// PRICING TIERS
+// Mobile: stack vertikal (satu kolom)
+// Tablet: 2 kolom
+// Desktop: 4 kolom (Free/Starter/Pro/Campus) — atau 2+2 kalau terlalu sempit
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+// FAQ
+// Selalu full-width, accordion style
+
+// FOOTER
+// Mobile: 1 kolom stack
+// Desktop: 4 kolom (brand + 3 kolom link)
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 ```
 
-- [ ] OG image 1200x630 PNG tersedia di `public/og-image.png`
-- [ ] Favicon 32x32 + 192x192 + apple-touch-icon
-- [ ] `public/robots.txt` allow `/`, `/features`, `/pricing` (sudah disallow `/internal-admin/`)
-- [ ] `public/sitemap.xml` static dengan 3 URL landing
-- [ ] Structured data JSON-LD `SoftwareApplication` schema di `Home.tsx`
-- [ ] Lang attribute `<html lang="id">` di `app.blade.php`
-
-### A.7 Analytics & Conversion Tracking
-
-Pilihan ringan tanpa over-engineering:
-
-- [ ] Pasang Plausible / Umami (privacy-friendly) atau GA4 di `<Head>` global
-- [ ] Track event:
-  - `landing_cta_primary_clicked` (hero CTA)
-  - `landing_cta_secondary_clicked`
-  - `landing_pricing_tier_clicked` (with `tier` param)
-  - `landing_video_played`
-  - `landing_signup_completed` (di register success)
-- [ ] Scroll depth: 25% / 50% / 75% / 100%
-- [ ] UTM parameter capture di register form (referral attribution)
-
-### A.8 Performance
-
-- [ ] Lighthouse audit (production build, mobile): score ≥ 90
-- [ ] LCP < 2.5s
-- [ ] CLS < 0.1
-- [ ] Image: pakai WebP atau AVIF, lazy-load below fold
-- [ ] Font: preload primary font, gunakan `font-display: swap`
-- [ ] Tidak load JS heavy untuk halaman public (hanya animation library yang perlu)
-- [ ] Inline critical CSS (Vite handle ini default)
-
-### A.9 A/B Test (Optional, Defer Kalau Belum Perlu)
-
-Pakai feature flag yang sudah ada (`FeatureFlag::isEnabled`):
-
-- [ ] Bikin flag `landing_hero_variant` dengan value `a` / `b`
-- [ ] `LandingController::home()` resolve variant berdasarkan visitor ID hash + flag
-- [ ] Pass variant ke React, render `HeroSectionA` atau `HeroSectionB`
-- [ ] Track event dengan property `hero_variant: 'a'|'b'`
-- [ ] Setelah 2 minggu data, bandingkan conversion → keep winner
-
-> **Catatan**: jangan mulai A/B test sebelum traffic minimal 200 visitor unik/hari. Di bawah itu, hasil tidak signifikan.
-
-### A.10 Eksekusi Per Sprint
-
-#### Sprint 1 (1-2 hari) — Copy & Content
-- [ ] Review semua section, tulis copy final di issue/notion
-- [ ] Update file `Components/Landing/*.tsx` dengan copy baru
-- [ ] Hapus / tandai placeholder yang tidak siap
-- [ ] Commit `feat(landing): polish copy semua section`
-
-#### Sprint 2 (1 hari) — Visual & Responsive
-- [ ] Sweep dark mode, hover state, focus ring
-- [ ] Fix layout di 375px (paling sering bug)
-- [ ] Verifikasi spacing, border radius, color konsisten
-- [ ] Commit `feat(landing): visual polish & responsive fixes`
-
-#### Sprint 3 (1 hari) — SEO & Analytics
-- [ ] Tambah `<Head>` di 3 pages
-- [ ] OG image + favicon set
-- [ ] Robots + sitemap
-- [ ] Pasang analytics provider
-- [ ] Track 5 event utama
-- [ ] Commit `feat(landing): SEO meta + analytics tracking`
-
-#### Sprint 4 (0.5 hari) — Performance Audit
-- [ ] Lighthouse audit, fix issue Critical
-- [ ] Image optimization
-- [ ] Commit `perf(landing): optimize images & lighthouse score`
-
-Total: ~4-5 hari kerja vs 8 hari plan CMS.
-
-### A.11 Definition of Done
-
-- [ ] Semua copy final, tidak ada `lorem`, `placeholder`, `TODO` di file landing
-- [ ] Tidak ada link 404 atau button dummy di landing
-- [ ] Lighthouse score mobile ≥ 90 untuk semua 3 halaman
-- [ ] OG image render benar saat URL di-share di WhatsApp / Twitter
-- [ ] Analytics event ter-trigger saat CTA diklik (verify di tool dashboard)
-- [ ] Browser smoke 4 viewport pass
-- [ ] Pint + lint + build hijau
-- [ ] Commit history rapi, satu commit per sprint
-
-### A.12 Update `features.md`
-
-Tambah section `## Marketing & Growth` (atau di `## Internal Tooling` kalau prefer):
-```
-- [ ] LCMS01 — Landing CMS · DIBATALKAN 2026-05-17 (lihat LANDING-CMS-PLAN.md Section A)
-- [x] Landing Polish · 2026-05-XX (Sprint 1-4)
+Test horizontal scroll:
+```bash
+# Tambahkan sementara di CSS untuk detect overflow
+# body { border: 2px solid red; } dan lihat apakah ada elemen melebihi body width
+# Root cause fix — jangan pakai overflow-x: hidden sebagai plester
 ```
 
-### A.13 Update `BUG-FIX-PLAN.md`
+### 2.3 Touch Target
 
-Phase yang relevan dengan polish (kalau ada bug landing yang sudah di-track) → cross-reference ke Section A ini.
+Semua tombol dan link di mobile: minimum `min-h-[44px] min-w-[44px]`.
+FAQ accordion: padding vertical minimal `py-3` supaya mudah di-tap.
 
----
+### 2.4 Dark Mode
 
-## Section B — Plan CMS Asli (ARCHIVED — DO NOT EXECUTE)
+Pastikan dark mode berfungsi dengan cek semua class di Landing component:
+```tsx
+// Pattern yang benar:
+className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+className="border border-slate-200 dark:border-slate-700"
+className="text-slate-600 dark:text-slate-400"
 
-> Bagian di bawah ini adalah plan asli LCMS01 yang sudah dibatalkan. Tetap disimpan sebagai referensi kalau di masa depan ada kebutuhan CMS yang sudah valid (tim marketing real, frekuensi update tinggi, blog plan serius). **Tidak boleh dieksekusi tanpa persetujuan ulang founder/PO.**
-
----
-
----
-
-## 0. Konteks dan Tujuan
-
-### 0.1 State Sekarang
-- Landing page hidup di `resources/js/Pages/Landing/{Home,Features,Pricing}.tsx`.
-- Konten per section di `resources/js/Components/Landing/*.tsx` masih **hardcoded** sebagai array konstanta atau JSX literal:
-  - `HeroSection.tsx` → headline, sub-copy, CTA labels hardcoded.
-  - `SocialProofBar.tsx` → list trust logos hardcoded.
-  - `ProblemSection.tsx` → list problem points hardcoded.
-  - `FeatureShowcase.tsx` → list feature highlights hardcoded.
-  - `HowItWorksSection.tsx` → list steps hardcoded.
-  - `TestimonialsSection.tsx` → 3 testimonial hardcoded.
-  - `PricingSection.tsx` → 4 tier (Free/Starter/Pro/Campus) + features list hardcoded.
-  - `FaqSection.tsx` → 10 FAQ hardcoded.
-  - `CtaBanner.tsx` → headline, CTA hardcoded.
-  - `Navbar.tsx`/`Footer.tsx` → nav items, social, copyright hardcoded.
-  - `DemoVideoModal.tsx` → URL embed hardcoded.
-- `LandingController.php` cuma return `Inertia::render('Landing/Home')` tanpa props.
-
-### 0.2 Setelah LCMS01 Selesai
-- Tim non-teknis (CMO, marketing, sekretaris yang dipercaya) bisa edit semua konten landing dari panel `/internal-admin/landing/*` tanpa redeploy.
-- Setiap perubahan otomatis tercache di Redis 5 menit, invalidasi otomatis saat save.
-- Live preview pakai token sementara sebelum publish.
-- Audit log lengkap (siapa, apa, kapan).
-- React component landing terima props dari `LandingController` (data-backed), shape props menggantikan array hardcoded.
-- Schema didesain support multi-locale ke depan (kolom `locale` ada walau MVP cuma `id`).
-
-### 0.3 Non-Goals
-- **Bukan** full headless CMS seperti Strapi atau Sanity. Tidak ada API REST eksternal.
-- **Bukan** WYSIWYG drag-drop page builder. Section dan urutan tetap fix di React; hanya **isi** yang editable.
-- **Bukan** A/B testing engine (di-defer ke modul terpisah kalau dibutuhkan).
-- **Bukan** content delivery network (CDN) khusus landing — masih lewat Vite + S3 untuk asset.
-
----
-
-## 1. Constraint Wajib (AGENTS.md Compliance)
-
-Sebelum mulai, baca ulang aturan-aturan ini:
-
-| AGENTS.md | Aturan | Bagaimana dipatuhi di LCMS01 |
-|---|---|---|
-| §6 PHP | `declare(strict_types=1);` di setiap file PHP | Semua Action, DTO, Model, Form Request wajib |
-| §6 PHP | Type hint parameter dan return | Wajib di Action `execute(...)` dan controller method |
-| §6 PHP | Pakai readonly properties dan enum | DTO landing pakai readonly, section type pakai enum |
-| §4 Structure | Business logic di Action, bukan controller | Semua logic publish/preview/cache di `app/Actions/Landing/` |
-| §9 API | No REST API, semua via Inertia | `LandingController` tetap render Inertia, tidak ada `/api/landing/*` |
-| §11 Performance | Cache expensive aggregates di Redis | `landing_settings:{key}` dan `landing_items:{type}` di Redis 5 menit |
-| §11 Performance | Eager-load relationships | Asset relation auto-eager di Filament resource |
-| §15 Do Not | Tidak boleh `env()` di app code | `config/landing.php` baru, akses via `config('landing.cache_ttl')` |
-| §15 Do Not | Tidak boleh modifikasi `Components/ui/` | Bikin landing-specific component baru, jangan ubah shadcn |
-| §15 Do Not | Tidak boleh return raw model ke Inertia | Selalu pakai array hasil DTO `toArray()` atau Resource |
-| §10 Multi-tenant | Wajib `organization_id` scoping | Tidak relevan untuk landing (single-tenant Prokerin), tapi audit log per super admin tetap |
-| §16 Env | Tambah env baru ke `.env.example` | `LANDING_CACHE_TTL`, `LANDING_PREVIEW_TTL` |
-
----
-
-## 2. Arsitektur Singkat
-
+// Yang sering salah:
+// - Warna hardcoded #333 tanpa dark variant
+// - bg-white tanpa dark:bg-*
+// - Ikon SVG fill hardcoded hitam
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  Filament Panel (/internal-admin)                                  │
-│  ├── Landing > Hero (Settings Page)                                │
-│  ├── Landing > CTA Banner (Settings Page)                          │
-│  ├── Landing > Footer (Settings Page)                              │
-│  ├── Landing > Demo Video (Settings Page)                          │
-│  ├── Landing > SEO Meta (Settings Page, tab per page)              │
-│  ├── Landing > Pricing Tiers (Resource list/edit)                  │
-│  ├── Landing > Testimonials (Resource list/edit)                   │
-│  ├── Landing > FAQ Items (Resource list/edit)                      │
-│  ├── Landing > Feature Highlights (Resource list/edit)             │
-│  ├── Landing > How It Works Steps (Resource list/edit)             │
-│  ├── Landing > Problem Points (Resource list/edit)                 │
-│  └── Landing > Trusted Logos (Resource list/edit)                  │
-└────────────────────────────────────────────────────────────────────┘
-                                │ save/publish
-                                ▼
-┌────────────────────────────────────────────────────────────────────┐
-│  Storage Layer                                                     │
-│  ├── landing_settings (singleton sections)                         │
-│  ├── landing_content_items (collection sections)                   │
-│  ├── landing_setting_versions (version history)                    │
-│  └── S3 disk: landing/assets/* (images, screenshots)               │
-└────────────────────────────────────────────────────────────────────┘
-                                │ cache layer
-                                ▼
-┌────────────────────────────────────────────────────────────────────┐
-│  Redis Cache                                                       │
-│  ├── landing:settings:{key} (TTL 5 minutes)                        │
-│  ├── landing:items:{type} (TTL 5 minutes)                          │
-│  └── landing:home_payload (TTL 1 minute, stampede-safe)            │
-└────────────────────────────────────────────────────────────────────┘
-                                │ payload
-                                ▼
-┌────────────────────────────────────────────────────────────────────┐
-│  LandingController (Inertia)                                       │
-│  ├── home() → GetLandingHomePayloadAction → Inertia::render        │
-│  ├── features() → GetLandingFeaturesPayloadAction                  │
-│  └── pricing() → GetLandingPricingPayloadAction                    │
-└────────────────────────────────────────────────────────────────────┘
-                                │ props
-                                ▼
-┌────────────────────────────────────────────────────────────────────┐
-│  React Landing Pages (data-backed)                                 │
-│  ├── Pages/Landing/Home.tsx (terima props lengkap)                 │
-│  ├── Components/Landing/HeroSection.tsx (props-driven)             │
-│  └── (semua landing component refactor jadi pure presentational)   │
-└────────────────────────────────────────────────────────────────────┘
+
+### 2.5 Focus & Accessibility Sweep
+
+```tsx
+// Semua button/link wajib punya focus-visible ring:
+className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#24695c] focus-visible:ring-offset-2"
+
+// Form field (newsletter jika ada) harus punya <label>
+// Modal (FAQ, demo video) harus bisa ditutup dengan Escape
+// Heading order: H1 di hero, H2 di section heading, H3 di card heading
+// Alt text untuk semua <img>
+```
+
+### 2.6 Commit Sprint 2
+```bash
+./vendor/bin/pint --test
+npm run build
+git add resources/js/Components/Landing/
+git commit -m "feat(landing): visual polish, responsive fix, dark mode - sprint 2"
 ```
 
 ---
 
-## 3. Database Schema
+## SPRINT 3 — SEO, META TAG & ANALYTICS
 
-### 3.1 Migration `landing_settings` (singleton sections)
+> **Goal**: Siap di-index Google, OG image jalan di WhatsApp/Twitter, analytics terpasang.
+
+### 3.1 Update LandingController
+
+```php
+// app/Http/Controllers/LandingController.php
+// Tambah SEO props ke setiap method
+
+public function home(): \Inertia\Response
+{
+    return Inertia::render('Landing/Home', [
+        'seo' => [
+            'title'       => 'Prokerin · Kelola Proker, Proposal & LPJ Organisasi Kampus',
+            'description' => 'Platform manajemen program kerja untuk BEM, HIMA, dan UKM kampus. Proker, task, RAB, LPJ, absensi QR, dan sertifikat — satu tempat.',
+            'ogImage'     => asset('og-image.png'),
+            'canonical'   => url('/'),
+        ],
+    ]);
+}
+
+public function features(): \Inertia\Response
+{
+    return Inertia::render('Landing/Features', [
+        'seo' => [
+            'title'       => 'Fitur Prokerin · Manajemen Proker Lengkap untuk Organisasi Kampus',
+            'description' => 'Kanban task, editor proposal PDF, RAB realtime, QR absensi, sertifikat digital, notifikasi WhatsApp — semua dalam satu platform.',
+            'ogImage'     => asset('og-image.png'),
+            'canonical'   => url('/features'),
+        ],
+    ]);
+}
+
+public function pricing(): \Inertia\Response
+{
+    return Inertia::render('Landing/Pricing', [
+        'seo' => [
+            'title'       => 'Harga Prokerin · Gratis untuk Organisasi Kampus Kecil',
+            'description' => 'Paket Free, Starter Rp49rb/bln, Pro Rp99rb/bln, dan Campus untuk universitas. Tidak perlu kartu kredit untuk mulai.',
+            'ogImage'     => asset('og-image.png'),
+            'canonical'   => url('/pricing'),
+        ],
+    ]);
+}
 ```
-id                  bigint pk
-section_key         varchar(60) unique  -- 'hero','cta_banner','footer','seo_home','seo_features','seo_pricing','demo_video','navbar'
-locale              varchar(8) default 'id' indexed   -- siap multi-bahasa
-data                json                              -- whole payload section
-asset_path          varchar(255) nullable             -- main image (hero bg, cta bg, og image, dll)
-updated_by_user_id  bigint nullable fk users
-published_at        timestamp nullable                -- null = draft
-timestamps
-unique (section_key, locale)
+
+### 3.2 Update Pages/Landing/*.tsx
+
+Tambahkan `<Head>` di setiap page:
+
+```tsx
+// Pages/Landing/Home.tsx
+import { Head } from '@inertiajs/react';
+
+interface HomeProps {
+  seo: { title: string; description: string; ogImage: string; canonical: string; };
+}
+
+export default function Home({ seo }: HomeProps) {
+  return (
+    <>
+      <Head>
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:image" content={seo.ogImage} />
+        <meta property="og:url" content={seo.canonical} />
+        <meta property="og:locale" content="id_ID" />
+        <meta property="og:site_name" content="Prokerin" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo.title} />
+        <meta name="twitter:description" content={seo.description} />
+        <meta name="twitter:image" content={seo.ogImage} />
+
+        {/* Canonical */}
+        <link rel="canonical" href={seo.canonical} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "Prokerin",
+          "applicationCategory": "BusinessApplication",
+          "description": seo.description,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "IDR",
+          },
+          "operatingSystem": "Web",
+          "url": seo.canonical,
+        })}</script>
+      </Head>
+      {/* ... rest of page */}
+    </>
+  );
+}
 ```
 
-### 3.2 Migration `landing_content_items` (collection sections)
-```
-id                  bigint pk
-section_type        varchar(40) indexed  -- 'feature','testimonial','pricing_tier','faq','trust_logo','how_it_works_step','problem_point','navbar_link','footer_link'
-locale              varchar(8) default 'id' indexed
-sort_order          int default 0 indexed
-is_published        boolean default false indexed
-data                json
-asset_path          varchar(255) nullable
-updated_by_user_id  bigint nullable fk users
-timestamps
-index (section_type, locale, is_published, sort_order)
-```
+Pattern yang sama untuk `Features.tsx` dan `Pricing.tsx` (tanpa structured data `SoftwareApplication` yang hanya di Home).
 
-### 3.3 Migration `landing_setting_versions` (rollback)
-```
-id                  bigint pk
-landing_setting_id  bigint fk landing_settings cascade
-data                json                  -- snapshot
-asset_path          varchar(255) nullable
-created_by_user_id  bigint fk users
-created_at          timestamp
-index (landing_setting_id, created_at)
+### 3.3 OG Image
+
+Buat file `public/og-image.png` berukuran **1200×630px**:
+
+```bash
+# Jika ada tool imagemagick:
+convert -size 1200x630 \
+  -background '#24695c' \
+  -fill white \
+  -font DejaVu-Sans-Bold \
+  -pointsize 72 \
+  -gravity center \
+  -annotate 0 "Prokerin\nKelola Proker Organisasi Kampus" \
+  public/og-image.png
+
+# Kalau tidak ada imagemagick, buat placeholder sederhana:
+# — file PNG 1200x630 warna #24695c dengan teks "Prokerin"
+# — Atau gunakan https://og-playground.vercel.app untuk generate manual
 ```
 
-(Versioning untuk koleksi dianggap overkill di MVP — koleksi cukup pakai soft delete kalau perlu rollback per item. Lihat phase 9 di bawah.)
+### 3.4 Favicon Set
 
-### 3.4 Asset Disk
-- Tambahkan disk `landing` di `config/filesystems.php`:
-  ```
-  'landing' => [
-      'driver' => 's3',
-      'root' => 'landing',
-      'visibility' => 'public',
-      ...
-  ]
-  ```
-  atau pakai `s3` existing dengan prefix `landing/`. Direkomendasikan disk terpisah supaya kalau bucket berbeda nantinya lebih mudah.
+Pastikan file-file ini ada di `public/`:
+```bash
+# Cek file favicon yang ada:
+ls public/*.png public/*.ico public/*.svg 2>/dev/null
 
-### 3.5 Seed Data Awal
-Bikin `LandingContentSeeder` yang menyalin **persis** isi hardcoded sekarang ke tabel. Tujuannya: setelah migrate + seed, landing tampak identik dengan sebelumnya.
-- 1 row di `landing_settings` untuk hero, cta_banner, footer, demo_video, navbar.
-- 3 row di `landing_settings` untuk seo_home, seo_features, seo_pricing (ambil dari `structuredData` props existing).
-- N row di `landing_content_items` per `section_type` mengikuti array yang ada di komponen sekarang. Set `is_published=true`, `sort_order` berurutan.
+# Yang harus ada:
+# favicon.ico           (32x32)
+# favicon-192.png       (192x192) — untuk Android
+# apple-touch-icon.png  (180x180) — untuk iOS
+```
 
----
+Kalau belum ada, buat dari logo Prokerin atau generate placeholder:
+```bash
+# Placeholder favicon (ganti dengan yang proper nanti):
+convert -size 32x32 xc:'#24695c' \
+  -fill white -gravity center -pointsize 20 \
+  -annotate 0 "P" public/favicon.ico 2>/dev/null || \
+echo "imagemagick tidak ada — buat favicon manual"
+```
 
-## 4. Domain Layer
+Tambahkan ke `resources/views/app.blade.php`:
+```html
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+```
 
-### 4.1 Enums Baru
-- `app/Domain/Landing/LandingSectionKey.php`
-  ```
-  enum LandingSectionKey: string {
-      case Hero = 'hero';
-      case CtaBanner = 'cta_banner';
-      case Footer = 'footer';
-      case Navbar = 'navbar';
-      case DemoVideo = 'demo_video';
-      case SeoHome = 'seo_home';
-      case SeoFeatures = 'seo_features';
-      case SeoPricing = 'seo_pricing';
-      public function label(): string { ... }
+### 3.5 `public/robots.txt`
+
+```txt
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /events/
+
+# Block panel dan API
+Disallow: /admin
+Disallow: /internal-admin
+Disallow: /api/
+
+Sitemap: https://prokerin.id/sitemap.xml
+```
+
+### 3.6 `public/sitemap.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://prokerin.id/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://prokerin.id/features</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://prokerin.id/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+```
+
+### 3.7 Analytics Event Tracking
+
+Buat file `resources/js/lib/analytics.ts`:
+
+```typescript
+/**
+ * Analytics helper — abstraksi tipis di atas Plausible/Umami/GA4.
+ * Swap provider dengan ganti implementasi di sini, tanpa ubah caller.
+ */
+
+type AnalyticsEvent =
+  | 'landing_cta_primary_clicked'
+  | 'landing_cta_secondary_clicked'
+  | 'landing_pricing_tier_clicked'
+  | 'landing_video_played'
+  | 'landing_signup_completed'
+  | 'landing_scroll_25'
+  | 'landing_scroll_50'
+  | 'landing_scroll_75'
+  | 'landing_scroll_100';
+
+interface EventProperties {
+  tier?: string;
+  variant?: 'a' | 'b';
+  [key: string]: string | number | boolean | undefined;
+}
+
+export function trackEvent(event: AnalyticsEvent, props?: EventProperties): void {
+  // Plausible
+  if (typeof window !== 'undefined' && 'plausible' in window) {
+    (window as any).plausible(event, { props });
+    return;
   }
-  ```
-- `app/Domain/Landing/LandingItemType.php`
-  ```
-  enum LandingItemType: string {
-      case PricingTier = 'pricing_tier';
-      case Testimonial = 'testimonial';
-      case FaqItem = 'faq';
-      case FeatureHighlight = 'feature';
-      case HowItWorksStep = 'how_it_works_step';
-      case ProblemPoint = 'problem_point';
-      case TrustedLogo = 'trust_logo';
-      case NavbarLink = 'navbar_link';
-      case FooterLink = 'footer_link';
-      public function label(): string { ... }
+  // Umami
+  if (typeof window !== 'undefined' && 'umami' in window) {
+    (window as any).umami.track(event, props);
+    return;
   }
-  ```
+  // GA4 gtag
+  if (typeof window !== 'undefined' && 'gtag' in window) {
+    (window as any).gtag('event', event, props);
+    return;
+  }
+  // Dev fallback
+  if (import.meta.env.DEV) {
+    console.debug('[analytics]', event, props);
+  }
+}
 
-### 4.2 DTO Section-Specific
-Sekian DTO readonly di `app/DTOs/Landing/`. Contoh dua yang utama:
+/** Scroll depth tracker — pasang sekali di Home.tsx */
+export function useScrollDepthTracking(): void {
+  if (typeof window === 'undefined') return;
+  const reported = new Set<number>();
+  const checkpoints = [25, 50, 75, 100];
 
-`HeroSectionData`:
-```
-- eyebrow: string
-- headline: string
-- headlineAccent: string
-- subCopy: string
-- primaryCtaLabel: string
-- primaryCtaHref: string
-- secondaryCtaLabel: string
-- trustNote: string
-- backgroundImagePath: ?string
-```
+  const handler = () => {
+    const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    checkpoints.forEach((cp) => {
+      if (scrolled >= cp && !reported.has(cp)) {
+        reported.add(cp);
+        trackEvent(`landing_scroll_${cp}` as AnalyticsEvent);
+      }
+    });
+  };
 
-`PricingTierData`:
-```
-- name: string
-- monthlyPrice: string
-- yearlyPrice: string
-- description: string
-- ctaLabel: string
-- ctaHref: string
-- isHighlighted: bool
-- features: array<int, string>
-- missingFeatures: array<int, string>
-- sortOrder: int
-- isPublished: bool
-```
-
-DTO lain mengikuti pattern yang sama. Setiap DTO punya:
-- `static fromArray(array $data, ?string $assetUrl = null): self`
-- `toArray(): array`
-- `validateOrFail(): void` (asserting required string non-empty, dst, throw `\InvalidArgumentException`)
-
-### 4.3 Model Eloquent
-- `app/Models/LandingSetting.php` — fillable: `section_key, locale, data, asset_path, updated_by_user_id, published_at`. Cast `data` => `array`, `published_at` => `datetime`. Scope `published()`, `forKey(LandingSectionKey $key, string $locale = 'id')`.
-- `app/Models/LandingContentItem.php` — fillable: `section_type, locale, sort_order, is_published, data, asset_path, updated_by_user_id`. Cast `data` => `array`, `is_published` => `bool`. Scope `published()`, `ofType(LandingItemType $type, string $locale = 'id')`, `ordered()`.
-- `app/Models/LandingSettingVersion.php` — read-mostly.
-
----
-
-## 5. Action Layer
-
-Lokasi: `app/Actions/Landing/`.
-
-### 5.1 Read Actions
-
-#### `GetLandingHomePayloadAction`
-- Input: `?string $locale = 'id', ?string $previewToken = null`.
-- Output: array dengan key:
-  - `hero: HeroSectionData->toArray()`
-  - `socialProof.logos: array<TrustedLogoData>`
-  - `problem: array{ title, intro, items: array<ProblemPointData> }`
-  - `features.items: array<FeatureHighlightData>`
-  - `howItWorks: array{ heading, steps: array<HowItWorksStepData> }`
-  - `testimonials.items: array<TestimonialData>`
-  - `pricing: array{ heading, sub, tiers: array<PricingTierData> }`
-  - `faq.items: array<FaqItemData>`
-  - `cta: CtaBannerData->toArray()`
-  - `seo: SeoMetaData->toArray()` (key seo_home)
-- Implementasi:
-  - Kalau `previewToken` ada dan valid, ambil dari draft (lihat preview action).
-  - Kalau tidak, baca cache `landing:home_payload` (TTL 60 detik, anti-stampede pakai `Cache::remember(..., function ()` + `lock`).
-  - Cache miss → query DB, build DTO, cache, return.
-
-#### `GetLandingFeaturesPayloadAction`, `GetLandingPricingPayloadAction`
-- Pattern sama, key cache berbeda.
-
-#### `GetLandingSectionAction`
-- Generic helper untuk Filament resource: `execute(LandingSectionKey $key, string $locale): array`. Tidak di-cache (panel butuh data fresh).
-
-#### `GetLandingItemsAction`
-- `execute(LandingItemType $type, string $locale, ?bool $publishedOnly = null): array`. Tidak di-cache untuk pemakaian di Filament.
-
-### 5.2 Write Actions
-
-#### `PublishLandingSectionAction`
-- Input: `int $actorUserId, LandingSectionKey $key, string $locale, array $data, ?UploadedFile $asset = null`.
-- Logic:
-  1. Validasi `data` cocok dengan DTO section yang sesuai.
-  2. Upload asset ke S3 disk `landing` kalau ada (delete file lama).
-  3. Buat snapshot ke `landing_setting_versions` sebelum update.
-  4. `LandingSetting::updateOrCreate([section_key, locale], [...])` set `published_at = now()`.
-  5. Invalidate cache: `Cache::forget('landing:settings:'.$key->value.':'.$locale)` dan `Cache::forget('landing:home_payload')` (juga features/pricing payload kalau key berdampak).
-  6. Audit log via `LogActivityAction::execute('landing.section.publish', $setting, ['key' => $key->value])`.
-
-#### `SaveLandingDraftSectionAction`
-- Sama seperti publish tapi `published_at` tetap null. Tidak invalidate cache produksi.
-
-#### `RollbackLandingSectionAction`
-- Input: `int $actorUserId, int $versionId`.
-- Restore `data` + `asset_path` dari version, simpan version baru sebagai forward snapshot, invalidate cache, audit log.
-
-#### `StoreLandingItemAction`, `UpdateLandingItemAction`, `DeleteLandingItemAction`
-- CRUD koleksi. `delete` adalah soft delete (lihat phase 9). Invalidate cache section type + home/features/pricing payload yang terdampak.
-
-#### `ReorderLandingItemsAction`
-- Input: `int $actorUserId, LandingItemType $type, array<int, int> $orderedIds` (`[id => sort_order]`).
-- Update sort_order dalam transaction, invalidate cache, audit log.
-
-#### `IssueLandingPreviewTokenAction`
-- Input: `int $actorUserId, ?int $ttlMinutes = 30`.
-- Generate UUID, simpan di Redis dengan key `landing:preview:{uuid}` value `{ user_id, issued_at, ttl }`. TTL 30 menit.
-- Return token UUID.
-
-#### `ResolveLandingPreviewSnapshotAction`
-- Input: `string $token`.
-- Validasi token ada di Redis, ambil semua draft (yang belum `published_at` atau yang draft di koleksi via field flag baru kalau perlu). Build payload home/features/pricing seperti normal tapi dari draft.
-
-### 5.3 Cache Layer Helper
-- File: `app/Support/LandingCache.php` (final class statis):
-  - `public static function homePayloadKey(string $locale): string`
-  - `public static function settingsKey(LandingSectionKey $key, string $locale): string`
-  - `public static function itemsKey(LandingItemType $type, string $locale): string`
-  - `public static function flushAll(): void` (dipanggil di seeder dan tombol "Flush Cache" di panel kalau perlu).
-
----
-
-## 6. Form Request Layer
-
-Lokasi: `app/Http/Requests/Landing/`.
-
-Setiap section punya Form Request sendiri. Contoh `PublishHeroRequest`:
-```
-authorize(): bool
-    return $this->user() !== null
-        && $this->user()->hasRole('super_admin');
-
-rules(): array {
-    return [
-        'eyebrow'         => ['required', 'string', 'max:120'],
-        'headline'        => ['required', 'string', 'max:200'],
-        'headline_accent' => ['nullable', 'string', 'max:200'],
-        'sub_copy'        => ['required', 'string', 'max:600'],
-        'primary_cta_label' => ['required', 'string', 'max:60'],
-        'primary_cta_href'  => ['required', 'string', 'max:255'],
-        'secondary_cta_label' => ['nullable', 'string', 'max:60'],
-        'trust_note'      => ['nullable', 'string', 'max:255'],
-        'asset'           => ['nullable', 'image', 'max:2048', 'mimes:png,jpg,jpeg,webp'],
-        'publish'         => ['nullable', 'boolean'],
-    ];
+  window.addEventListener('scroll', handler, { passive: true });
+  return () => window.removeEventListener('scroll', handler);
 }
 ```
 
-Pattern serupa untuk: `PublishCtaBannerRequest`, `PublishFooterRequest`, `PublishNavbarRequest`, `PublishDemoVideoRequest`, `PublishSeoMetaRequest`, dan untuk koleksi `StorePricingTierRequest`, `UpdatePricingTierRequest`, dst.
+Pasang di komponen:
 
----
+```tsx
+// HeroSection.tsx — primary CTA
+import { trackEvent } from '@/lib/analytics';
 
-## 7. Filament Panel UI
+<a
+  href={primaryCtaHref}
+  onClick={() => trackEvent('landing_cta_primary_clicked')}
+  className="..."
+>
+  {primaryCtaLabel}
+</a>
 
-### 7.1 Settings Pages (Singleton Sections)
+// PricingSection.tsx — tier CTA
+<a
+  href={tier.ctaHref}
+  onClick={() => trackEvent('landing_pricing_tier_clicked', { tier: tier.name })}
+>
+  {tier.ctaLabel}
+</a>
 
-Lokasi: `app/Filament/Pages/Landing/`.
+// Home.tsx — scroll depth
+import { useScrollDepthTracking } from '@/lib/analytics';
+import { useEffect } from 'react';
 
-Setiap page extend `Filament\Pages\Page` dengan custom view atau pakai pattern `HasForms`. Contoh `HeroSettingsPage`:
-
-```
-class HeroSettingsPage extends Page implements HasForms {
-    use InteractsWithForms;
-    protected static ?string $navigationGroup = 'Landing CMS';
-    protected static ?string $navigationLabel = 'Hero Section';
-    protected static ?int $navigationSort = 10;
-    protected static string $view = 'filament.pages.landing.hero-settings';
-
-    public ?array $data = [];
-
-    public function mount(GetLandingSectionAction $action): void {
-        $payload = $action->execute(LandingSectionKey::Hero, 'id');
-        $this->form->fill($payload);
-    }
-
-    public function form(Form $form): Form {
-        return $form->schema([
-            TextInput::make('eyebrow')->required()->maxLength(120),
-            TextInput::make('headline')->required()->maxLength(200),
-            TextInput::make('headline_accent')->maxLength(200),
-            Textarea::make('sub_copy')->required()->maxLength(600),
-            Grid::make(2)->schema([
-                TextInput::make('primary_cta_label')->required(),
-                TextInput::make('primary_cta_href')->required(),
-            ]),
-            TextInput::make('secondary_cta_label'),
-            TextInput::make('trust_note'),
-            FileUpload::make('asset')->image()->disk('landing')->directory('hero')->maxSize(2048),
-        ]);
-    }
-
-    public function save(PublishLandingSectionAction $action, ...): void {
-        $action->execute(...);
-        Notification::make()->success()->title('Hero published')->send();
-    }
-
-    public function preview(IssueLandingPreviewTokenAction $issue): RedirectResponse {
-        $token = $issue->execute(auth()->id());
-        return redirect('/?landing_preview='.$token, secure: true);
-    }
+export default function Home(props: HomeProps) {
+  useEffect(useScrollDepthTracking, []);
+  // ...
 }
 ```
 
-Setiap page punya 2 tombol: "Save Draft" dan "Save & Publish". Tambahan tombol "Preview" buka tab baru ke landing dengan token.
+### 3.8 `lang="id"` di app.blade.php
 
-Pages yang harus dibuat:
-- `HeroSettingsPage`
-- `CtaBannerSettingsPage`
-- `FooterSettingsPage`
-- `NavbarSettingsPage`
-- `DemoVideoSettingsPage`
-- `SeoMetaSettingsPage` (3 tab: Home, Features, Pricing)
-
-### 7.2 Resources (Collection Sections)
-
-Lokasi: `app/Filament/Resources/Landing/`.
-
-#### `PricingTierResource`
-- Model: `LandingContentItem` dengan global scope `ofType(LandingItemType::PricingTier)`.
-- Table:
-  - Columns: name (dari `data->name`), monthly_price, yearly_price, is_highlighted, is_published, sort_order.
-  - Reorderable (Filament built-in `->reorderable('sort_order')`).
-  - Filter is_published.
-- Form:
-  - Schema sesuai `PricingTierData` field. Pakai `Repeater::make('features')` dan `Repeater::make('missing_features')` untuk array string.
-  - Toggle is_highlighted (max 1 row boleh true; validasi di Action).
-  - Toggle is_published.
-
-#### `TestimonialResource`
-- Form: name, role, organization, quote, photo (FileUpload `disk('landing')->directory('testimonials')->image()->circleCropper()`), is_featured, sort_order, is_published.
-
-#### `FaqResource`
-- Form: question (TextInput), answer (RichEditor markdown), sort_order, is_published.
-- Reorderable.
-
-#### `FeatureHighlightResource`
-- Form: title, description, icon_name (Select dari list lucide icons yang dipakai di Prokerin — sediakan static array di DTO), screenshot (FileUpload), sort_order, is_published.
-
-#### `HowItWorksStepResource`
-- Form: step_number (auto-incrementing kalau kosong), title, description, sort_order, is_published.
-
-#### `ProblemPointResource`
-- Form: title, description, icon_name, sort_order, is_published.
-
-#### `TrustedLogoResource`
-- Form: name, link, logo (FileUpload `disk('landing')->directory('trusted-logos')->image()->maxSize(512)`), sort_order, is_published.
-
-#### `NavbarLinkResource`, `FooterLinkResource`
-- Form: label, href, sort_order, is_published, group (footer butuh group: "Product"/"Company"/"Resources").
-
-### 7.3 Sidebar Group
-Di `AdminPanelProvider`:
+```bash
+# Cek file blade
+grep -n "html" resources/views/app.blade.php | head -5
 ```
-->navigationGroups([
-    NavigationGroup::make('Landing CMS')
-        ->collapsed(false)
-        ->icon('heroicon-o-globe-alt'),
-    ...
-])
-```
-Set `protected static ?string $navigationGroup = 'Landing CMS'` di setiap resource/page yang relevan.
 
-### 7.4 Authorization
-- Setiap resource/page panggil `SuperAdminGate::canAccess()` di `canViewAny()` (sudah pattern existing).
-- Tambah optional permission Spatie kalau mau granular: `super_admin` dapat semua, role baru `landing_editor` dapat akses CMS saja tanpa user/org management. Untuk MVP cukup `super_admin`.
+Pastikan tag `<html>` punya `lang="id"`:
+```html
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+```
+
+### 3.9 Commit Sprint 3
+```bash
+./vendor/bin/pint --test
+npm run build
+git add resources/js/ public/ resources/views/app.blade.php app/Http/Controllers/LandingController.php
+git commit -m "feat(landing): SEO meta, OG image, sitemap, analytics tracking - sprint 3"
+```
 
 ---
 
-## 8. Frontend Refactor (React)
+## SPRINT 4 — PERFORMANCE AUDIT & OPTIMASI
 
-### 8.1 Update `LandingController`
+> **Goal**: Lighthouse mobile score ≥ 90, LCP < 2.5s, CLS < 0.1.
+
+### 4.1 Build Production & Audit
+
+```bash
+npm run build
+php artisan serve --env=production &
+# Buka http://localhost:8000 di browser
+# Jalankan Lighthouse via CLI:
+npx lighthouse http://localhost:8000 \
+  --preset=desktop \
+  --output=json \
+  --output-path=qa-results/lighthouse-desktop.json
+
+npx lighthouse http://localhost:8000 \
+  --form-factor=mobile \
+  --output=json \
+  --output-path=qa-results/lighthouse-mobile.json
+
+# Parse score
+node -e "
+const r = require('./qa-results/lighthouse-mobile.json');
+const s = r.categories;
+console.log('Performance:', Math.round(s.performance.score * 100));
+console.log('Accessibility:', Math.round(s.accessibility.score * 100));
+console.log('Best Practices:', Math.round(s['best-practices'].score * 100));
+console.log('SEO:', Math.round(s.seo.score * 100));
+"
+# ASSERT: Performance ≥ 90, SEO ≥ 95
 ```
-public function home(GetLandingHomePayloadAction $action): Response {
-    $payload = $action->execute('id', $this->resolvePreviewToken());
-    return Inertia::render('Landing/Home', $payload);
+
+### 4.2 Image Optimization
+
+```bash
+# Cek semua image di public/
+find public/ -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" | head -20
+
+# Convert PNG ke WebP (hemat 30-70%)
+for f in public/images/*.png public/*.png; do
+  [ -f "$f" ] || continue
+  npx sharp-cli --input "$f" --output "${f%.png}.webp" 2>/dev/null || true
+done
+
+# Atau pakai imagemagick:
+for f in public/images/*.jpg; do
+  [ -f "$f" ] || continue
+  convert "$f" -quality 85 "${f%.jpg}.webp" 2>/dev/null || true
+done
+```
+
+Update referensi di komponen React untuk pakai WebP:
+```tsx
+// Contoh di HeroSection atau SocialProofBar
+<picture>
+  <source srcSet="/images/hero-bg.webp" type="image/webp" />
+  <img src="/images/hero-bg.png" alt="Prokerin dashboard" loading="lazy" />
+</picture>
+
+// Image below-fold: tambahkan loading="lazy"
+<img src="..." alt="..." loading="lazy" />
+
+// Image di hero (LCP): tambahkan fetchpriority="high" dan loading="eager"
+<img src="..." alt="..." fetchPriority="high" loading="eager" />
+```
+
+### 4.3 Font Preload
+
+Di `resources/views/app.blade.php`, tambahkan preload untuk font utama:
+```html
+<head>
+  <!-- preload critical font -->
+  <link rel="preload" href="/fonts/your-font.woff2" as="font" type="font/woff2" crossorigin>
+</head>
+```
+
+Verifikasi `font-display: swap` di CSS:
+```css
+@font-face {
+  font-family: 'YourFont';
+  font-display: swap;
+  ...
 }
 ```
 
-`resolvePreviewToken()` membaca query string `?landing_preview=...`, validasi via Redis, return token kalau valid. Halaman dengan preview token wajib `noindex`.
+### 4.4 Cek CLS (Cumulative Layout Shift)
 
-### 8.2 Refactor Component Landing
-Pattern: tiap section yang sekarang punya array hardcoded, refactor jadi presentational component yang terima props.
+CLS paling sering disebabkan oleh:
+1. Image tanpa `width` dan `height` → tambahkan dimensi eksplisit
+2. Font swap → sudah dihandle `font-display: swap`
+3. Banner/widget yang muncul tiba-tiba → pastikan konten critical ada di SSR
 
-`HeroSection.tsx`:
-```
-interface HeroSectionProps {
-    eyebrow: string;
-    headline: string;
-    headlineAccent: string | null;
-    subCopy: string;
-    primaryCtaLabel: string;
-    primaryCtaHref: string;
-    secondaryCtaLabel: string;
-    trustNote: string;
-    backgroundImageUrl: string | null;
-}
-```
-`Home.tsx`:
-```
-<HeroSection {...payload.hero} />
-<SocialProofBar logos={payload.socialProof.logos} />
-<ProblemSection {...payload.problem} />
-<FeatureShowcase items={payload.features.items} />
-<HowItWorksSection heading={payload.howItWorks.heading} steps={payload.howItWorks.steps} />
-<TestimonialsSection items={payload.testimonials.items} />
-<PricingSection heading={payload.pricing.heading} sub={payload.pricing.sub} tiers={payload.pricing.tiers} />
-<FaqSection items={payload.faq.items} />
-<CtaBanner {...payload.cta} />
+```tsx
+// Image harus selalu punya width + height atau aspect-ratio
+<img
+  src="/og-image.png"
+  alt="Prokerin"
+  width={1200}
+  height={630}
+  className="w-full h-auto"
+/>
 ```
 
-Hapus `useState` array constants, ganti `useState` cukup untuk UI state (open FAQ, billing toggle).
+### 4.5 Commit Sprint 4
 
-### 8.3 Update Type Definitions
-File baru: `resources/js/types/landing.d.ts` dengan interface lengkap untuk `LandingHomePayload`, `LandingFeaturesPayload`, `LandingPricingPayload`. Re-export dari `resources/js/types/index.d.ts` kalau perlu.
-
-### 8.4 Preview Mode Indicator
-Kalau payload datang dengan flag `isPreview: true`, tampilkan banner sticky di atas landing: "Mode Preview · Token kadaluarsa pukul HH:MM".
-
----
-
-## 9. Versioning, Soft Delete, Rollback
-
-### 9.1 Singleton Settings
-- Setiap publish auto-snapshot ke `landing_setting_versions`.
-- Filament page `HeroSettingsPage` tambah action "Lihat Riwayat" (modal) menampilkan versions list dengan tombol "Restore".
-- Restore memanggil `RollbackLandingSectionAction`.
-
-### 9.2 Collection Items
-- Pakai `SoftDeletes` di `LandingContentItem`.
-- Filament resource `Tables\Filters\TrashedFilter` dan action `Tables\Actions\RestoreAction`.
-
-### 9.3 Schedule Publish (Optional Future)
-- Tambah kolom `publish_at` di `landing_content_items` (kalau dibutuhkan).
-- Job `PublishScheduledLandingItemsJob` jalan setiap 5 menit (cron) yang flip `is_published=true` jika `publish_at <= now()`. Di-defer ke iterasi 2 kalau tidak urgent.
-
----
-
-## 10. Cache Strategy Detail
-
-### 10.1 Key Naming
-| Key | Isi | TTL | Invalidasi |
-|---|---|---|---|
-| `landing:home_payload:id` | Full payload Home (DTO arrays) | 60s | Setiap save section yang dipakai Home, atau item type yang dipakai Home |
-| `landing:features_payload:id` | Full payload Features | 60s | Save section yang dipakai Features |
-| `landing:pricing_payload:id` | Full payload Pricing | 60s | Save pricing tier, save seo_pricing, save cta_banner |
-| `landing:settings:hero:id` | Single section data | 5m | Save hero |
-| `landing:items:pricing_tier:id` | Sorted published items | 5m | CRUD pricing tier |
-
-TTL pendek (60s) untuk full payload supaya invalidation miss tetap cepat refresh. Kalau super admin sering edit di staging, bisa set lebih kecil via `LANDING_CACHE_TTL=10`.
-
-### 10.2 Cache Stampede Protection
-Pakai `Cache::lock('landing:lock:home_payload', 5)` di dalam `Cache::remember`. Hanya satu request yang regenerate, sisanya tunggu pakai `->block(3)`.
-
-### 10.3 Manual Flush
-Tombol "Flush Cache Landing" di Filament dashboard (page "Landing CMS Operations") yang call `LandingCache::flushAll()`. Audit log.
-
----
-
-## 11. Audit Log Integration
-
-Action keys (gunakan `LogActivityAction` existing):
-- `landing.section.publish` (target = LandingSetting, payload = `{ key, locale, has_asset }`)
-- `landing.section.draft_saved` (target = LandingSetting)
-- `landing.section.rollback` (target = LandingSetting, payload = `{ from_version_id }`)
-- `landing.item.created` (target = LandingContentItem, payload = `{ type }`)
-- `landing.item.updated` (target = LandingContentItem)
-- `landing.item.deleted` (target = LandingContentItem)
-- `landing.item.reordered` (target = LandingContentItem `0` placeholder, payload = `{ type, ordered_ids }`)
-- `landing.cache.flushed` (target = current super admin user, no payload)
-- `landing.preview.issued` (target = current super admin user, payload = `{ token_hash }`)
-
----
-
-## 12. Test Strategy
-
-Lokasi tests baru: `tests/Feature/Landing/` dan `tests/Unit/Landing/`.
-
-### 12.1 Unit Tests
-- `tests/Unit/Landing/HeroSectionDataTest.php` — fromArray, validateOrFail.
-- `tests/Unit/Landing/PricingTierDataTest.php` — same.
-- Lakukan untuk semua DTO yang punya validasi non-trivial.
-
-### 12.2 Feature Tests
-- `LandingPayloadTest.php`
-  - Home payload mengembalikan struktur lengkap.
-  - Cache hit kedua kali (assert query count berkurang).
-  - Cache invalidate setelah PublishLandingSectionAction (Heroe edit).
-- `PublishLandingSectionTest.php`
-  - Super admin bisa publish hero, audit log tercatat.
-  - Non super admin (organization_owner) ditolak 403.
-  - File asset valid disimpan di disk fake.
-  - File invalid (PHP, oversize) ditolak.
-- `LandingItemCrudTest.php`
-  - Super admin create/update/delete pricing tier.
-  - Reorder mengubah sort_order benar.
-  - Soft delete + restore.
-- `LandingPreviewTest.php`
-  - Token valid → React render dengan data draft.
-  - Token expired → fallback ke published.
-  - Token milik user lain → ditolak (preview tetap published).
-- `LandingNoIndexHeaderTest.php`
-  - Response saat preview mode wajib `X-Robots-Tag: noindex, nofollow`.
-
-### 12.3 Browser Smoke (manual checklist)
-- Publish hero baru → reload `/` → headline berubah.
-- Toggle pricing tier publish off → tier hilang dari `/pricing`.
-- Reorder FAQ → urutan berubah di `/`.
-- Upload logo trust → muncul di SocialProofBar.
-- Klik Preview di Filament → tab baru tampilkan draft, ada banner preview.
-
----
-
-## 13. Environment Variables Tambahan
-
-Tambahkan ke `.env.example`:
-```
-LANDING_CACHE_TTL=300
-LANDING_HOME_PAYLOAD_TTL=60
-LANDING_PREVIEW_TTL_MINUTES=30
-LANDING_DISK=landing
-LANDING_LOCALE_DEFAULT=id
-LANDING_ALLOWED_LOCALES=id
-```
-
-Tambahkan ke `config/landing.php`:
-```
-return [
-    'cache_ttl' => (int) env('LANDING_CACHE_TTL', 300),
-    'home_payload_ttl' => (int) env('LANDING_HOME_PAYLOAD_TTL', 60),
-    'preview_ttl_minutes' => (int) env('LANDING_PREVIEW_TTL_MINUTES', 30),
-    'disk' => env('LANDING_DISK', 'landing'),
-    'default_locale' => env('LANDING_LOCALE_DEFAULT', 'id'),
-    'allowed_locales' => array_filter(explode(',', (string) env('LANDING_ALLOWED_LOCALES', 'id'))),
-];
+```bash
+./vendor/bin/pint --test
+npm run build
+git add public/ resources/js/ resources/views/
+git commit -m "perf(landing): image webp, font preload, LCP & CLS optimizations - sprint 4"
 ```
 
 ---
 
-## 14. Eksekusi Per Fase
+## DEFINISI SELESAI (Definition of Done)
 
-Eksekusi top-down. Jangan loncat fase.
+Jalankan checklist ini sebelum closing ticket:
 
-### Phase 1 — Schema & Domain (1-2 hari)
-- [ ] Migration `landing_settings`, `landing_content_items`, `landing_setting_versions`.
-- [ ] Disk `landing` di `config/filesystems.php`.
-- [ ] Enum `LandingSectionKey`, `LandingItemType`.
-- [ ] DTO untuk semua section + collection.
-- [ ] Model `LandingSetting`, `LandingContentItem`, `LandingSettingVersion`.
-- [ ] `config/landing.php` dan update `.env.example`.
-- [ ] Seeder `LandingContentSeeder` yang menyalin isi hardcoded sekarang ke DB.
-- [ ] Run migration + seed di local, verifikasi rows ada.
+### Automated Checks
+```bash
+# 1. Tidak ada sisa placeholder
+grep -r "lorem\|placeholder\|TODO\|FIXME\|your text\|dummy\|test@test" \
+  resources/js/Components/Landing/ resources/js/Pages/Landing/ \
+  --include="*.tsx" -il | wc -l
+# ASSERT: 0 file
 
-### Phase 2 — Read Action & Cache Layer (1 hari)
-- [ ] `LandingCache` helper.
-- [ ] `GetLandingSectionAction`, `GetLandingItemsAction`.
-- [ ] `GetLandingHomePayloadAction`, `GetLandingFeaturesPayloadAction`, `GetLandingPricingPayloadAction`.
-- [ ] Test Feature `LandingPayloadTest::test_home_payload_uses_cache`.
+# 2. Tidak ada link # atau href kosong di landing
+grep -r 'href="#"' resources/js/Components/Landing/ resources/js/Pages/Landing/ \
+  --include="*.tsx" | wc -l
+# ASSERT: 0 (kecuali smooth-scroll anchor yang disengaja, annotate dengan comment)
 
-### Phase 3 — Frontend Data-Backed (1-2 hari)
-- [ ] Refactor `LandingController` agar return Inertia props.
-- [ ] Refactor semua `Components/Landing/*.tsx` jadi pure presentational dengan props.
-- [ ] Update `Pages/Landing/Home.tsx`, `Features.tsx`, `Pricing.tsx` agar terima dan distribusi props ke komponen.
-- [ ] Tambah `types/landing.d.ts`.
-- [ ] Browser smoke: tampilan landing identik dengan sebelum refactor (karena seed konten sama).
-- [ ] `npm run build` pass.
+# 3. Build sukses
+npm run build
+# ASSERT: exit 0
 
-### Phase 4 — Filament Settings Pages (2 hari)
-- [ ] `HeroSettingsPage`, `CtaBannerSettingsPage`, `FooterSettingsPage`, `NavbarSettingsPage`, `DemoVideoSettingsPage`.
-- [ ] `SeoMetaSettingsPage` dengan tabs Home/Features/Pricing.
-- [ ] Form Request `PublishHeroRequest`, dst.
-- [ ] Action `PublishLandingSectionAction`, `SaveLandingDraftSectionAction`.
-- [ ] Save sukses → flash notification, audit log tercatat.
-- [ ] Save invalidate cache, landing produksi langsung refresh (verify manual).
+# 4. Lint
+./vendor/bin/pint --test
+npm run lint 2>/dev/null || true
+# ASSERT: exit 0
 
-### Phase 5 — Filament Resources (Collection) (2-3 hari)
-- [ ] `PricingTierResource`, `TestimonialResource`, `FaqResource`, `FeatureHighlightResource`, `HowItWorksStepResource`, `ProblemPointResource`, `TrustedLogoResource`.
-- [ ] `NavbarLinkResource`, `FooterLinkResource`.
-- [ ] Reorder action di Filament table.
-- [ ] Form Request CRUD per tipe.
-- [ ] Action `StoreLandingItemAction`, `UpdateLandingItemAction`, `DeleteLandingItemAction`, `ReorderLandingItemsAction`.
-- [ ] Soft delete + Trashed filter aktif.
-- [ ] Tests CRUD + reorder.
+# 5. Routes OK
+php artisan route:list | grep landing
+# ASSERT: landing.home, landing.features, landing.pricing muncul
 
-### Phase 6 — Live Preview (1 hari)
-- [ ] `IssueLandingPreviewTokenAction`, `ResolveLandingPreviewSnapshotAction`.
-- [ ] Update `LandingController` agar baca `?landing_preview=` query param.
-- [ ] Banner preview di React landing.
-- [ ] Header `X-Robots-Tag: noindex, nofollow` saat preview.
-- [ ] Tombol "Preview" di setiap Settings Page Filament + tombol "Preview Halaman" global.
-- [ ] Test feature preview.
+# 6. HTTP smoke
+for path in "/" "/features" "/pricing"; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000${path}")
+  echo "$path → $code"
+done
+# ASSERT: semua 200
+```
 
-### Phase 7 — Versioning Singleton (1 hari)
-- [ ] `RollbackLandingSectionAction`.
-- [ ] Filament action "Lihat Riwayat" di Settings Pages.
-- [ ] Modal list versions, tombol "Restore".
-- [ ] Test feature rollback.
-
-### Phase 8 — Polish & Verification (1 hari)
-- [ ] Sweep semua section: data benar-benar dari DB, tidak ada lagi array hardcoded.
-- [ ] Audit log lengkap untuk semua action.
-- [ ] Pint + lint + build hijau.
-- [ ] Full regression `php artisan test` pass, jumlah test naik > baseline.
-- [ ] Browser smoke: edit setiap section dari panel → refresh `/` → konten ter-update dalam 60 detik (TTL home payload).
-- [ ] Update `features.md`: tambah section `LCMS01 · Landing CMS` ke `## Internal Tooling` (atau bikin section baru `Marketing & Growth Tooling`) dengan status `[x]` dan verification log.
-- [ ] Update `QA-MASTER-PROKERIN.md`: tambah Section "Landing CMS" dengan checklist test cases.
+### Manual Checks (tandai saat selesai)
+```
+□ Hero headline: jelas, max 12 kata, ada accent warna
+□ Semua CTA mengarah ke URL yang valid (tidak 404)
+□ Navbar: semua link aktif benar, hamburger berfungsi di 375px
+□ Pricing: 4 tier tampil benar, "Paling Populer" highlighted di Pro
+□ FAQ: 7 FAQ, accordion expand/collapse benar
+□ Footer: copyright tahun dinamis, tidak ada link sosial dummy
+□ Dark mode: semua halaman landing readable
+□ Viewport 375px: tidak ada horizontal scroll
+□ OG image render di WhatsApp/Twitter saat share URL (test pakai: https://www.opengraph.xyz)
+□ robots.txt accessible di /robots.txt
+□ sitemap.xml accessible di /sitemap.xml
+□ Analytics event ter-log saat CTA diklik (cek di browser console dev mode)
+□ Lighthouse mobile Performance ≥ 90
+□ Commit history: satu commit per sprint, pesan commit jelas
+```
 
 ---
 
-## 15. Risiko dan Mitigasi
+## CATATAN PENTING
 
-| Risiko | Dampak | Mitigasi |
-|---|---|---|
-| Cache stale lebih dari 60 detik karena Redis hiccup | Konten lama tampil sebentar setelah publish | Tambah tombol "Flush Cache Landing" manual. Gunakan `Cache::tags(['landing'])->flush()` kalau driver support. |
-| Image upload besar memori | Worker out of memory saat resize | Pakai job `OptimizeLandingImageJob` queued, panel langsung simpan path original, optimasi async. Tampilkan placeholder sampai job selesai. |
-| Tim non-teknis salah ubah CTA href ke URL invalid | CTA jadi 404 | Validasi `url` di Form Request untuk `*_cta_href` (allow internal route via regex `^/[a-z0-9/-]+$` ATAU absolute URL). |
-| Markdown FAQ disisipi script | XSS di landing | Pakai parser markdown yang strip HTML by default (`league/commonmark` dengan `disallowedRawHtml`). Test feature. |
-| Preview token bocor publik | Konten draft tampil ke pengunjung | Token UUID v4, TTL 30 menit, single-user binding. Audit log issued tokens. |
-| Locale ID-only sekarang, nanti EN ditambah → migrasi data tidak konsisten | Multi-bahasa setengah jadi | Schema sudah punya kolom `locale` dari awal. Saat tambah EN, fill row baru dengan locale='en' tanpa ubah schema. |
-| Filament panel jadi padat dengan ~12 item baru | Sidebar overflow | Group `Landing CMS` collapsible, navigationSort konsisten. |
+1. **Scope ketat**: Hanya ubah file landing (Components/Landing, Pages/Landing, LandingController, public assets). Jangan sentuh komponen dashboard, auth, atau Filament.
 
----
+2. **Shadcn/UI tidak dimodifikasi**: Kalau perlu tombol baru, pakai `<Button>` dari `@/components/ui/button` tanpa override, atau buat komponen baru di `Components/Landing/` saja.
 
-## 16. Master Checklist (Quick View)
+3. **CMS dibatalkan**: Jangan buat migration, jangan buat Filament resource, jangan buat model baru. Semua hardcoded di React — ini keputusan founder yang sudah final untuk saat ini.
 
-### Phase 1 Schema
-- [ ] Migration 3 tabel
-- [ ] Disk `landing`
-- [ ] Enum + DTO + Model
-- [ ] Config + ENV
-- [ ] Seeder
+4. **Iterasi sprint**: Kalau ada sprint yang blockednya (mis. OG image butuh desainer), skip dan catat di `# TODO` dengan format `// TODO(landing-polish): ...` lalu lanjut ke sprint berikutnya.
 
-### Phase 2 Read Layer
-- [ ] LandingCache helper
-- [ ] Get section/item/payload actions
-- [ ] Test cache hit
-
-### Phase 3 Frontend
-- [ ] LandingController data-backed
-- [ ] Refactor 13 komponen jadi props
-- [ ] Update 3 Pages/Landing
-- [ ] types/landing.d.ts
-- [ ] Build & smoke parity
-
-### Phase 4 Settings Pages Panel
-- [ ] 5 Settings Pages + SEO tabs
-- [ ] Form Request publish
-- [ ] PublishLandingSectionAction
-- [ ] Audit log + cache invalidate
-
-### Phase 5 Resources Panel
-- [ ] 9 Resources
-- [ ] Reorder action
-- [ ] Form Request CRUD
-- [ ] CRUD actions
-- [ ] Soft delete
-
-### Phase 6 Preview
-- [ ] Token issue/resolve
-- [ ] Controller preview branch
-- [ ] React banner + noindex header
-
-### Phase 7 Rollback
-- [ ] Rollback action
-- [ ] Filament riwayat modal
-
-### Phase 8 Verification
-- [ ] No hardcoded array tersisa
-- [ ] Audit log lengkap
-- [ ] Pint/lint/build hijau
-- [ ] Full regression test pass
-- [ ] features.md & QA-MASTER updated
-
----
-
-*Setelah dokumen ini selesai dieksekusi, semua konten landing page Prokerin bisa di-edit oleh tim non-teknis lewat `/internal-admin/landing/*` tanpa redeploy. CMS ini dirancang aman, ter-audit, dan punya rollback path.*
+5. **Test suite**: Setelah selesai semua sprint, pastikan `php artisan test` masih hijau — jangan ada test yang regresi.

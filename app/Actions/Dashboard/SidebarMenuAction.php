@@ -6,6 +6,7 @@ namespace App\Actions\Dashboard;
 
 use App\Enums\DashboardVariant;
 use App\Models\User;
+use App\Support\OrganizationModeGate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -38,7 +39,7 @@ final readonly class SidebarMenuAction
                     $group['items'],
                 ),
             ],
-            $this->menu($variant),
+            $this->menuForMode($variant, OrganizationModeGate::forOrganization($organizationId)),
         );
     }
 
@@ -95,6 +96,34 @@ final readonly class SidebarMenuAction
         };
     }
 
+    /**
+     * @return array<int, array{groupLabel: string, items: array<int, array{label: string, href: string, icon: string, badge?: string}>}>
+     */
+    private function menuForMode(DashboardVariant $variant, OrganizationModeGate $modeGate): array
+    {
+        if (! $modeGate->isKepanitiaan()) {
+            return $this->menu($variant);
+        }
+
+        $hiddenLabels = [
+            'Periode' => ! $modeGate->canUsePeriods(),
+            'Handover' => ! $modeGate->canUseHandover(),
+            'Anggota & Role' => ! $modeGate->canUseRoleMatrix(),
+        ];
+
+        return array_values(array_filter(array_map(
+            static function (array $group) use ($hiddenLabels): array {
+                $group['items'] = array_values(array_filter(
+                    $group['items'],
+                    static fn (array $item): bool => ! ($hiddenLabels[$item['label']] ?? false),
+                ));
+
+                return $group;
+            },
+            $this->menu($variant),
+        ), static fn (array $group): bool => $group['items'] !== []));
+    }
+
     private function pimpinanMenu(): array
     {
         return [
@@ -116,6 +145,7 @@ final readonly class SidebarMenuAction
                 $this->item('Proposal', route('reports.proposal-editor', absolute: false), 'FileText', 'approval_count'),
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck', 'approval_count'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Surat Menyurat', route('letters.index', absolute: false), 'Mail'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
                 $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),
@@ -142,6 +172,7 @@ final readonly class SidebarMenuAction
                 $this->item('Proposal', route('reports.proposal-editor', absolute: false), 'FileText'),
                 $this->item('LPJ', route('reports.lpj-checklist', absolute: false), 'ClipboardCheck'),
                 $this->item('Dokumen', route('documents.index', absolute: false), 'Folder'),
+                $this->item('Surat Menyurat', route('letters.index', absolute: false), 'Mail'),
                 $this->item('Rapat & Notulen', route('meetings.index', absolute: false), 'CalendarDays'),
                 $this->item('Registrasi Event', route('events.registrations.index', absolute: false), 'ClipboardCheck'),
                 $this->item('Absensi QR', route('attendance.index', absolute: false), 'ScanLine'),

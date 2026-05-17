@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Organization\CreateKepanitiaanAction;
 use App\Actions\Organization\CreateOrganizationAction;
 use App\Actions\Organization\StoreOrganizationPeriodAction;
 use App\Actions\Organization\SwitchActiveOrganizationAction;
 use App\Actions\Organization\UpdateOrganizationAction;
 use App\Actions\Organization\UpdateOrganizationPeriodAction;
 use App\DTOs\Organization\CreateOrganizationData;
+use App\Http\Requests\StoreKepanitiaanRequest;
 use App\Http\Requests\StoreOrganizationPeriodRequest;
 use App\Http\Requests\StoreOrganizationRequest;
 use App\Http\Requests\SwitchActiveOrganizationRequest;
 use App\Http\Requests\UpdateOrganizationPeriodRequest;
 use App\Http\Requests\UpdateOrganizationRequest;
+use App\Support\OrganizationModeGate;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 
 final class OrganizationController extends Controller
@@ -34,6 +38,23 @@ final class OrganizationController extends Controller
         $request->session()->put('active_organization_id', $organizationId);
 
         return redirect()->route('organization.setup')->with('success', 'Organisasi berhasil dibuat.');
+    }
+
+    public function storeKepanitiaan(
+        StoreKepanitiaanRequest $request,
+        CreateKepanitiaanAction $createKepanitiaan,
+    ): RedirectResponse {
+        $validated = $request->validated();
+        $organizationId = $createKepanitiaan->execute(
+            actorUserId: (int) $request->user()->id,
+            name: (string) $validated['name'],
+            eventDate: CarbonImmutable::parse((string) $validated['event_date']),
+            description: isset($validated['description']) ? (string) $validated['description'] : null,
+        );
+
+        $request->session()->put('active_organization_id', $organizationId);
+
+        return redirect()->route('dashboard')->with('success', 'Workspace kepanitiaan berhasil dibuat.');
     }
 
     public function switch(SwitchActiveOrganizationRequest $request, SwitchActiveOrganizationAction $switchActiveOrganization): RedirectResponse
@@ -57,6 +78,8 @@ final class OrganizationController extends Controller
         StoreOrganizationPeriodRequest $request,
         StoreOrganizationPeriodAction $storeOrganizationPeriod,
     ): RedirectResponse {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUsePeriods(), 403);
+
         $storeOrganizationPeriod->execute((int) $request->user()->id, $request->validated());
 
         return back()->with('success', 'Periode kepengurusan berhasil ditambahkan.');
@@ -67,6 +90,8 @@ final class OrganizationController extends Controller
         int $period,
         UpdateOrganizationPeriodAction $updateOrganizationPeriod,
     ): RedirectResponse {
+        abort_unless(OrganizationModeGate::forRequest($request)->canUsePeriods(), 403);
+
         $updateOrganizationPeriod->execute((int) $request->user()->id, $period, $request->validated());
 
         return back()->with('success', 'Periode kepengurusan berhasil diperbarui.');

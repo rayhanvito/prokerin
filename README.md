@@ -12,8 +12,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Inertia.js](https://img.shields.io/badge/Inertia.js-2-9553E9?style=flat-square)](https://inertiajs.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Tests-190%20passed-22c55e?style=flat-square&logo=checkmarx&logoColor=white)](#testing)
-[![License](https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-526%20passed-22c55e?style=flat-square&logo=checkmarx&logoColor=white)](#testing)
+[![License](https://img.shields.io/badge/License-Pre--Release-f59e0b?style=flat-square)](#lisensi)
 [![Status](https://img.shields.io/badge/Status-Active%20Development-24695c?style=flat-square)](#roadmap)
 
 <br />
@@ -243,7 +243,7 @@ MAIL_FROM_ADDRESS=hello@prokerin.id
 ## Testing
 
 ```bash
-# Jalankan semua test
+# Jalankan semua test (PHP)
 php artisan test
 
 # Unit tests saja
@@ -254,15 +254,21 @@ php artisan test --filter=Feature
 
 # Test spesifik module
 php artisan test --filter=ProposalTest
+
+# Frontend unit test (Vitest, untuk hooks & lib helpers)
+npm run test:js          # one-shot
+npm run test:js:watch    # watch mode
 ```
 
-**Status test saat ini:**
+**Status test saat ini (2026-05-17):**
 
-| Checkpoint | Tests | Assertions |
-|-----------|-------|-----------|
-| MVP baseline (M01–M13) | 181 ✅ | 712 |
-| Setelah M14 (Rapat) | 183 ✅ | 755 |
-| Setelah M15 (Absensi QR) | 190 ✅ | 804 |
+| Suite | Tests | Assertions | Catatan |
+|---|---:|---:|---|
+| Full PHP suite | **526 passed** | 2856 | `php artisan test` — durasi ~37s |
+| Frontend type-check | — | — | `npm run lint` (`tsc --noEmit`) ✅ |
+| PHP code style | — | — | `./vendor/bin/pint --test` ✅ |
+| Frontend build | — | — | `npm run build` ✅ |
+| Vitest harness | — | — | `npx vitest --run` ✅ ready (test files akan ditambah saat Sprint 3 landing-polish) |
 
 Coverage target: minimum 70% untuk Actions dan Policies.
 Prioritas: Authorization > Business Logic > API endpoints.
@@ -291,6 +297,9 @@ php artisan db:seed            # Seed tanpa drop table
 # Queue
 php artisan queue:work         # Start queue worker
 php artisan queue:listen       # Auto-reload on code change (dev)
+
+# Real-time notifications
+php artisan reverb:start       # WebSocket worker for notification bell updates
 
 # Cache
 php artisan optimize:clear     # Clear setelah pull di staging/production
@@ -323,62 +332,80 @@ php artisan filament:make-resource [Name]   # Scaffold Filament resource
 | M12 · Notifikasi | Email + database channel, deadline reminder | ✅ |
 | M13 · Admin Panel | Filament internal admin (Organization, User, Export) | ✅ |
 
-### Post-MVP Wave 1 (Selesai ✅)
+### Post-MVP Wave 1 — Tier IMMEDIATE (Complete)
 
 | Modul | Deskripsi | Status |
 |-------|-----------|--------|
 | M14 · Rapat & Notulen | Agenda, attendee, keputusan, action items | ✅ |
 | M15 · Absensi QR | QR token, check-in, manual fallback, anti-duplikat | ✅ |
-| M16 · Sertifikat Digital | Issue, verifikasi publik, PDF generation | 〜 Partial |
+| M16 · Sertifikat Digital | Issue, verifikasi publik, PDF generation | 〜 Maintenance |
+| M27 · Mobile QR Camera Scanner (PWA) | html5-qrcode, continuous mode, fallback manual | ✅ |
+| M44 · Web Push Notifications | VAPID, service worker push handler, banner permission | ✅ |
+| M28 · Onboarding Wizard | 5 step (period → invite → proker → RAB → preview), auto-detect | ✅ |
+| M25 · Rich Text Editor (Tiptap) | Proposal & LPJ editor, sanitize + render Tiptap JSON | ✅ |
+| M26 · Real-Time Notifications | Laravel Reverb broadcasting, bell dropdown | ✅ |
 
-### Post-MVP Aktif & Planned
+### Inisiatif Khusus (Active Specs)
+
+| Inisiatif | Path | Status |
+|-----------|------|--------|
+| Landing Polish | `.kiro/specs/landing-polish/` + `LANDING PAGE PLAN.md` | 🟡 Sprint 1 in progress (4/61 leaf task) |
+| Super Admin V2 | `SUPER-ADMIN-V2-PLAN.md` | 🟡 Planning |
+| QA | `.kiro/specs/prokerin-qa/` | 🟡 Active |
+
+### Tier GROWTH (Planned)
 
 | Modul | Deskripsi | Status |
 |-------|-----------|--------|
-| M17 · WhatsApp Reminder | Notifikasi via WhatsApp channel | 🔲 |
-| M18 · Multi-Level Approval | Workflow approval bertahap | 🔲 |
-| M19 · Handover Kepengurusan | Serah terima antar periode | 〜 Partial |
-| M20 · Sponsor & Vendor DB | Direktori sponsor dan vendor per org | 🔲 |
-| M21 · Event Registration | Pendaftaran publik per event | 🔲 |
-| M22 · Payment & Ticketing | Tiket berbayar via Midtrans | 🔲 |
-| M23 · AI Assistant | Draft proposal, ringkasan LPJ berbasis AI | 🔲 |
-| M24 · Campus Dashboard B2B | Agregat lintas organisasi untuk rektorat | 🔲 |
+| M30 · Kepanitiaan Mode | Ad-hoc committee, lifecycle 3-6 bulan, auto-archive 90 hari | ✅ |
+| M31 · Public Proker Microsite | Halaman publik per proker, OG meta, gallery | ✅ |
+| M39 · Surat Menyurat Generator | Template, sequencing, sign, send, bulk | 🔲 |
+| M29 · Global Search (Cmd+K) | Laravel Scout, 5 model searchable | 🔲 |
+| M43 · Calendar Sync (.ics) | Token-based public calendar feed | 🔲 |
+| M40 · Inventory & Asset | Loan, return, integrasi M19 + M27 | 🔲 |
 
-> Lihat [`features.md`](features.md) dan [`features-extended.md`](features-extended.md) untuk spec lengkap setiap modul.
+> **Tier MOMENTUM dihapus dari roadmap aktif (2026-05-17).** Modul M45/M46/M47/M41/M42 ditunda untuk prioritas deploy MVP. Akan di-re-evaluate pasca-deploy berdasarkan feedback user nyata.
+
+### Modul Existing — FROZEN / Maintenance
+
+Per `POST-MVP-ROADMAP.md` §0.5: scope tidak boleh ditambah, hanya bug fix critical.
+
+| Modul | Catatan |
+|-------|---------|
+| M16 · Certificate | QA-OPEN-012 visual preview di-skip |
+| M18 · Multi-Level Approval | Pro tier perk, no further enhancement |
+| M19 · Handover Kepengurusan | Sebagian flow jalan, partial |
+| M22 · Payment & Ticketing | Beta / Pro-tier opt-in only |
+| M23 · AI Assistant | Freeze 6 bulan post-launch |
+| M24 · Campus Dashboard B2B | Hibernate sampai paying customer signed |
+
+> Lihat [`features.md`](features.md) untuk single source of truth status modul, dan [`POST-MVP-ROADMAP.md`](POST-MVP-ROADMAP.md) untuk spec detail tiap Post-MVP module.
 
 ---
 
 ## Roadmap
 
 ```
-2026 Q2  ▸  MVP Complete (M01–M13) ✅
-             Post-MVP Wave 1: M14 Rapat, M15 Absensi QR ✅
-             M16 Sertifikat Digital 🔲
+2026 Q2  ▸  MVP Complete (M01–M16) ✅
+             Post-MVP Wave 1 IMMEDIATE — M27, M44, M28, M25, M26 ✅
+             Launch QA: native mobile camera, OS push, two-browser Reverb smoke
+             Tier GROWTH started — M30, M31 ✅
+             Active spec: Landing Polish (4/61 task) 🟡
 
-2026 Q3  ▸  UX Critical: M25 Rich Text Editor
-             M26 Real-Time Notifications
-             M27 QR Camera Scanner (PWA)
-             M28 Onboarding Wizard
-             Landing Page (prokerin.id)
+2026 Q3  ▸  Tier GROWTH lanjutan: M39 Surat Menyurat (killer feature)
+             M29 Global Search (Cmd+K)
+             M43 Calendar Sync (.ics)
+             M40 Inventory & Asset
+             Pre-launch hardening: BUG-FIX security + observability
+             Public deploy 🚀
 
-2026 Q4  ▸  Growth: M29 Global Search
-             M30 Kepanitiaan Mode
-             M31 Public Proker Microsite
-             M32 Template Marketplace
-             M17 WhatsApp Reminder
-             M18 Multi-Level Approval
-
-2027 Q1  ▸  Enterprise: M19 Handover (complete)
-             M21 Event Registration
-             M22 Payment & Ticketing
-             M33 Prokerin Academy
-             M24 Campus Dashboard B2B
-
-2027 Q2  ▸  Platform: M23 AI Assistant
-             M34 Smart Deadline Prediction
-             M37 Org Health Analytics
-             M38 Prokerin Pay
+2027+    ▸  Pasca-deploy:
+             - Re-evaluate Tier MOMENTUM (M45/M46/M47/M41/M42 — dihapus 2026-05-17)
+             - Re-evaluate FROZEN modules (M22 Payment, M23 AI, M24 Campus)
+             - Native mobile (PWA-first sampai signal jelas)
 ```
+
+> Status modul aktual & migration timeline ada di [`features.md`](features.md). Spec detail per modul ada di [`POST-MVP-ROADMAP.md`](POST-MVP-ROADMAP.md).
 
 ---
 
@@ -438,8 +465,9 @@ npm run build
 ### Panduan Pengembangan
 
 - Baca [`AGENTS.md`](AGENTS.md) untuk arsitektur, konvensi, dan aturan yang wajib diikuti.
-- Baca [`features.md`](features.md) untuk status dan spec modul M01–M24.
-- Baca [`features-extended.md`](features-extended.md) untuk roadmap M25–M38 dan landing page.
+- Baca [`features.md`](features.md) untuk status modul terkini & migration timeline (single source of truth).
+- Baca [`POST-MVP-ROADMAP.md`](POST-MVP-ROADMAP.md) untuk spec detail Tier IMMEDIATE / GROWTH.
+- Cek `.kiro/specs/` untuk spec aktif (mis. `landing-polish`, `prokerin-qa`).
 - **Jangan mulai modul baru kalau test suite sedang merah.**
 - Satu PR untuk satu perubahan logis — jangan mix fitur yang tidak berkaitan.
 - Setiap fitur baru wajib disertai feature test. Coverage target: 70% untuk Actions & Policies.
@@ -460,7 +488,7 @@ Prokerin mengimplementasikan multi-tenancy berbasis `organization_id`:
 
 ## Lisensi
 
-Prokerin dilisensikan di bawah [MIT License](LICENSE).
+Prokerin masih dalam fase active development. Lisensi resmi akan diumumkan saat MVP go-public.
 
 ---
 

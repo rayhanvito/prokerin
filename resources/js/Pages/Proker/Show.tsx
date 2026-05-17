@@ -1,4 +1,4 @@
-import { Archive, CalendarDays, FileText, ReceiptText, Users } from 'lucide-react';
+import { Archive, CalendarDays, FileText, Globe2, ReceiptText, Users } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import Breadcrumb from '@/Components/ui/Breadcrumb';
@@ -217,6 +217,13 @@ export default function ProkerShow({
                                 className="rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white"
                             >
                                 Edit Proker
+                            </Link>
+                            <Link
+                                href={route('proker.microsite.edit', project.slug)}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#24695c] transition hover:bg-[#f5f7fb]"
+                            >
+                                <Globe2 className="h-4 w-4" />
+                                Microsite
                             </Link>
                             <button
                                 type="button"

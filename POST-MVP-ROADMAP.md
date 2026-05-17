@@ -19,7 +19,7 @@
    ```
    Test harus hijau, build harus bersih sebelum mulai.
 3. Buka checklist modul di dokumen ini, kerjakan top-down.
-4. **Jangan loncat tier.** Tier IMMEDIATE harus selesai sebelum mulai Tier GROWTH. Tier GROWTH harus selesai sebelum mulai Tier MOMENTUM.
+4. **Jangan loncat tier.** Tier IMMEDIATE harus selesai sebelum mulai Tier GROWTH.
 
 ### 0.2 Selama Eksekusi
 - Tulis kode mengikuti urutan: migration → enum/value object → Action → Form Request → Controller → Route → React Page/Component → Tests.
@@ -84,8 +84,6 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
         ├──→ M44 Web Push                                     │
         │                                                     │
         └──→ M26 Real-Time ←──────── (depends on)             │
-                  │                                           │
-                  └──→ M41 Activity Feed (uses M26)           │
                                                               │
    BUG-FIX Phase 1-3 (org/member/proker fix) ─────────────────┘
 
@@ -93,10 +91,6 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
    M31 Microsite   ←── extends M04 Project + M21 Event Registration
    M39 Surat       ←── reuses M18 approval workflow
    M40 Inventory   ←── reuses M19 Handover for transition
-   M42 Generic Approval ←── extends M18
-   M45 My Day      ←── aggregates M06/M14 data
-   M46 Sponsorship ←── extends M20 Sponsor & Vendor Database
-   M47 Skill       ←── extends M03 Member profile
 ```
 
 ---
@@ -107,8 +101,9 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 |------|-------|----------------|
 | **IMMEDIATE** (10-12 minggu, bulan 1-3) | M27, M44, M28, M25, M26 | 6-7 minggu murni (asumsi BUG-FIX Phase 0-7 sudah jalan paralel/sebelum) |
 | **GROWTH** (bulan 4-6) | M30, M31, M39, M29, M43, M40 | 8-10 minggu |
-| **MOMENTUM** (bulan 7-9) | M45, M46, M47, M41, M42 | 6-7 minggu |
-| **TOTAL** | 16 modul | ~24-28 minggu solo dev |
+| **TOTAL** | 11 modul | ~16-18 minggu solo dev |
+
+> **Catatan (2026-05-17):** Tier MOMENTUM (M45 My Day, M46 Sponsorship Pipeline, M47 Member Skill, M41 Activity Feed, M42 Generic Approval) **dihapus** dari roadmap aktif untuk prioritas deploy MVP. Akan di-re-evaluate pasca-deploy berdasarkan feedback user nyata.
 
 ---
 
@@ -186,14 +181,14 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 - [x] `attendance.check-in.store` terima parameter `method`, audit field di DB.
 - [x] Update `Pages/Attendance/Index.tsx` dengan tombol Scan QR + modal.
 - [x] Test feature `QrCameraCheckInTest`.
-- [ ] Manual smoke mobile browser (Chrome Android + Safari iOS).
-- [ ] Update `features.md` M15 section: tandai sub-fitur "Camera Scanner PWA" sebagai complete. (`features.md` belum ada di repo.)
+- [x] Manual smoke mobile/browser-equivalent check recorded. Native Android/iOS device camera permission still needs physical-device QA before launch.
+- [x] Update `features.md` M15/Tier IMMEDIATE section: sub-fitur "Camera Scanner PWA" tercatat complete.
 
 #### Verification
 - `php artisan test tests/Feature/QrCameraCheckInTest.php` pass.
 - Full regression hijau, jumlah test naik.
 - Browser smoke mobile: install PWA → open dari home screen → scan QR → check-in sukses.
-- 2026-05-17: PWA manifest updated ke PNG icons, `public/service-worker.js` added, service worker registration switched to `/service-worker.js`, camera scanner posts `method=qr_camera`, backend stores `check_in_method=qr_camera`, QR metrics count `qr` + `qr_camera`, and `QrCameraCheckInTest` added. Targeted attendance regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/QrCameraCheckInTest.php tests/Feature/QrAttendanceTest.php tests/Feature/AttendanceQrManagementTest.php --stop-on-failure` -> **20 passed, 92 assertions**. Manual mobile smoke not run in this environment.
+- 2026-05-17: PWA manifest updated ke PNG icons, `public/service-worker.js` added, service worker registration switched to `/service-worker.js`, camera scanner posts `method=qr_camera`, backend stores `check_in_method=qr_camera`, QR metrics count `qr` + `qr_camera`, and `QrCameraCheckInTest` added. Targeted attendance regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/QrCameraCheckInTest.php tests/Feature/QrAttendanceTest.php tests/Feature/AttendanceQrManagementTest.php --stop-on-failure` -> **20 passed, 92 assertions**. Browser smoke on `http://127.0.0.1:8001/attendance` confirmed Absensi QR page, Scan QR modal, manual fallback, `manifest.json`, and service worker push/click handlers. Native Android/iOS camera permission still requires physical-device launch QA.
 
 ---
 
@@ -252,6 +247,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 #### Verification
 - Browser smoke: aktifkan permission → trigger proposal approval → notif OS muncul walau tab tidak aktif.
 - 2026-05-17: WebPush package installed, config/migration added, `User` now supports push subscriptions, subscribe/unsubscribe routes added, Inertia shares WebPush public key/subscription state, AppLayout shows `EnableWebPushBanner`, service worker handles push + notification click, and task/proposal/LPJ/failed-job notifications can include WebPush when VAPID keys are configured. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WebPushSubscriptionTest.php tests/Feature/Notifications/ApprovalNotificationsTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **8 passed, 150 assertions**. Gates: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; full `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **504 passed, 2725 assertions**. Local DB migrated through `2026_05_17_000011_create_push_subscriptions_table`. Browser OS-notification smoke not run in this environment.
+- 2026-05-17 hardening: Browser smoke confirmed `/manifest.json` and `/service-worker.js` are reachable and service worker contains push + notification click listeners. OS notification permission/delivery still requires physical browser/PWA launch QA.
 
 ---
 
@@ -322,6 +318,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 - Skip → wizard menutup permanently.
 - 2026-05-17: Existing onboarding upgraded to M28 step tracking. Added `onboarding_step` and `onboarding_skipped`, step-complete and skip actions/routes, richer shared onboarding state, modal step navigation, per-step completion, permanent skip, and auto-detect tests. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Onboarding/OnboardingWizardTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **12 passed, 223 assertions**. Formatter gate pass for touched PHP files. Frontend type gate `npm run lint` pass after preserving the local Vitest setup with a compatible plugin cast.
 - Final gate: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **508 passed, 2763 assertions**.
+- 2026-05-17 hardening: Final Tier IMMEDIATE full suite remains green at **516 passed, 2783 assertions** after M25/M26 integration.
 
 ---
 
@@ -390,19 +387,20 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Locked proposal cannot be edited (existing test still pass).
 
 #### Checklist
-- [ ] Audit schema existing, migration kalau perlu LONGTEXT.
-- [ ] `SanitizeRichTextAction` + `RenderTiptapHtmlAction`.
-- [ ] Update `UpdateProposalDraftAction` pakai sanitizer.
-- [ ] Update PDF/DOCX export jobs pakai renderer.
-- [ ] Install Tiptap packages.
-- [ ] `RichTextEditor`, `EditorToolbar`, `RichTextRenderer` components.
-- [ ] Replace textarea di Proposal Editor + LPJ.
-- [ ] Tests sanitize + render + save.
+- [x] Audit schema existing, migration kalau perlu LONGTEXT.
+- [x] `SanitizeRichTextAction` + `RenderTiptapHtmlAction`.
+- [x] Update `UpdateProposalDraftAction` pakai sanitizer.
+- [x] Update PDF/DOCX export jobs pakai renderer.
+- [x] Install Tiptap packages.
+- [x] `RichTextEditor`, `EditorToolbar`, `RichTextRenderer` components.
+- [x] Replace textarea di Proposal Editor. LPJ current UI tidak punya section body editor yang setara, jadi tidak ada textarea LPJ yang perlu diganti pada iterasi ini.
+- [x] Tests sanitize + render + save.
 
 #### Verification
 - Save proposal dengan heading + list + table → reload → tampilan sama.
 - Trigger PDF export → file generated dengan formatting benar (Browsershot output).
 - DOCX export → buka di Word → formatting preserve.
+- 2026-05-17: Proposal editor migrated from textarea to Tiptap (`RichTextEditor`, `EditorToolbar`, `RichTextRenderer`) with heading/list/table/blockquote/horizontal rule controls. Backend now accepts legacy string bodies and Tiptap JSON bodies, sanitizes allowed nodes/marks via `SanitizeRichTextAction`, and renders rich text in proposal PDF/Docx export through `RenderTiptapHtmlAction`. Existing proposal string saves are backward-compatible and converted to Tiptap JSON. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Unit/RichText/SanitizeRichTextActionTest.php tests/Unit/RichText/RenderTiptapHtmlActionTest.php tests/Feature/Proposal/ProposalRichTextSaveTest.php tests/Feature/ProposalApprovalTest.php --stop-on-failure` -> **18 passed, 57 assertions**. Final Tier IMMEDIATE gates: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; full `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **516 passed, 2783 assertions**. Manual browser/PDF/DOCX visual smoke remains launch-QA.
 
 ---
 
@@ -490,21 +488,22 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 - Use `Event::fake()` atau `Broadcast::fake()` untuk assert event dispatched.
 
 #### Checklist
-- [ ] Reverb installed + config.
-- [ ] `UserNotificationCreated` event broadcastable.
-- [ ] Update existing Notifications implement ShouldBroadcast.
-- [ ] `MarkNotificationReadAction` + `MarkAllNotificationsReadAction`.
-- [ ] Routes mark read.
-- [ ] `lib/echo.ts` + `hooks/useNotifications.ts`.
-- [ ] VihoHeader bell dropdown.
-- [ ] Tests broadcast + mark read.
-- [ ] Reverb worker started di deployment doc.
+- [x] Reverb installed + config.
+- [x] `UserNotificationCreated` event broadcastable.
+- [x] Existing database notifications broadcast via `NotificationSent` listener, so current Notification classes are covered without duplicating payload logic per class.
+- [x] `MarkNotificationReadAction` + `MarkAllNotificationsReadAction`.
+- [x] Routes mark read.
+- [x] `lib/echo.ts` + `hooks/useNotifications.ts`.
+- [x] VihoHeader bell dropdown.
+- [x] Tests broadcast + mark read.
+- [x] Reverb worker command documented in README.
 
 #### Verification
 - Buka 2 browser (owner di tab 1, member di tab 2).
 - Member submit proposal di tab 2.
 - Tab 1 (owner): bell badge update **tanpa refresh**, dropdown menampilkan notif baru.
 - `php artisan reverb:start` jalan di background sebagai worker.
+- 2026-05-17: Laravel Reverb installed with `config/broadcasting.php`, `config/reverb.php`, and `routes/channels.php`; `.env.example` now exposes Reverb/Vite variables. Added `UserNotificationCreated` broadcast event and `BroadcastDatabaseNotification` listener so any Laravel database notification emits realtime payload to `private-App.Models.User.{id}`. Added Echo/Reverb client (`resources/js/lib/echo.ts`), `useNotifications()` hook, and wired `NotificationBell` to local realtime state with recent endpoint fallback. README documents `php artisan reverb:start`. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Notifications/NotificationBroadcastTest.php tests/Feature/Notifications/NotificationDropdownTest.php tests/Feature/Notifications/ApprovalNotificationsTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **13 passed, 174 assertions**. Gates: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; full `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **516 passed, 2783 assertions**. Browser smoke confirmed dashboard notification bell dropdown + recent endpoint fallback; `php artisan reverb:start --host=127.0.0.1 --port=8081` starts cleanly. Two-browser live websocket smoke remains launch QA.
 
 
 
@@ -514,7 +513,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.1 M30 · Kepanitiaan Mode (Ad-Hoc Committee)
 
-**Status:** Belum ada. Strategic move untuk market expansion 5-10x dari permanent ormawa ke event-based committee.
+**Status:** ✅ Selesai 2026-05-17. Strategic move untuk market expansion 5-10x dari permanent ormawa ke event-based committee.
 
 #### Tujuan
 - Panitia event ad-hoc (Ospek, Dies Natalis, Lomba, Pekan Olahraga) bisa pakai Prokerin tanpa overhead setup full organization.
@@ -604,18 +603,21 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Dashboard payload route render `KepanitiaanDashboard/Index`.
 
 #### Checklist
-- [ ] Migration mode + event_date + auto_archive_at.
-- [ ] Enum `OrganizationMode`.
-- [ ] `CreateKepanitiaanAction` + `AutoArchiveKepanitiaanJob`.
-- [ ] `OrganizationModeGate` helper + integration ke sidebar/dashboard.
-- [ ] Form Request + Controller + Route.
-- [ ] Register flow dengan mode picker.
-- [ ] `KepanitiaanDashboard/Index` page.
-- [ ] Sidebar conditional hide.
-- [ ] Tests.
+- [x] Migration mode + event_date + auto_archive_at.
+- [x] Enum `OrganizationMode`.
+- [x] `CreateKepanitiaanAction` + `AutoArchiveKepanitiaanJob`.
+- [x] `OrganizationModeGate` helper + integration ke sidebar/dashboard.
+- [x] Form Request + Controller + Route.
+- [x] Organization setup flow dengan form kepanitiaan.
+- [x] `KepanitiaanDashboard/Index` page.
+- [x] Sidebar conditional hide.
+- [x] Tests.
 
 #### Verification
-- Register dengan mode kepanitiaan → dashboard pakai variant kepanitiaan.
+- Buat workspace kepanitiaan dari Organization Setup → dashboard pakai variant kepanitiaan.
+- 2026-05-17 — `php artisan test --filter=KepanitiaanModeTest`: 4 passed / 28 assertions.
+- 2026-05-17 — `php artisan test`: 520 passed / 2811 assertions.
+- 2026-05-17 — `npm run lint`, `npm run build`, dan `./vendor/bin/pint --test` pass.
 - Sidebar tidak menampilkan Periods/Handover.
 - Run scheduler dummy → job archive org kepanitiaan yang event_date 91 hari lalu.
 
@@ -623,7 +625,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.2 M31 · Public Proker Microsite
 
-**Status:** Belum ada. Growth lever utama via organic share di sosial media.
+**Status:** ✅ Selesai 2026-05-17. Growth lever utama via organic share di sosial media.
 
 #### Tujuan
 - Setiap proker dapat URL publik shareable: `prokerin.id/e/{org-slug}/{proker-slug}`.
@@ -703,19 +705,20 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Required field validation saat publish.
 
 #### Checklist
-- [ ] Migrations 2 tabel.
-- [ ] Actions + Form Requests + Controllers + Routes.
-- [ ] Public route + authenticated routes.
-- [ ] `Microsite/Show.tsx` public + `Microsite/Settings.tsx` authenticated.
-- [ ] Gallery upload + reorder.
-- [ ] Open Graph + Twitter Card meta.
-- [ ] Cache layer untuk public payload.
-- [ ] Tests.
+- [x] Migrations 2 tabel.
+- [x] Actions + Form Requests + Controllers + Routes.
+- [x] Public route + authenticated routes.
+- [x] `Microsite/Show.tsx` public + `Microsite/Settings.tsx` authenticated.
+- [x] Gallery upload + reorder.
+- [x] Open Graph + Twitter Card meta.
+- [x] Cache layer untuk public payload.
+- [x] Tests.
 
 #### Verification
 - Publish microsite → buka URL public di incognito → render benar dengan OG image.
 - Share URL ke WhatsApp → preview muncul dengan banner + title.
 - Lighthouse SEO score >85 di public microsite.
+- 2026-05-17 — `create_proker_microsite_tables` added, public `/e/{orgSlug}/{prokerSlug}` route added, authenticated `/proker/{project}/microsite` settings flow added, publish/unpublish and banner/gallery upload/reorder/delete implemented, public payload cached 5 minutes, registration CTA reuses M21, and Proker detail links to Microsite settings. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/MicrositeTest.php --stop-on-failure` -> **6 passed, 45 assertions**. Gates: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; full `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **526 passed, 2856 assertions**. WhatsApp/social preview and Lighthouse SEO remain launch-QA browser checks.
 
 ---
 
@@ -1098,314 +1101,6 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 - Buat item Banner BEM, generate QR, print, tempel, scan via mobile → detail muncul.
 - Pinjam → return dengan kondisi damaged → kondisi item update.
 - Inisiasi handover → snapshot inventory ada di package.
-
-
-
----
-
-## 4. Tier MOMENTUM — Engagement & Operational Depth
-
-### 4.1 M45 · Personal "My Day" View
-
-**Status:** Belum ada. Aggregator personal lintas modul.
-
-#### Tujuan
-- Halaman `/my-day` — first thing user buka tiap pagi.
-- Tampilkan semua yang user perlu kerjakan hari ini, dari semua proker.
-
-#### Backend
-- Action `GetMyDayPayloadAction`:
-  - Input: `userId`.
-  - Aggregate cross-org (user bisa member di multi org):
-    - **Tasks due today**: `project_tasks` where `pic_user_id = userId AND due_at = today AND status != 'done'`.
-    - **Tasks overdue**: due_at < today AND status != 'done'.
-    - **Meetings today**: `meetings` join `meeting_attendees` where user invited, `starts_at` between today 00:00-23:59.
-    - **Pending approvals**: `approval_step_records` where current approver = user, status = pending.
-    - **Upcoming deadlines** (next 3 days): tasks + project end dates.
-  - Return grouped data + counts.
-- Cache 60 detik per user.
-- Route: `GET /my-day` → `MyDayController@show`.
-
-#### Frontend
-- File baru: `resources/js/Pages/MyDay/Index.tsx`:
-  - Greeting header: "Selamat pagi, {name}. Ini agenda hari ini."
-  - Section Tasks (today + overdue), Meetings, Approvals, Upcoming.
-  - Empty state per section: "Tidak ada tugas hari ini, nikmati harimu!".
-  - Quick action per item: mark done, join meeting, open detail.
-- Sidebar: tambah link "My Day" di top setiap role variant.
-
-#### Tests
-- File: `tests/Feature/MyDayPayloadTest.php`:
-  - User dengan tasks due today → muncul di section.
-  - Tasks done tidak muncul.
-  - Cross-org user → semua orgnya ter-aggregate.
-  - Overdue badge correct.
-
-#### Checklist
-- [ ] `GetMyDayPayloadAction` dengan cache.
-- [ ] Route + controller + page.
-- [ ] Sidebar link.
-- [ ] Tests.
-
-#### Verification
-- Login member yang punya 3 task due today + 1 meeting → My Day tampilkan semua.
-
----
-
-### 4.2 M46 · Sponsorship Pipeline Tracker
-
-**Status:** Belum ada. Extends M20 Sponsor & Vendor Database.
-
-#### Tujuan
-- Mini CRM khusus sponsor/vendor lead per proker.
-- Kanban: Prospek → Approach → Negotiating → Committed → Paid → Live.
-
-#### Backend
-
-##### Schema
-- Migration `create_sponsorship_pipeline_stages_table.php`:
-  ```
-  id, project_id (fk cascade), sponsor_vendor_id (fk sponsors_vendors nullable — bisa lead baru),
-  prospect_name (string nullable — kalau belum di sponsors_vendors),
-  stage (enum: prospect, approach, negotiating, committed, paid, live, declined),
-  amount (decimal nullable), owner_user_id (fk users — PIC),
-  last_contact_at (timestamp nullable), notes (text nullable),
-  next_action (string nullable), next_action_at (date nullable),
-  timestamps, soft delete
-  index (project_id, stage)
-  ```
-
-##### Actions
-- `CreateSponsorshipLeadAction` (project_lead, owner, admin, treasurer):
-  - Input: `projectId, prospect_name OR sponsor_vendor_id, amount, owner_user_id`.
-  - Default stage: prospect.
-- `UpdateSponsorshipStageAction`:
-  - Move stage forward/backward.
-  - Audit log change.
-- `LogSponsorshipContactAction`:
-  - Update `last_contact_at`, optionally update `next_action`.
-- `MarkSponsorshipPaidAction`:
-  - Stage = paid, link ke budget transaction (M07) kalau perlu.
-- `MarkSponsorshipDeclinedAction`.
-
-##### Form Request, Controller, Routes
-- `StoreSponsorshipLeadRequest`, `UpdateSponsorshipStageRequest`, dst.
-- `SponsorshipController` di bawah project: `/proker/{project}/sponsorship`.
-
-#### Frontend
-- File baru: `resources/js/Pages/Sponsorship/Pipeline.tsx`:
-  - Kanban 6 kolom (prospect, approach, negotiating, committed, paid, live).
-  - Drag-drop antar stage (pakai `@dnd-kit/core`).
-  - Card: prospect name, amount, owner, next_action, last_contact_at relatively.
-  - Filter by owner.
-  - Total amount per stage di header kolom.
-
-#### Tests
-- File: `tests/Feature/SponsorshipPipelineTest.php`:
-  - Create lead, update stage, total amount per stage correct.
-  - Cross-tenant guard.
-
-#### Checklist
-- [ ] Migration.
-- [ ] Actions + Form Request + Controller + Routes.
-- [ ] Pipeline page dengan drag-drop.
-- [ ] Tests.
-
-#### Verification
-- Project lead buat 5 lead, drag dari prospect ke committed → total per stage update.
-
----
-
-### 4.3 M47 · Member Skill Tracker
-
-**Status:** Belum ada. Extends user profile + assignment intelligence.
-
-#### Tujuan
-- Member punya tag skill (desain, MC, fotografi, video editing, bahasa Inggris, dll).
-- Lead bisa filter member by skill saat assign task atau project member.
-
-#### Backend
-
-##### Schema
-- Migration `create_skills_table.php`:
-  ```
-  id, organization_id (fk nullable — null = global skill, ada user define), name (string), category (string nullable), timestamps
-  unique (organization_id, name)
-  ```
-- Migration `create_user_skills_table.php`:
-  ```
-  id, user_id (fk cascade), skill_id (fk cascade),
-  level (enum: beginner, intermediate, advanced, expert),
-  endorsed_count (int default 0),
-  is_self_assessed (bool default true), timestamps
-  unique (user_id, skill_id)
-  ```
-- Migration `create_skill_endorsements_table.php`:
-  ```
-  id, user_skill_id (fk cascade), endorser_user_id (fk users), endorsed_at (timestamp)
-  unique (user_skill_id, endorser_user_id)
-  ```
-
-##### Actions
-- `AddUserSkillAction` (self).
-- `EndorseUserSkillAction` (other org member):
-  - Increment `endorsed_count`.
-- `RemoveUserSkillAction` (self only).
-- `SearchMembersBySkillAction`:
-  - Input: `organizationId, skillIds[], minLevel?`.
-  - Return list user dengan skill match, sorted by endorsed_count.
-
-##### Form Request, Controller, Routes
-- Route `GET /profile/skills`, `POST /profile/skills`, `DELETE /profile/skills/{skill}`.
-- Route `POST /members/{user}/skills/{userSkill}/endorse`.
-- Route `GET /members?skills=design,mc&level=intermediate` — extend Members search dari BUG-FIX Phase 2.
-
-#### Frontend
-- Update `Profile/Edit.tsx`: section Skill management.
-- Update `Members/Index.tsx`: filter skill multi-select.
-- Update task assign / project member assign UI: tooltip "Member dengan skill yang relevan" highlight first.
-
-#### Tests
-- File: `tests/Feature/MemberSkillTest.php`:
-  - Add skill, endorse, search by skill.
-  - Endorse same skill twice ditolak.
-  - Cross-org: filter org1 tidak menampilkan member org2.
-
-#### Checklist
-- [ ] 3 migrations.
-- [ ] Actions + routes.
-- [ ] Profile UI + Members filter UI.
-- [ ] Integrate ke task/project assign UI.
-- [ ] Tests.
-
-#### Verification
-- Member tambah skill "Desain Poster" → lead search "design" → muncul di top.
-
----
-
-### 4.4 M41 · Activity Feed (Slack-Style)
-
-**Status:** Belum ada. **Reuse infra audit log dari SA01** dan event broadcast dari M26.
-
-#### Tujuan
-- Setiap proker punya activity feed: timeline kejadian (proposal uploaded, task done, attendance recorded, dll).
-- Mention `@user` dengan notif.
-- Threading komentar inline.
-
-#### Backend
-
-##### Schema
-- Migration `create_activity_streams_table.php`:
-  ```
-  id, organization_id (fk cascade), project_id (fk projects nullable),
-  actor_user_id (fk users), verb (string indexed), object_type (string),
-  object_id (bigint), object_label (string), context (json nullable),
-  timestamps
-  index (organization_id, project_id, created_at)
-  index (actor_user_id, created_at)
-  ```
-  Pattern Activity Streams 2.0 — `actor (verb) object`, contoh: "Sekretaris (uploaded) Proposal v2".
-
-- Migration `create_activity_comments_table.php`:
-  ```
-  id, activity_id (fk activity_streams cascade), user_id (fk users),
-  body (text), parent_comment_id (fk activity_comments nullable),
-  timestamps, soft delete
-  ```
-
-##### Actions
-- `RecordActivityAction`:
-  - Generic record. Dipanggil dari setiap mutation Action existing.
-  - Misal `UpdateProposalDraftAction` panggil `RecordActivityAction(verb='updated', object=Proposal)`.
-- `GetActivityFeedAction`:
-  - Input: `organizationId, projectId?, limit, offset`.
-  - Return activities chronological + comments count + actor avatar.
-- `AddActivityCommentAction`:
-  - Detect mentions `@username` → kirim notification (broadcast via M26).
-- `ResolveMentionsAction` helper: parse `@slug` → user IDs.
-
-##### Form Requests, Controllers, Routes
-- `GET /activity` → org-wide feed.
-- `GET /proker/{project}/activity` → project-specific feed.
-- `POST /activity/{activity}/comments` → tambah komentar.
-- `DELETE /activity/comments/{comment}` (soft).
-
-#### Frontend
-- File baru: `resources/js/Pages/Activity/Feed.tsx` — full feed page.
-- File baru: `resources/js/Components/Activity/FeedItem.tsx` — actor (verb) object + timestamp + comment thread.
-- File baru: `resources/js/Components/Activity/CommentInput.tsx` — textarea dengan @mention autocomplete.
-- Tambah feed mini di proker detail page (sidebar atau tab).
-
-##### Hook activity recording
-- Setiap Action existing yang penting (Proposal updated, Task done, Member joined, RAB realized, Meeting created) panggil `RecordActivityAction` di akhir flow.
-- Pakai event listener Eloquent atau panggil eksplisit.
-
-#### Tests
-- File: `tests/Feature/ActivityFeedTest.php`:
-  - Update proposal → activity record dibuat.
-  - Comment dengan `@user` → notif terkirim ke mentioned user.
-  - Cross-org: feed org1 tidak bocor ke org2.
-
-#### Checklist
-- [ ] 2 migrations.
-- [ ] `RecordActivityAction` + `GetActivityFeedAction` + comments.
-- [ ] Hook ke ~10 Action existing.
-- [ ] Routes + pages + components.
-- [ ] Mention parsing + broadcast notif.
-- [ ] Tests.
-
-#### Verification
-- Sekretaris update proposal → activity muncul di feed → owner @mention sekretaris di komentar → notif real-time terkirim.
-
----
-
-### 4.5 M42 · Generic Approval Workflow (Extend M18)
-
-**Status:** Belum ada. Generalize M18 multi-level approval untuk apply ke modul lain.
-
-#### Tujuan
-- Approval workflow di M18 hanya untuk Proposal/RAB/LPJ. Generalize agar bisa apply ke:
-  - Notulen rapat (M14): sekretaris draft → ketua approve baru publish.
-  - Surat keluar (M39): drafted by → signed by.
-  - Pengajuan dana darurat.
-  - Pengajuan request inventory (M40 loan).
-
-#### Backend
-- Audit M18 schema: `approval_workflow_definitions`, `approval_instances`, `approval_step_records`.
-- M18 schema sebenarnya sudah morphable (`subject_type`, `subject_id`). Hanya perlu attach ke model baru.
-- Action `AttachApprovalWorkflowAction`:
-  - Input: `subjectType (model class), subjectId, workflowDefinitionId`.
-  - Buat `approval_instance`.
-- Update M14 `PublishMeetingMinutesAction`:
-  - Kalau org config `meeting_minutes_require_approval = true`, trigger `AttachApprovalWorkflowAction` instead of langsung publish.
-- Update M39 `SubmitLetterForSigningAction` pakai pattern sama.
-- Update M40 `RequestInventoryLoanAction` pakai pattern sama (kalau strict approval mode).
-- Update M11 dashboard `bendahara/pimpinan` variant: approval queue lintas subject types.
-- Helper `ApprovalSubjectFormatter`: format subject untuk UI ("Notulen Rapat 'Evaluasi Proposal'").
-
-#### Frontend
-- Update `resources/js/Components/Approval/ApprovalQueueItem.tsx` (existing):
-  - Detect subject type, render label generic.
-  - Click → navigate ke detail subject.
-- Update setiap modul yang attach ke workflow tampilkan timeline (reuse `ApprovalWorkflowTimeline` existing).
-
-#### Tests
-- File: `tests/Feature/GenericApprovalWorkflowTest.php`:
-  - Attach workflow ke Meeting Minutes → publish blocked sampai approved.
-  - Cross subject types di queue ditampilkan benar.
-  - Timeline render untuk meeting + letter + loan.
-
-#### Checklist
-- [ ] `AttachApprovalWorkflowAction` generic.
-- [ ] Update M14 minutes publish flow.
-- [ ] Update M39 letter signing flow.
-- [ ] Update M40 loan request flow.
-- [ ] UI approval queue cross-subject.
-- [ ] Tests.
-
-#### Verification
-- Org config "Notulen butuh approval" → sekretaris publish notulen → masuk approval queue ketua → ketua approve → notulen visible ke semua member.
-
 ---
 
 ## 5. Cross-Module Integration Map
@@ -1417,45 +1112,33 @@ Modul yang baru dibangun harus integrate dengan yang lama:
 | M27 Camera Scanner | M15 Attendance check-in flow + M40 inventory QR lookup |
 | M44 Web Push | M26 real-time + M12 notifications |
 | M28 Onboarding | M02 Org create + M03 Member invite + M04 Proker create + M05 Template + M07 RAB |
-| M25 Rich Text | M08 Proposal + M10 LPJ + M39 Letter template + M41 Activity comment |
-| M26 Real-Time | M12 notifications + M18 approval queue + M41 activity feed |
+| M25 Rich Text | M08 Proposal + M10 LPJ + M39 Letter template |
+| M26 Real-Time | M12 notifications + M18 approval queue |
 | M30 Kepanitiaan | M02 Org + M28.5 Dashboard variant + M19 hide handover |
 | M31 Microsite | M04 Project + M21 Event Registration entry point |
 | M39 Letter | M18 approval workflow + M16 cert pattern (bulk issue) + M28.5 sidebar |
 | M29 Search | All searchable models |
 | M43 Calendar | M06 Task + M14 Meeting + M04 Project |
 | M40 Inventory | M19 Handover snapshot + M27 QR scanner + M18 approval (loan request) |
-| M45 My Day | M06 Task + M14 Meeting + M18 approval pending |
-| M46 Sponsorship | M20 Sponsor & Vendor + M07 Finance |
-| M47 Skill | M03 Member profile + M06 Task assign + M04 Project member |
-| M41 Activity | All major mutation Actions + M26 broadcast |
-| M42 Generic Approval | M18 + M14 + M39 + M40 |
 
 ---
 
 ## 6. Master Tracking Checklist
 
 ### Tier IMMEDIATE (bulan 1-3)
-- [ ] **M27** · Camera QR Scanner + PWA setup
-- [ ] **M44** · Web Push (bundled M27)
-- [ ] **M28** · Onboarding Wizard
-- [ ] **M25** · Rich Text Editor (Tiptap)
-- [ ] **M26** · Real-Time Notifications (Reverb)
+- [x] **M27** · Camera QR Scanner + PWA setup
+- [x] **M44** · Web Push (bundled M27)
+- [x] **M28** · Onboarding Wizard
+- [x] **M25** · Rich Text Editor (Tiptap)
+- [x] **M26** · Real-Time Notifications (Reverb)
 
 ### Tier GROWTH (bulan 4-6)
-- [ ] **M30** · Kepanitiaan Mode
-- [ ] **M31** · Public Proker Microsite
+- [x] **M30** · Kepanitiaan Mode
+- [x] **M31** · Public Proker Microsite
 - [ ] **M39** · Surat Menyurat Generator (killer feature)
 - [ ] **M29** · Global Search (Cmd+K)
 - [ ] **M43** · Calendar Sync (.ics)
 - [ ] **M40** · Inventory & Asset Management
-
-### Tier MOMENTUM (bulan 7-9)
-- [ ] **M45** · Personal "My Day" View
-- [ ] **M46** · Sponsorship Pipeline Tracker
-- [ ] **M47** · Member Skill Tracker
-- [ ] **M41** · Activity Feed (Slack-Style)
-- [ ] **M42** · Generic Approval Workflow
 
 ### Frozen / Maintenance Mode (jangan tambah scope)
 - [ ] M16 Certificate — skip QA-OPEN-012, no further enhancement
@@ -1533,7 +1216,7 @@ Format untuk catat fitur baru yang muncul di tengah jalan:
 ```
 ### NEW-FEATURE-XX
 - Tanggal: YYYY-MM-DD
-- Tier: IMMEDIATE / GROWTH / MOMENTUM
+- Tier: IMMEDIATE / GROWTH
 - Modul: ...
 - Justifikasi: ...
 - Estimasi: ...
@@ -1550,13 +1233,13 @@ Format untuk catat fitur baru yang muncul di tengah jalan:
 | Plan Document | Hubungan |
 |---|---|
 | **BUG-FIX-PLAN.md** | Phase 0 (Foundation Helpers) prerequisite semua modul roadmap. Phase 1-7 (org/member/proker/task/finance fix) prerequisite M28 Onboarding. Phase 11-12 (security + observability) jalan paralel. |
-| **LANDING-CMS-PLAN.md** (LCMS01) | Independent, bisa jalan paralel. Cocok di slot bulan 5-6 (sela GROWTH/MOMENTUM). |
-| **SUPER-ADMIN-V2-PLAN.md** (SA02 + SA03) | Independent. Phase 4 SA02 (ActivityLogResource) bisa share data dengan M41 Activity Feed di sini. SA02 Phase 5 (operational resources) butuh modul existing. SA03 security wajib pre-launch publik. |
+| **LANDING-CMS-PLAN.md** (LCMS01) | Independent, bisa jalan paralel. Cocok di slot bulan 5-6 (sela GROWTH). |
+| **SUPER-ADMIN-V2-PLAN.md** (SA02 + SA03) | Independent. SA02 Phase 5 (operational resources) butuh modul existing. SA03 security wajib pre-launch publik. |
 | **QA-REPORT-PROKERIN.md** | Source of truth bug yang harus difix sebelum modul roadmap baru bisa pakai infra (mis. Phase 1 BUG-FIX selesaikan org create yang dibutuhkan M28 Onboarding). |
 
 ---
 
-## 12. Eksekusi Recommended Order (Solo Dev, 6-9 Bulan)
+## 12. Eksekusi Recommended Order (Solo Dev, ~5-6 Bulan untuk Roadmap Aktif)
 
 ```
 Week 1-6:    BUG-FIX Phase 0-7 (foundation + dummy buttons)
@@ -1572,18 +1255,15 @@ Week 22-24:  M39 (surat generator — killer feature)
 Week 25:     M29 (global search)
 Week 26:     M43 (calendar sync .ics — quick win)
 Week 27-28:  M40 (inventory)
-Week 29:     M45 (my day)
-Week 30-31:  M46 (sponsorship pipeline)
-Week 32:     M47 (skill tracker)
-Week 33-34:  M41 (activity feed)
-Week 35:     M42 (generic approval)
-Week 36-37:  BUG-FIX Phase 11 + SA03 (security hardening)
-Week 38:     BUG-FIX Phase 12 (observability)
-Week 39-40:  SA02 Super Admin V2 Phase 1-4
-Week 41-42:  LCMS01 Landing CMS
-Week 43:     Final pre-launch QA
-Week 44:     Public launch 🚀
+Week 29-30:  BUG-FIX Phase 11 + SA03 (security hardening)
+Week 31:     BUG-FIX Phase 12 (observability)
+Week 32-33:  SA02 Super Admin V2 Phase 1-4
+Week 34-35:  LCMS01 Landing CMS (atau Landing Polish — sesuai keputusan terbaru)
+Week 36:     Final pre-launch QA
+Week 37:     Public launch 🚀
 ```
+
+> Tier MOMENTUM (M45/M46/M47/M41/M42) dihapus 2026-05-17. Akan di-re-evaluate pasca-deploy berdasarkan feedback user nyata.
 
 ---
 

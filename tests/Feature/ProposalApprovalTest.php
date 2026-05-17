@@ -209,7 +209,8 @@ final class ProposalApprovalTest extends TestCase
             ->where('id', $draft->id)
             ->value('sections'), true);
 
-        $this->assertSame('Latar belakang hasil revisi sekretaris.', $updatedSections[0]['body']);
+        $this->assertSame('doc', $updatedSections[0]['body']['type']);
+        $this->assertSame('Latar belakang hasil revisi sekretaris.', $updatedSections[0]['body']['content'][0]['content'][0]['text']);
         $this->assertDatabaseHas('proposal_drafts', [
             'id' => $draft->id,
             'status' => 'draft',

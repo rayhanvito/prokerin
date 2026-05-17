@@ -1,13 +1,13 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
-import { PageProps } from '@/types';
 
 export default function NotificationBell() {
-    const { props } = usePage<PageProps>();
-    const notifications = props.notifications;
+    const { unreadCount, notifications, markAsRead, markAllRead, loadInitial } =
+        useNotifications();
     const [open, setOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -28,41 +28,16 @@ export default function NotificationBell() {
         }
     }, [open]);
 
-    const unreadCount = notifications?.unreadCount ?? 0;
-    const recent = notifications?.recent ?? [];
-
-    const markRead = (id: string, url: string | null) => {
-        router.patch(
-            route('notifications.read', { notification: id }),
-            {},
-            {
-                preserveScroll: true,
-                preserveState: true,
-                onSuccess: () => {
-                    if (url) {
-                        window.location.href = url;
-                    }
-                },
-            },
-        );
-    };
-
-    const markAllRead = () => {
-        router.patch(
-            route('notifications.read-all'),
-            {},
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-
     const toggleDropdown = () => {
         const nextOpen = !open;
 
         setOpen(nextOpen);
 
         if (nextOpen) {
-            router.reload({
-                only: ['notifications'],
+            loadInitial().catch(() => {
+                router.reload({
+                    only: ['notifications'],
+                });
             });
         }
     };
@@ -106,12 +81,12 @@ export default function NotificationBell() {
                         role="list"
                         aria-label="Notifikasi terbaru"
                     >
-                        {recent.length === 0 ? (
+                        {notifications.length === 0 ? (
                             <li className="px-4 py-6 text-center text-sm text-[#717171]">
                                 Belum ada notifikasi.
                             </li>
                         ) : (
-                            recent.map((item) => (
+                            notifications.map((item) => (
                                 <li
                                     key={item.id}
                                     className={cn(
@@ -122,7 +97,7 @@ export default function NotificationBell() {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            markRead(item.id, item.url)
+                                            markAsRead(item.id, item.url)
                                         }
                                         className="block w-full text-left px-4 py-3 transition hover:bg-[#fafbfc]"
                                     >
