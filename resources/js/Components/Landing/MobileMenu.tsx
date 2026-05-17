@@ -11,7 +11,6 @@ interface MobileMenuProps {
 const navItems = [
     { label: 'Fitur', href: route('landing.features') },
     { label: 'Harga', href: route('landing.pricing') },
-    { label: 'Blog', href: null },
 ];
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {

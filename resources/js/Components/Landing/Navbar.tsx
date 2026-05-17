@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 const navItems = [
     { label: 'Fitur', href: route('landing.features') },
     { label: 'Harga', href: route('landing.pricing') },
-    { label: 'Blog', href: null },
 ];
 
 export default function Navbar() {

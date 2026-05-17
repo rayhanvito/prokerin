@@ -13,7 +13,6 @@ const footerColumns = [
     {
         title: 'Resources',
         links: [
-            { label: 'Blog', href: null },
             { label: 'Prokerin Academy (coming soon)', href: null },
             { label: 'Dokumentasi API', href: null },
             { label: 'Status Layanan', href: null },
