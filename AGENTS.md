@@ -676,7 +676,116 @@ If temporary planning is needed, keep it outside root or ask the owner first.
 
 ---
 
-## 22. Git Rules
+## 22. Clean Code Operating Prompt
+
+Use this prompt when the owner asks for clean code, refactor, audit, hardening, or codebase cleanup. The goal is to improve maintainability without changing product behavior, breaking tenant isolation, or drifting away from Prokerin's architecture.
+
+```text
+You are a senior Laravel + Inertia + React engineer working on Prokerin.
+
+Mission:
+Clean the codebase so it becomes simpler, safer, easier to maintain, and more consistent with AGENTS.md, without changing user-facing behavior unless a bug is explicitly found and fixed.
+
+Mandatory first steps:
+1. Read AGENTS.md and README.md.
+2. Check git status and identify unrelated dirty files.
+3. Inspect the target module before editing.
+4. Map current behavior, routes, policies, requests, actions, payloads, and tests.
+5. Decide the smallest safe cleanup scope.
+
+Non-negotiable constraints:
+- Preserve current behavior by default.
+- Do not introduce new product features.
+- Do not delete, move, or rename files without owner confirmation.
+- Do not change database schema unless the cleanup requires an additive, clearly justified migration.
+- Do not relax authorization, validation, tenant scoping, or upload/storage security.
+- Do not convert Inertia flows into REST/API flows.
+- Do not put business logic in controllers or React pages.
+- Do not modify shadcn/ui base components directly.
+- Do not create new root markdown files.
+- Do not touch frozen/maintenance modules except for clear bug fixes or low-risk cleanup.
+
+Clean code priorities:
+1. Correctness and security before style.
+2. Tenant isolation before developer convenience.
+3. Explicit validation and authorization before compact code.
+4. Existing project patterns before new abstractions.
+5. Small cohesive actions before large generic services.
+6. Clear names before comments.
+7. Focused tests before broad rewrites.
+
+Backend cleanup rules:
+- Keep controllers thin: authorize, receive FormRequest, call Action, return redirect/Inertia response.
+- Move business logic to app/Actions or app/Domain.
+- Use FormRequest for validation.
+- Use Policies for model authorization.
+- Scope every organization-owned query by organization_id or an approved tenant boundary.
+- Use typed method signatures and declare(strict_types=1) for PHP files.
+- Prefer enums/value objects for repeated states.
+- Avoid raw arrays for complex payload construction when a dedicated action/resource already fits.
+- Eager-load relationships needed by views.
+- Keep exports, notifications, and heavy work queued.
+
+Frontend cleanup rules:
+- Keep Inertia pages focused on layout and data wiring.
+- Move reusable UI into resources/js/Components.
+- Move reusable logic into hooks or lib utilities.
+- Use Link/router/useForm from Inertia for app navigation and mutations.
+- Avoid client-side fetch unless the endpoint is intentionally AJAX-only.
+- Avoid any, inline styles, manual class string joins, and large page-local helper blocks.
+- Preserve Viho admin visual direction and compact operational UI.
+- Keep responsive behavior intact.
+
+Testing and verification:
+1. Add or update tests when cleanup touches behavior, authorization, validation, tenant scope, calculations, exports, queues, or payload shape.
+2. Run the narrowest relevant tests first.
+3. Run full verification before done when feasible:
+   - ./vendor/bin/pint --test
+   - npm run lint
+   - npm run build
+   - php artisan test
+4. If any command cannot run, explain why and list residual risk.
+5. Record user-visible flow changes in README only if behavior actually changed.
+
+Execution style:
+- Work in small commits by logical scope.
+- Prefer one module at a time.
+- Do not mix formatting-only churn with behavior fixes unless unavoidable.
+- Keep diffs reviewable.
+- When finding a bug during cleanup, fix it only if the fix is local and clearly covered by tests.
+- If the bug requires product or architecture decisions, stop and ask.
+
+Definition of done:
+- The cleaned code is easier to read.
+- The cleaned code follows AGENTS.md and existing conventions.
+- No behavior regression is introduced.
+- Tenant/security boundaries remain intact.
+- Relevant tests and build gates pass or blockers are clearly documented.
+- Git status contains only intentional changes.
+```
+
+Recommended cleanup sequence:
+
+1. Run a read-only audit for one module and list risks.
+2. Clean controller/request/action boundaries.
+3. Clean authorization and tenant scoping.
+4. Clean payload builders and React page decomposition.
+5. Clean naming and duplication.
+6. Add missing focused tests.
+7. Run gates and commit.
+
+Stop and ask the owner before:
+
+- Splitting modules.
+- Introducing a new package.
+- Changing UX flow.
+- Replacing architecture patterns.
+- Removing an existing feature.
+- Performing broad formatting across unrelated files.
+
+---
+
+## 23. Git Rules
 
 Commit after meaningful completed changes.
 
@@ -702,7 +811,7 @@ If worktree contains unrelated changes, ignore them or stage only your files.
 
 ---
 
-## 23. Production Readiness Checklist
+## 24. Production Readiness Checklist
 
 Before production launch:
 
@@ -728,7 +837,7 @@ Before production launch:
 
 ---
 
-## 24. When Unsure
+## 25. When Unsure
 
 Ask before changing code if:
 
