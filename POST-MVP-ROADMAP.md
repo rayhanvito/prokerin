@@ -240,17 +240,18 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Notification proposal approved → push subscription di-trigger (gunakan Notification fake).
 
 #### Checklist
-- [ ] Package laravel-notification-channels/webpush.
-- [ ] VAPID keys + config.
-- [ ] Migration push_subscriptions.
-- [ ] WebPushChannel di Notification existing.
-- [ ] `lib/webpush.ts` + service worker push handler.
-- [ ] `EnableWebPushBanner` di AppLayout.
-- [ ] Routes subscribe/unsubscribe.
-- [ ] Tests subscription + notification dispatch.
+- [x] Package laravel-notification-channels/webpush.
+- [x] VAPID keys + config.
+- [x] Migration push_subscriptions.
+- [x] WebPushChannel di Notification existing.
+- [x] `lib/webpush.ts` + service worker push handler.
+- [x] `EnableWebPushBanner` di AppLayout.
+- [x] Routes subscribe/unsubscribe.
+- [x] Tests subscription + notification dispatch.
 
 #### Verification
 - Browser smoke: aktifkan permission → trigger proposal approval → notif OS muncul walau tab tidak aktif.
+- 2026-05-17: WebPush package installed, config/migration added, `User` now supports push subscriptions, subscribe/unsubscribe routes added, Inertia shares WebPush public key/subscription state, AppLayout shows `EnableWebPushBanner`, service worker handles push + notification click, and task/proposal/LPJ/failed-job notifications can include WebPush when VAPID keys are configured. Targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/WebPushSubscriptionTest.php tests/Feature/Notifications/ApprovalNotificationsTest.php tests/Feature/Security/AuthenticationBypassTest.php --stop-on-failure` -> **8 passed, 150 assertions**. Gates: `npm run lint` pass; `npm run build` pass; `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass; full `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **504 passed, 2725 assertions**. Local DB migrated through `2026_05_17_000011_create_push_subscriptions_table`. Browser OS-notification smoke not run in this environment.
 
 ---
 

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'email_verified_at', 'last_login_at', 'password', 'google_id', 'avatar_url', 'whatsapp_number', 'whatsapp_opt_in'])]
@@ -21,7 +22,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Impersonate, Notifiable;
+    use HasFactory, HasPushSubscriptions, HasRoles, Impersonate, Notifiable;
 
     /**
      * Get the attributes that should be cast.

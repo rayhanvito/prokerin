@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Notifications\Channels\WhatsAppNotificationChannel;
+use App\Notifications\Concerns\SendsWebPushNotifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 final class ProposalApprovalDecidedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWebPushNotifications;
 
     public function __construct(
         public readonly string $projectName,
@@ -26,7 +28,7 @@ final class ProposalApprovalDecidedNotification extends Notification implements 
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail', WhatsAppNotificationChannel::class];
+        return $this->withWebPush(['database', 'mail', WhatsAppNotificationChannel::class]);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -52,6 +54,19 @@ final class ProposalApprovalDecidedNotification extends Notification implements 
         return $this->decision === 'approved'
             ? "Proposal {$this->projectName} disetujui oleh {$this->approverName}."
             : "Proposal {$this->projectName} dikembalikan untuk revisi oleh {$this->approverName}.";
+    }
+
+    public function toWebPush(object $notifiable, ?Notification $notification = null): WebPushMessage
+    {
+        $headline = $this->decision === 'approved'
+            ? 'Proposal disetujui'
+            : 'Proposal perlu revisi';
+
+        return $this->webPushMessage(
+            title: $headline,
+            body: "{$this->projectName} oleh {$this->approverName}.",
+            url: $this->resourceUrl,
+        );
     }
 
     /**

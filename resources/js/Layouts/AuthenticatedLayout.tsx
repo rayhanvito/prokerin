@@ -4,6 +4,7 @@ import { usePage } from '@inertiajs/react';
 import FlashBanner from '@/Components/Prokerin/FlashBanner';
 import ImpersonationBanner from '@/Components/Prokerin/ImpersonationBanner';
 import OnboardingWizard from '@/Components/Prokerin/OnboardingWizard';
+import EnableWebPushBanner from '@/Components/Notifications/EnableWebPushBanner';
 import VihoHeader from '@/Components/Viho/VihoHeader';
 import VihoSidebar from '@/Components/Viho/VihoSidebar';
 import Toaster from '@/Components/ui/Toaster';
@@ -16,7 +17,7 @@ export default function Authenticated({
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
-    const { flash } = usePage<PageProps>().props;
+    const { app, flash } = usePage<PageProps>().props;
 
     useEffect(() => {
         showFlashToast(flash);
@@ -40,6 +41,12 @@ export default function Authenticated({
 
                 <main className="px-4 py-6 sm:px-6 lg:px-8">
                     <FlashBanner />
+                    {app.webPush.enabled && (
+                        <EnableWebPushBanner
+                            publicKey={app.webPush.publicKey}
+                            subscribed={app.webPush.subscribed}
+                        />
+                    )}
                     {children}
                 </main>
             </div>

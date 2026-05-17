@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsWebPushNotifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 final class TaskDeadlineReminderNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWebPushNotifications;
 
     public function __construct(
         public readonly string $taskTitle,
@@ -24,7 +26,7 @@ final class TaskDeadlineReminderNotification extends Notification implements Sho
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return $this->withWebPush(['database', 'mail']);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -38,6 +40,15 @@ final class TaskDeadlineReminderNotification extends Notification implements Sho
     public function toWhatsApp(object $notifiable): string
     {
         return "Reminder Prokerin: task {$this->taskTitle} untuk {$this->projectName} deadline {$this->dueAt}.";
+    }
+
+    public function toWebPush(object $notifiable, ?Notification $notification = null): WebPushMessage
+    {
+        return $this->webPushMessage(
+            title: 'Deadline task mendekat',
+            body: "{$this->taskTitle} untuk {$this->projectName} deadline {$this->dueAt}.",
+            url: route('tasks.kanban', absolute: false),
+        );
     }
 
     /**

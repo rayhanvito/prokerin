@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsWebPushNotifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 final class QueueJobFailedNotification extends Notification
 {
-    use Queueable;
+    use Queueable, SendsWebPushNotifications;
 
     public function __construct(
         public readonly string $jobLabel,
@@ -22,7 +24,16 @@ final class QueueJobFailedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->withWebPush(['database']);
+    }
+
+    public function toWebPush(object $notifiable, ?Notification $notification = null): WebPushMessage
+    {
+        return $this->webPushMessage(
+            title: 'Export gagal',
+            body: "{$this->jobLabel}: {$this->reason}",
+            url: $this->resourceUrl,
+        );
     }
 
     /**

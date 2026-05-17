@@ -55,6 +55,13 @@ class HandleInertiaRequests extends Middleware
                     'period' => $campus['domain'] ?? '-',
                     'role' => $campus === null ? 'viewer' : 'campus_admin',
                 ],
+                'webPush' => [
+                    'enabled' => filled(config('webpush.vapid.public_key')),
+                    'publicKey' => config('webpush.vapid.public_key'),
+                    'subscribed' => $user instanceof User && method_exists($user, 'pushSubscriptions')
+                        ? $user->pushSubscriptions()->exists()
+                        : false,
+                ],
             ],
             'auth' => [
                 'user' => $user,

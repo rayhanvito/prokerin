@@ -90,6 +90,8 @@ final class AuthenticationBypassTest extends TestCase
             ['post', '/certificates/issue'],
             ['post', '/notifications/task-deadline-reminders'],
             ['post', '/notifications/meeting-alerts'],
+            ['post', '/webpush/subscribe'],
+            ['delete', '/webpush/subscribe'],
             ['patch', '/approval-workflows/1/decision'],
             ['patch', '/approval-workflows/1/delegate'],
             ['post', '/onboarding/complete'],

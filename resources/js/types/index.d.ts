@@ -50,6 +50,11 @@ export type PageProps<
             period: string;
             role: string;
         };
+        webPush: {
+            enabled: boolean;
+            publicKey: string | null;
+            subscribed: boolean;
+        };
     };
     auth: {
         user: User | null;

@@ -63,6 +63,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskDeadlineReminderController;
 use App\Http\Controllers\TaskPicController;
 use App\Http\Controllers\TaskStatusController;
+use App\Http\Controllers\WebPushSubscriptionController;
 use App\Http\Controllers\WorkspacePageController;
 use Illuminate\Support\Facades\Route;
 
@@ -219,6 +220,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/recent', [NotificationRecentController::class, 'show'])->name('notifications.recent');
     Route::patch('/notifications/read-all', [NotificationReadController::class, 'readAll'])->name('notifications.read-all');
     Route::patch('/notifications/{notification}/read', [NotificationReadController::class, 'update'])->name('notifications.read');
+    Route::post('/webpush/subscribe', [WebPushSubscriptionController::class, 'store'])->name('webpush.subscribe');
+    Route::delete('/webpush/subscribe', [WebPushSubscriptionController::class, 'destroy'])->name('webpush.unsubscribe');
     Route::post('/invitations/{token}/accept', [OrganizationInvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitations/{token}/decline', [OrganizationInvitationController::class, 'decline'])->name('invitations.decline');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])

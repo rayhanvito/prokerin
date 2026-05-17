@@ -38,3 +38,49 @@ self.addEventListener('fetch', (event) => {
         fetch(event.request).catch(() => caches.match(event.request)),
     );
 });
+
+self.addEventListener('push', (event) => {
+    const fallback = {
+        title: 'Prokerin',
+        body: 'Ada notifikasi baru.',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        data: { url: '/notifications' },
+    };
+
+    const payload = event.data ? event.data.json() : fallback;
+    const title = payload.title || fallback.title;
+
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body: payload.body || fallback.body,
+            icon: payload.icon || fallback.icon,
+            badge: payload.badge || fallback.badge,
+            data: payload.data || fallback.data,
+            tag: payload.tag,
+            renotify: payload.renotify,
+            requireInteraction: payload.requireInteraction,
+        }),
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = event.notification.data?.url || '/notifications';
+
+    event.waitUntil(
+        self.clients
+            .matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clients) => {
+                for (const client of clients) {
+                    if ('focus' in client) {
+                        client.navigate(targetUrl);
+                        return client.focus();
+                    }
+                }
+
+                return self.clients.openWindow(targetUrl);
+            }),
+    );
+});
