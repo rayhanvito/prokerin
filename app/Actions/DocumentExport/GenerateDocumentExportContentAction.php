@@ -354,6 +354,13 @@ final class GenerateDocumentExportContentAction
             })
             ->all();
 
+        $taskSummary = $this->lpjTaskSummary((int) $export->project_id);
+        $attendanceCount = DB::table('attendance_records')
+            ->join('attendance_sessions', 'attendance_sessions.id', '=', 'attendance_records.attendance_session_id')
+            ->where('attendance_sessions.project_id', $export->project_id)
+            ->where('attendance_records.status', 'present')
+            ->count();
+
         return [
             'title' => (string) $export->document_title,
             'subtitle' => $project === null ? 'Laporan pertanggungjawaban' : (string) $project->name,
@@ -366,8 +373,39 @@ final class GenerateDocumentExportContentAction
                     'title' => 'Checklist LPJ',
                     'body' => implode(PHP_EOL, $items),
                 ],
+                [
+                    'title' => 'Ringkasan Eksekusi',
+                    'body' => implode(PHP_EOL, [
+                        'Task selesai: '.$taskSummary['done'].'/'.$taskSummary['total'],
+                        'Realisasi anggaran: Rp'.number_format($this->lpjRealizedBudget((int) $export->project_id), 0, ',', '.'),
+                        'Kehadiran tercatat: '.$attendanceCount.' orang',
+                    ]),
+                ],
             ],
         ];
+    }
+
+    /**
+     * @return array{done: int, total: int}
+     */
+    private function lpjTaskSummary(int $projectId): array
+    {
+        return [
+            'done' => DB::table('project_tasks')
+                ->where('project_id', $projectId)
+                ->where('status', 'done')
+                ->count(),
+            'total' => DB::table('project_tasks')
+                ->where('project_id', $projectId)
+                ->count(),
+        ];
+    }
+
+    private function lpjRealizedBudget(int $projectId): int
+    {
+        return (int) DB::table('budget_lines')
+            ->where('project_id', $projectId)
+            ->sum('realized_amount');
     }
 
     /**

@@ -8,19 +8,21 @@ use Illuminate\Support\Facades\DB;
 
 final class GetTaskCalendarPayloadAction
 {
+    public function __construct(
+        private readonly GetActiveOrganizationContextAction $activeOrganizationContext,
+    ) {}
+
     /**
      * @return array{days: array<int, array{id: int, date: string, title: string, project: string, status: string}>}
      */
-    public function execute(int $userId): array
+    public function execute(int $userId, ?int $preferredOrganizationId = null): array
     {
-        $organizationIds = DB::table('organization_members')
-            ->where('user_id', $userId)
-            ->pluck('organization_id');
+        $context = $this->activeOrganizationContext->execute($userId, $preferredOrganizationId);
 
         return [
             'days' => DB::table('project_tasks')
                 ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
-                ->whereIn('projects.organization_id', $organizationIds)
+                ->where('projects.organization_id', $context->organizationId)
                 ->where('projects.status', '!=', 'archived')
                 ->whereNotNull('project_tasks.due_at')
                 ->orderBy('project_tasks.due_at')

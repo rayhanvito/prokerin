@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Actions\Dashboard\SidebarMenuAction;
+use App\Actions\Notification\GetRecentNotificationsAction;
+use App\Actions\Onboarding\CheckOnboardingStatusAction;
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
@@ -36,7 +39,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $organization = $user === null ? null : $this->activeOrganization((int) $user->id);
+        $organization = $user === null ? null : $this->activeOrganization($request, (int) $user->id);
         $campus = $user === null || $organization !== null ? null : $this->activeCampus((int) $user->id);
 
         return [
@@ -67,6 +70,8 @@ class HandleInertiaRequests extends Middleware
                 'attendanceQrToken' => fn (): ?array => $this->sessionArray($request, 'attendanceQrToken'),
             ],
             'impersonating' => $this->impersonationContext(),
+            'onboarding' => $user === null ? null : app(CheckOnboardingStatusAction::class)->execute((int) $user->id),
+            'notifications' => $user === null ? null : app(GetRecentNotificationsAction::class)->execute((int) $user->id),
         ];
     }
 
@@ -153,22 +158,30 @@ class HandleInertiaRequests extends Middleware
     /**
      * @return array{id: int, name: string, period: string, role: string}|null
      */
-    private function activeOrganization(int $userId): ?array
+    private function activeOrganization(Request $request, int $userId): ?array
     {
-        $organization = DB::table('organization_members')
-            ->join('organizations', 'organizations.id', '=', 'organization_members.organization_id')
-            ->leftJoin('organization_periods', function ($join): void {
-                $join->on('organization_periods.organization_id', '=', 'organizations.id')
-                    ->where('organization_periods.is_active', true);
+        $activeOrganizationId = $request->session()->get('active_organization_id');
+        $organization = $this->organizationMembershipQuery($userId)
+            ->when(is_numeric($activeOrganizationId), static function ($query) use ($activeOrganizationId): void {
+                $query->where('organization_members.organization_id', (int) $activeOrganizationId);
             })
-            ->where('organization_members.user_id', $userId)
-            ->orderBy('organization_members.id')
             ->first([
                 'organizations.id',
                 'organizations.name',
                 'organization_members.role',
                 'organization_periods.name as period_name',
             ]);
+
+        if ($organization === null && is_numeric($activeOrganizationId)) {
+            $request->session()->forget('active_organization_id');
+            $organization = $this->organizationMembershipQuery($userId)
+                ->first([
+                    'organizations.id',
+                    'organizations.name',
+                    'organization_members.role',
+                    'organization_periods.name as period_name',
+                ]);
+        }
 
         if ($organization === null) {
             $organization = DB::table('project_members')
@@ -198,5 +211,17 @@ class HandleInertiaRequests extends Middleware
             'period' => (string) ($organization->period_name ?? '-'),
             'role' => (string) $organization->role,
         ];
+    }
+
+    private function organizationMembershipQuery(int $userId): Builder
+    {
+        return DB::table('organization_members')
+            ->join('organizations', 'organizations.id', '=', 'organization_members.organization_id')
+            ->leftJoin('organization_periods', function ($join): void {
+                $join->on('organization_periods.organization_id', '=', 'organizations.id')
+                    ->where('organization_periods.is_active', true);
+            })
+            ->where('organization_members.user_id', $userId)
+            ->orderBy('organization_members.id');
     }
 }

@@ -1,9 +1,9 @@
 import Dropdown from '@/Components/Dropdown';
+import NotificationBell from '@/Components/Notifications/NotificationBell';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { vihoMenu } from '@/Data/vihoMenu';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    Bell,
     Bookmark,
     Maximize,
     Menu,
@@ -84,13 +84,7 @@ export default function VihoHeader({
                     >
                         <Bookmark className="h-[18px] w-[18px]" />
                     </button>
-                    <Link
-                        href={route('notifications.index')}
-                        className="relative h-10 w-10 items-center justify-center rounded-[4px] transition hover:bg-[#f5f7fb] sm:inline-flex"
-                    >
-                        <Bell className="h-[18px] w-[18px]" />
-                        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#d22d3d]" />
-                    </Link>
+                    <NotificationBell />
                     <button
                         type="button"
                         className="hidden h-10 w-10 items-center justify-center rounded-[4px] transition hover:bg-[#f5f7fb] sm:inline-flex"

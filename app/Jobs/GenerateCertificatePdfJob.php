@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Models\User;
+use App\Notifications\QueueJobFailedNotification;
 use Dompdf\Dompdf;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -68,9 +70,29 @@ final class GenerateCertificatePdfJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
+        $certificate = DB::table('certificate_recipients')
+            ->where('id', $this->certificateRecipientId)
+            ->first(['issued_by', 'recipient_name', 'certificate_number']);
+
         DB::table('certificate_recipients')
             ->where('id', $this->certificateRecipientId)
             ->update(['updated_at' => now()]);
+
+        if ($certificate === null || $certificate->issued_by === null) {
+            return;
+        }
+
+        $issuer = User::query()->find((int) $certificate->issued_by);
+
+        if ($issuer === null) {
+            return;
+        }
+
+        $issuer->notify(new QueueJobFailedNotification(
+            jobLabel: sprintf('Sertifikat %s', (string) $certificate->certificate_number),
+            reason: $exception->getMessage(),
+            resourceUrl: null,
+        ));
     }
 
     private function renderHtml(object $certificate): string

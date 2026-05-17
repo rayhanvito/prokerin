@@ -6,8 +6,10 @@ namespace App\Providers;
 
 use App\Support\WhatsApp\HttpWhatsAppProvider;
 use App\Support\WhatsApp\WhatsAppProvider;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +27,16 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         $this->configureRateLimiters();
+        $this->configureLoginTracking();
+    }
+
+    private function configureLoginTracking(): void
+    {
+        Event::listen(Login::class, static function (Login $event): void {
+            $event->user->forceFill([
+                'last_login_at' => now(),
+            ])->save();
+        });
     }
 
     private function configureRateLimiters(): void

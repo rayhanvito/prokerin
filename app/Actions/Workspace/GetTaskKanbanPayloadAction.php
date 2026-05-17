@@ -9,19 +9,25 @@ use Illuminate\Support\Facades\DB;
 
 final class GetTaskKanbanPayloadAction
 {
+    public function __construct(
+        private readonly GetActiveOrganizationContextAction $activeOrganizationContext,
+    ) {}
+
     /**
-     * @return array{columns: array<int, array{status: string, title: string, tasks: array<int, array{id: int, title: string, project: string, pic: string, dueAt: string|null, status: string}>}>}
+     * @return array{
+     *     columns: array<int, array{status: string, title: string, tasks: array<int, array{id: int, title: string, project: string, pic: string, dueAt: string|null, status: string, isOverdue: bool}>}>,
+     *     projects: array<int, array{id: int, name: string}>
+     * }
      */
-    public function execute(int $userId): array
+    public function execute(int $userId, ?int $preferredOrganizationId = null): array
     {
-        $organizationIds = DB::table('organization_members')
-            ->where('user_id', $userId)
-            ->pluck('organization_id');
+        $context = $this->activeOrganizationContext->execute($userId, $preferredOrganizationId);
+        $today = now()->toDateString();
 
         $tasks = DB::table('project_tasks')
             ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
             ->leftJoin('users as pics', 'pics.id', '=', 'project_tasks.pic_user_id')
-            ->whereIn('projects.organization_id', $organizationIds)
+            ->where('projects.organization_id', $context->organizationId)
             ->where('projects.status', '!=', 'archived')
             ->orderBy('project_tasks.due_at')
             ->get([
@@ -47,9 +53,22 @@ final class GetTaskKanbanPayloadAction
                             'pic' => is_string($task->pic_name) ? $task->pic_name : '-',
                             'dueAt' => is_string($task->due_at) ? $task->due_at : null,
                             'status' => (string) $task->status,
+                            'isOverdue' => is_string($task->due_at)
+                                && $task->due_at < $today
+                                && $task->status !== TaskStatus::Done->value,
                         ])
                         ->values()
                         ->all(),
+                ])
+                ->all(),
+            'projects' => DB::table('projects')
+                ->where('organization_id', $context->organizationId)
+                ->where('status', '!=', 'archived')
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(static fn (object $project): array => [
+                    'id' => (int) $project->id,
+                    'name' => (string) $project->name,
                 ])
                 ->all(),
         ];

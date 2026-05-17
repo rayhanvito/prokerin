@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import { Pencil, Save, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
+import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import { formatRupiah, humanizeStatus } from '@/lib/format';
 
@@ -21,6 +22,7 @@ interface EditForm {
 
 export default function BudgetLineRow({ line, statusOptions, canManage }: Props) {
     const [isEditing, setIsEditing] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
     const overBudget = line.realizedAmount > line.plannedAmount;
 
     const form = useForm<EditForm>({
@@ -49,16 +51,9 @@ export default function BudgetLineRow({ line, statusOptions, canManage }: Props)
     };
 
     const handleDelete = () => {
-        if (
-            !window.confirm(
-                `Hapus budget line "${line.name}"? Tindakan ini tidak bisa dibatalkan.`,
-            )
-        ) {
-            return;
-        }
-
         router.delete(route('finance.budget-lines.destroy', { budgetLine: line.id }), {
             preserveScroll: true,
+            onFinish: () => setDeleteOpen(false),
         });
     };
 
@@ -166,7 +161,7 @@ export default function BudgetLineRow({ line, statusOptions, canManage }: Props)
                         {line.isDeletable ? (
                             <button
                                 type="button"
-                                onClick={handleDelete}
+                                onClick={() => setDeleteOpen(true)}
                                 className="rounded-[4px] p-1.5 text-[#d22d3d] hover:bg-[#f5f7fb]"
                                 aria-label="Hapus"
                             >
@@ -174,6 +169,16 @@ export default function BudgetLineRow({ line, statusOptions, canManage }: Props)
                             </button>
                         ) : null}
                     </div>
+                    <ConfirmDialog
+                        open={deleteOpen}
+                        onOpenChange={setDeleteOpen}
+                        title="Hapus budget line?"
+                        description={`Budget line "${line.name}" akan dihapus dari draft RAB. Tindakan ini tidak bisa dibatalkan.`}
+                        confirmLabel="Hapus"
+                        confirmTone="danger"
+                        requireTypedPhrase={line.name}
+                        onConfirm={handleDelete}
+                    />
                 </td>
             ) : null}
         </tr>

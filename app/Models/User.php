@@ -16,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'email_verified_at', 'password', 'google_id', 'avatar_url', 'whatsapp_number'])]
+#[Fillable(['name', 'email', 'email_verified_at', 'last_login_at', 'password', 'google_id', 'avatar_url', 'whatsapp_number', 'whatsapp_opt_in'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -32,7 +32,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'whatsapp_opt_in' => 'boolean',
         ];
     }
 

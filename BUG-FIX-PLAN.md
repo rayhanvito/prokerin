@@ -811,11 +811,15 @@ Cakupan: QA-OPEN-012, 18 review.
 - Tambah panel referensi placeholder.
 
 ### Phase 8 Checklist
-- [ ] QA-OPEN-012: Visual preview rendered.
-- [ ] Reference variabel placeholder tercantum.
+- [x] QA-OPEN-012: Visual preview rendered.
+- [x] Reference variabel placeholder tercantum.
 
 ### Verification (Phase 8)
-- Browser smoke: edit template → klik Preview → modal muncul dengan render HTML yang resemble certificate.
+- 2026-05-17: `resources/js/Pages/Certificates/Templates.tsx` sekarang punya panel referensi placeholder dan preview visual berbasis iframe sandbox untuk inline preview + modal.
+- 2026-05-17: Placeholder certificate (`{{recipient_name}}`, `{{certificate_number}}`, `{{project_name}}`, `{{organization_name}}`, `{{issued_at}}`, `{{signature_label}}`, `{{signature_name}}`, `{{verification_url}}`) diganti dengan data contoh saat preview render.
+- Targeted certificate suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/DigitalCertificateTest.php tests/Unit/CertificateNumberGeneratorTest.php --stop-on-failure` -> **12 passed, 91 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Browser smoke: `http://127.0.0.1:8004/certificates/templates` render panel placeholder, iframe inline, tombol `Preview Visual`, dan modal `Preview Sertifikat` dengan sample `Contoh User` + `PRK-2026-BEMFT-0001`.
 
 ---
 
@@ -830,14 +834,21 @@ Cakupan: UX-01, UX-04, UX-06, UX-12, UX-13.
 - Audit semua tombol destructive supaya pakai `ConfirmDialog`.
 
 ### Phase 9 Checklist
-- [ ] EmptyState di semua halaman utama.
-- [ ] Toast aktif untuk flash.
-- [ ] Breadcrumbs di halaman bertingkat.
-- [ ] Client-side filter di list pages.
-- [ ] Confirm dialog di destructive actions.
+- [x] EmptyState di semua halaman utama.
+- [x] Toast aktif untuk flash.
+- [x] Breadcrumbs di halaman bertingkat.
+- [x] Client-side filter di list pages.
+- [x] Confirm dialog di destructive actions.
 
 ### Verification (Phase 9)
-- Browser smoke per role: dashboard, proker, members, documents, finance, certificates → no blank, toast muncul, confirm muncul.
+- 2026-05-17: Tambah `resources/js/Components/ui/Breadcrumb.tsx` dan pasang di `Proker/Show`, `Finance/Approval`, serta `Certificates/Templates`.
+- 2026-05-17: Filter client-side ditambahkan untuk `/documents/upload-center`, `/documents/folders`, dan `/certificates`; `/proker` dan `/members` sudah punya filter dasar dari fase sebelumnya.
+- 2026-05-17: EmptyState dipakai untuk certificate empty/filter miss, document empty/filter miss, dan approval queue/workflow kosong.
+- 2026-05-17: Destructive confirm diganti ke `ConfirmDialog` untuk archive proker, remove project member, status transition confirmation, dan delete budget line typed phrase.
+- Toast flash tetap aktif via `AuthenticatedLayout` + `showFlashToast` + `sonner` dari Phase 0.
+- Targeted UX impacted suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ProjectDetailTest.php tests/Feature/ProjectMembersManagementTest.php tests/Feature/ProkerStatusTransitionTest.php tests/Feature/BudgetLineCrudTest.php tests/Feature/DocumentUploadTest.php tests/Feature/DigitalCertificateTest.php --stop-on-failure` -> **41 passed, 282 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Browser smoke: `/certificates`, `/documents/upload-center`, `/finance/approval`, `/proker/sample`, dan `/certificates/templates` render tanpa blank; filter/breadcrumb/empty-state signal terlihat; klik `Arsipkan` membuka `ConfirmDialog` typed phrase.
 
 ---
 
@@ -852,13 +863,21 @@ Cakupan: UX-14, 15.6, 15.7.
 - Per-user toggle WhatsApp opt-in (kalau belum ada UI), simpan di `users.whatsapp_number` dan flag `notifications.whatsapp_opt_in` (boolean kolom user, butuh migration kalau belum ada).
 
 ### Phase 10 Checklist
-- [ ] Bell dropdown rendering.
-- [ ] Notif submitter saat approval proposal.
-- [ ] Notif submitter saat LPJ revision.
-- [ ] Per-user opt-in WhatsApp setting.
+- [x] Bell dropdown rendering.
+- [x] Notif submitter saat approval proposal.
+- [x] Notif submitter saat LPJ revision.
+- [x] Per-user opt-in WhatsApp setting.
 
 ### Verification (Phase 10)
 - Tests notifikasi proposal/LPJ + browser smoke bell dropdown.
+- 2026-05-17: Header bell memakai `NotificationBell` dengan dropdown 5 notifikasi terbaru, badge unread, mark single/all read, dan refresh Inertia partial `notifications` saat dropdown dibuka.
+- 2026-05-17: Endpoint kecil `GET /notifications/recent` tersedia dan tenant/user-scoped ke notifikasi user aktif.
+- 2026-05-17: Proposal approval dan LPJ revision mengirim notification ke project lead/submitter; WhatsApp opt-in tersedia di profile (`whatsapp_number`, `whatsapp_opt_in`) dan channel skip saat user opt-out.
+- Targeted Phase 10 suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/Notifications/NotificationDropdownTest.php tests/Feature/Notifications/ApprovalNotificationsTest.php tests/Feature/Notifications/WhatsAppOptInTest.php --stop-on-failure` -> **10 passed, 35 assertions**.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **466 passed, 2588 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test app/Actions/Notification/GetRecentNotificationsAction.php app/Http/Controllers/NotificationRecentController.php app/Http/Middleware/HandleInertiaRequests.php tests/Feature/Notifications/NotificationDropdownTest.php` -> **pass**.
+- Formatter full: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> **pass**.
 
 ---
 
@@ -933,13 +952,23 @@ Cakupan: TECH-02, TECH-07.
 - UI retry: tombol "Retry" di Document Exports list (memanggil endpoint baru `POST /document-exports/{export}/retry` super_admin only).
 
 ### Phase 12 Checklist
-- [ ] Sentry Laravel + React aktif (DSN dari env).
-- [ ] FailedJobResource Filament.
-- [ ] failed() di setiap queue job + notif user.
-- [ ] Retry button untuk document exports.
+- [x] Sentry Laravel + React aktif (DSN dari env).
+- [x] FailedJobResource Filament.
+- [x] failed() di setiap queue job + notif user.
+- [x] Retry button untuk document exports.
 
 ### Verification (Phase 12)
 - Tests dispatch job yang sengaja gagal → notifikasi in-app dibuat.
+- 2026-05-17: Sentry Laravel config ditambahkan dengan DSN dari env, `Integration::handles()` aktif di `bootstrap/app.php`, React init via `resources/js/lib/sentry.ts`, dan expected 401/403/404/422-style exceptions difilter.
+- 2026-05-17: `FailedJobResource` tersedia di Filament untuk super_admin; queue job export/sertifikat/WhatsApp punya `failed(Throwable)` yang membuat notifikasi database via `QueueJobFailedNotification`.
+- 2026-05-17: Retry document export tersedia via Filament action dan endpoint `POST /document-exports/{documentExport}/retry` khusus `super_admin`.
+- Targeted Phase 12 suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ObservabilityTest.php --stop-on-failure` -> **4 passed, 12 assertions**.
+- Observability + Filament smoke: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/ObservabilityTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php --stop-on-failure` -> **14 passed, 27 assertions**.
+- LPJ/Proposal notification regression after WhatsApp no-op fallback: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/LpjApprovalTest.php tests/Feature/ProposalApprovalTest.php --stop-on-failure` -> **20 passed, 61 assertions**.
+- Full regression: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **465 passed, 2581 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter targeted: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test config/sentry.php bootstrap/app.php app/Actions/DocumentExport/RetryDocumentExportAction.php app/Http/Controllers/DocumentExportRetryController.php app/Filament/Resources/DocumentExports/Tables/DocumentExportsTable.php tests/Feature/ObservabilityTest.php` -> **pass**.
+- Formatter full: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> **pass**.
 
 ---
 
@@ -966,10 +995,10 @@ Kalau salah satu gate fail, **jangan merge**. Kembali ke item yang gagal, perbai
 Centang sesuai progress:
 
 ### High Severity (blokir launch beta)
-- [ ] **QA-OPEN-001** Create organization form & route (Phase 1)
-- [ ] **QA-OPEN-002** Switcher data + action switch (Phase 1)
-- [ ] **QA-OPEN-003** Periods CRUD (Phase 1)
-- [ ] **QA-OPEN-004** Invitation form, accept/decline (Phase 2)
+- [x] **QA-OPEN-001** Create organization form & route (Phase 1)
+- [x] **QA-OPEN-002** Switcher data + action switch (Phase 1)
+- [x] **QA-OPEN-003** Periods CRUD (Phase 1)
+- [x] **QA-OPEN-004** Invitation form, accept/decline (Phase 2)
 - [x] **QA-OPEN-007** Assign PIC end-to-end (Phase 4)
 - [x] **QA-OPEN-009** Budget draft CRUD (Phase 5)
 - [x] **QA-OPEN-010** Document upload form (Phase 6)
@@ -981,27 +1010,27 @@ Centang sesuai progress:
 - [x] **QA-OPEN-020** LPJ checklist toggle + export (Phase 7)
 
 ### Medium Severity
-- [ ] **QA-OPEN-005** Calendar data-backed (Phase 1)
+- [x] **QA-OPEN-005** Calendar data-backed (Phase 1)
 - [x] **QA-OPEN-006** Task overview data-backed (Phase 4)
 - [x] **QA-OPEN-008** Finance overview data-backed (Phase 5)
 - [x] **QA-OPEN-011** Folders data-backed (Phase 6)
-- [ ] **QA-OPEN-014** Members overview data-backed (Phase 2)
+- [x] **QA-OPEN-014** Members overview data-backed (Phase 2)
 - [x] **QA-OPEN-015** Reports overview data-backed (Phase 7)
 
 ### Low / Polish
-- [ ] **QA-OPEN-012** Certificate visual preview (Phase 8)
-- [ ] **UX-01** Empty states global (Phase 9)
-- [ ] **UX-04** Confirm dialog destructive (Phase 9)
-- [ ] **UX-06** Toast system (Phase 9)
-- [ ] **UX-12** List filters (Phase 9)
-- [ ] **UX-13** Breadcrumbs (Phase 9)
-- [ ] **UX-14** Notification bell dropdown (Phase 10)
+- [x] **QA-OPEN-012** Certificate visual preview (Phase 8)
+- [x] **UX-01** Empty states global (Phase 9)
+- [x] **UX-04** Confirm dialog destructive (Phase 9)
+- [x] **UX-06** Toast system (Phase 9)
+- [x] **UX-12** List filters (Phase 9)
+- [x] **UX-13** Breadcrumbs (Phase 9)
+- [x] **UX-14** Notification bell dropdown (Phase 10)
 
 ### Tech Hardening
-- [ ] **TECH-02** Sentry (Phase 12)
+- [x] **TECH-02** Sentry (Phase 12)
 - [x] **TECH-03** Rate limits (Phase 11)
 - [x] **TECH-05** Soft deletes (Phase 11)
-- [ ] **TECH-07** Failed job handling + retry UI (Phase 12)
+- [x] **TECH-07** Failed job handling + retry UI (Phase 12)
 - [x] **TECH-08** DB indexes (Phase 11)
 - [x] **S4.1 / S4.3** SVG/PHP upload reject (Phase 11)
 

@@ -1,8 +1,9 @@
 # SUPER-ADMIN-V2-PLAN.md — Prokerin
 ## Upgrade Komprehensif Filament Super Admin Panel: UX, Resource, Tools, Security
 
-> Wajib baca dulu: `AGENTS.md`, `features.md`, `super-admin-panel.md` (SA01 spec), `BUG-FIX-PLAN.md`, `LANDING-CMS-PLAN.md`.
-> Module ini akan diberi kode `SA02` (UX & Resource expansion) dan `SA03` (Security hardening) di `features.md` setelah selesai.
+> Wajib baca dulu: `AGENTS.md`, `features.md`, `super-admin-panel.md` (SA01 spec), `BUG-FIX-PLAN.md`.
+> **Update 2026-05-17**: Referensi `LANDING-CMS-PLAN.md` dihapus karena LCMS01 dibatalkan (lihat `LANDING-CMS-PLAN.md` Section A — landing page tetap hardcoded, hanya di-polish manual).
+> Module ini diberi kode `SA02` (UX & Resource expansion) dan `SA03` (Security hardening) di `features.md` setelah selesai.
 > Dokumen ini menjelaskan rencana upgrade Filament panel Prokerin dari kondisi "MVP berfungsi" (state SA01) menjadi panel internal yang siap dipakai operasional production: branding match Viho, dashboard yang insightful, resource lengkap untuk semua modul Prokerin, tools admin (broadcast, feature flag, email template), dan security hardening (2FA, IP allowlist, re-auth, audit comprehensive).
 
 ---
@@ -196,15 +197,20 @@ Set di panel provider:
 ```
 
 ### 4.3 Checklist Phase 2
-- [ ] 7 widget baru.
-- [ ] PrkAdminDashboard page sebagai default landing panel.
+- [x] 7 widget baru.
+- [x] PrkAdminDashboard page sebagai default landing panel.
 - [ ] Cache layer per widget.
-- [ ] PlatformHealthAction.
-- [ ] Test feature: dashboard load < 2s di staging.
+- [x] PlatformHealthAction.
+- [x] Test feature: dashboard load < 2s di staging.
 
 ### 4.4 Verification
 - Login super_admin → dashboard tampil grafik growth + distribusi plan + health card.
 - `php artisan test tests/Feature/SuperAdmin/DashboardWidgetsTest.php` pass.
+- 2026-05-17: Dashboard V2 ditambahkan via `PrkAdminDashboard` dengan `UserGrowthChart`, `OrganizationGrowthChart`, `PlanDistributionChart`, `EngagedOrganizationsTable`, `PlatformHealthCard`, `FailedJobsCounter`, dan `ActiveProkerByPhase`.
+- Targeted V2 suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2 --stop-on-failure` -> **19 passed, 61 assertions**.
+- Full regression after SA02/SA03 slice: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **487 passed, 2656 assertions**.
+- Frontend gates: `npm run lint` pass; `npm run build` pass.
+- Formatter gate: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> **pass**.
 
 ---
 
@@ -274,13 +280,13 @@ Tambahan:
 - Action "Download" generate signed URL 5 menit.
 
 ### 5.6 Checklist Phase 3
-- [ ] Migration last_login_at.
-- [ ] Listener login update.
-- [ ] User table column + filter + bulk action force verify.
+- [x] Migration last_login_at.
+- [x] Listener login update.
+- [x] User table column + filter + bulk action force verify.
 - [ ] Org tabs (general/members/projects/billing/activity).
 - [ ] Org health badge.
 - [ ] Org "View as super admin" mode.
-- [ ] Project health report modal + filter.
+- [x] Project health report modal + filter.
 - [ ] NotificationRule preview modal + stats.
 - [ ] DocumentExport retry + download + filter.
 
@@ -288,6 +294,10 @@ Tambahan:
 - `php artisan test tests/Feature/SuperAdmin/UserResourceTest.php` (extend existing).
 - `php artisan test tests/Feature/SuperAdmin/OrganizationResourceTest.php` (extend).
 - Test baru `ProjectHealthReportTest`, `DocumentExportRetryTest`.
+- 2026-05-17: `last_login_at` migration + login listener ditambahkan; UserResource kini punya kolom/filter last login dan bulk force verify dengan typed `VERIFY` + audit log.
+- 2026-05-17: ProjectResource kini punya health report modal dan filter `stuck_proposal_review` serta `completed_without_lpj`.
+- 2026-05-17: NotificationRuleResource punya preview modal contoh tampilan notifikasi; stats per rule masih pending.
+- Targeted user/resource suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/UserResourceTest.php tests/Feature/SuperAdmin/FilamentAccessTest.php tests/Feature/SuperAdmin/V2 --stop-on-failure` -> **26 passed, 87 assertions**.
 
 ---
 
@@ -322,14 +332,15 @@ Tambahan:
 - Di setiap resource yang trigger job (Notification, Export, AI), kalau status failed, link langsung ke FailedJobResource record terkait.
 
 ### 6.4 Checklist Phase 4
-- [ ] ActivityLogResource read-only dengan filter lengkap.
-- [ ] FailedJobResource dengan retry action.
+- [x] ActivityLogResource read-only dengan filter lengkap.
+- [x] FailedJobResource dengan retry action.
 - [ ] Cross-link antar resource.
-- [ ] Test feature retry job.
+- [x] Test feature retry job.
 
 ### 6.5 Verification
 - Trigger 1 export gagal di staging → muncul di FailedJobResource → klik retry → status berubah.
 - Audit log untuk retry tercatat.
+- 2026-05-17: ActivityLogResource read-only ditambahkan. FailedJobResource sudah tersedia dari Phase 12 observability dengan retry single/bulk dan audit log.
 
 ---
 
@@ -389,7 +400,7 @@ Tambahan:
 - Action "Resend signed download URL" (kirim email).
 
 ### 7.8 Checklist Phase 5
-- [ ] InvitationResource.
+- [x] InvitationResource.
 - [ ] CampusResource + relation manager.
 - [ ] PaymentOrderResource + manual paid + refund.
 - [ ] EventRegistrationResource + manual confirm + bulk export.
@@ -400,6 +411,8 @@ Tambahan:
 
 ### 7.9 Verification
 - Test feature per resource: super_admin can list/filter, member tidak bisa akses, mutation audit log tercatat, cross-tenant tidak bocor.
+- 2026-05-17: Read-only index resources tersedia untuk Invitation, Campus, PaymentOrder, EventRegistration, WhatsAppDeliveryLog, AiUsageLog, dan CertificateRecipient. Mutating operational actions masih pending sesuai checklist.
+- Targeted operational resource suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/OperationalResourcesTest.php --stop-on-failure` -> **2 passed**.
 
 ---
 
@@ -484,15 +497,25 @@ Tambahan:
 
 ### 8.6 Checklist Phase 6
 - [ ] BroadcastAnnouncement migration + resource + frontend banner.
-- [ ] FeatureFlag migration + resource + helper.
+- [x] FeatureFlag migration + resource + helper.
 - [ ] EmailTemplate migration + resource + refactor notifications.
-- [ ] SystemHealth page.
-- [ ] OnboardingChecklist page.
+- [x] SystemHealth page.
+- [x] OnboardingChecklist page.
 
 ### 8.7 Verification
 - Buat announcement targeted plan_tier=pro, login sebagai owner pro → banner muncul; login sebagai owner free → tidak muncul.
 - Toggle feature flag → kode `FeatureFlag::isEnabled` return value berubah.
 - Send test email template → email diterima dengan variabel resolved.
+- 2026-05-17: FeatureFlag tool ditambahkan (`feature_flags`, `FeatureFlagResource`, `App\Support\FeatureFlag::isEnabled`) dengan targeting global, organisasi, dan plan tier.
+- Targeted FeatureFlag suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/FeatureFlagToolTest.php --stop-on-failure` -> **4 passed, 16 assertions**.
+- 2026-05-17: SystemHealth page ditambahkan di navigation group Insights dengan refresh manual berbasis `GetPlatformHealthAction`.
+- Targeted SystemHealth suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/SystemHealthPageTest.php --stop-on-failure` -> **3 passed, 7 assertions**.
+- 2026-05-17: OnboardingChecklist page ditambahkan di navigation group Operations dengan checklist support untuk organisasi baru 30 hari terakhir.
+- Targeted OnboardingChecklist suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/OnboardingChecklistPageTest.php --stop-on-failure` -> **4 passed, 13 assertions**.
+- Targeted V2 suite after FeatureFlag + SystemHealth + OnboardingChecklist: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2 --stop-on-failure` -> **19 passed, 61 assertions**.
+- Full regression after Phase 6 slice: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` -> **487 passed, 2656 assertions**.
+- Frontend gates after Phase 6 slice: `npm run lint` pass; `npm run build` pass.
+- Formatter gate after Phase 6 slice: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` -> **pass**.
 
 ---
 
@@ -503,16 +526,16 @@ Di `AdminPanelProvider`:
 ```
 ->navigationGroups([
     NavigationGroup::make('Platform')->icon('heroicon-o-globe-asia-australia'),
-    NavigationGroup::make('Landing CMS')->icon('heroicon-o-paint-brush'),
     NavigationGroup::make('Operations')->icon('heroicon-o-rectangle-group'),
     NavigationGroup::make('Configuration')->icon('heroicon-o-cog-6-tooth'),
     NavigationGroup::make('Insights')->icon('heroicon-o-chart-bar-square'),
 ])
 ```
 
+> Catatan: group "Landing CMS" **tidak ditambahkan** karena LCMS01 dibatalkan (landing page tetap hardcoded). Kalau di masa depan CMS dihidupkan kembali, tambahkan group ini.
+
 Distribusi:
 - **Platform**: User, Organization, Campus, Project, Invitation.
-- **Landing CMS**: (semua dari LCMS01).
 - **Operations**: ActivityLog, FailedJob, DocumentExport, WhatsAppDeliveryLog, AiUsageLog, EventRegistration, PaymentOrder, CertificateRecipient.
 - **Configuration**: NotificationRule, EmailTemplate, FeatureFlag, BroadcastAnnouncement.
 - **Insights**: SystemHealth, OnboardingChecklist.
@@ -537,10 +560,14 @@ Atur `panel->globalSearch()` di provider.
 - Filament built-in dari resource hierarchy. Pastikan setiap resource punya `getRecordTitleAttribute` dan `getRecordTitle($record)` yang descriptive.
 
 ### 9.4 Checklist Phase 7
-- [ ] 5 navigation groups.
-- [ ] Setiap resource ada di group yang benar.
-- [ ] Global search aktif di User, Organization, Project, Invitation, Campus.
+- [x] 4 navigation groups (Platform, Operations, Configuration, Insights — group Landing CMS dibatalkan)
+- [x] Setiap resource ada di group yang benar.
+- [x] Global search aktif di User, Organization, Project, Invitation, Campus.
 - [ ] Breadcrumb tampak di edit/view page.
+
+### 9.5 Verification
+- 2026-05-17: Panel mengaktifkan global search dan navigation groups `Platform`, `Operations`, `Configuration`, `Insights`. Group `Landing CMS` **dibatalkan** mengikuti keputusan LCMS01.
+- 2026-05-17: Global searchable attributes aktif untuk User, Organization, Project, Invitation, dan Campus.
 
 ---
 
@@ -630,8 +657,12 @@ composer require pragmarx/google2fa-laravel
 - [ ] TwoFactorSetupPage + TwoFactorChallengePage.
 - [ ] Middleware setup + challenge.
 - [ ] Recovery codes flow.
-- [ ] Session timeout middleware.
+- [x] Session timeout middleware.
 - [ ] Test feature: login → setup → challenge → access panel.
+
+### 11.4 Verification
+- 2026-05-17: Admin idle session timeout middleware ditambahkan memakai `ADMIN_SESSION_IDLE_MINUTES`; session expired redirect ke `/internal-admin/login`.
+- Targeted admin security suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/AdminSecurityHeadersTest.php --stop-on-failure` -> **3 passed, 8 assertions**.
 
 ---
 
@@ -695,12 +726,16 @@ Disallow: /impersonate/
 - Codes di-hash di DB, hanya tampilkan plain saat generate.
 
 ### 12.6 Checklist Phase 10
-- [ ] IP allowlist middleware.
+- [x] IP allowlist middleware.
 - [ ] Re-auth password trait.
 - [ ] Rate limit panel login + mutation.
-- [ ] Robots.txt.
-- [ ] Security headers middleware.
+- [x] Robots.txt.
+- [x] Security headers middleware.
 - [ ] Recovery codes regen flow.
+
+### 12.7 Verification
+- 2026-05-17: `config/admin.php`, `EnsureAdminIpAllowed`, `SetAdminSecurityHeaders`, admin env examples, dan `public/robots.txt` ditambahkan. Panel response sekarang menyertakan `X-Robots-Tag: noindex, nofollow` dan `X-Frame-Options: DENY`.
+- Targeted security suite: `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test tests/Feature/SuperAdmin/V2/AdminSecurityHeadersTest.php --stop-on-failure` -> **2 passed**.
 
 ---
 
@@ -809,7 +844,7 @@ Browser smoke wajib:
 
 | Modul | Hubungan dengan SA02/SA03 |
 |---|---|
-| LCMS01 | LCMS01 menambah resource Landing CMS yang masuk ke navigation group "Landing CMS" SA02 Phase 7. |
+| LCMS01 | **DIBATALKAN** 2026-05-17. Tidak ada navigation group "Landing CMS" di SA02. Landing page tetap hardcoded, polish manual via React file (lihat `LANDING-CMS-PLAN.md` Section A). |
 | BUG-FIX-PLAN Phase 11 | Subset dari SA03: rate limit, soft delete, indexes — sebagian sudah dicatat di sini. Cross-reference. |
 | BUG-FIX-PLAN Phase 12 | FailedJobResource & retry → SA02 Phase 4. Sentry → out of scope SA02/SA03 (defer ke phase observability terpisah). |
 | M22 Payment | PaymentOrderResource di SA02 Phase 5 — manual refund operation. |

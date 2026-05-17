@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Actions\Project;
 
+use App\Domain\Project\ProjectStatus;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class GetProjectDetailPayloadAction
 {
     /**
-     * @return array{project: array{id: int, name: string, slug: string, description: string|null, status: string, progress: int, startsAt: string|null, endsAt: string|null, templateType: string|null, organization: string, lead: string|null}, metrics: array<int, array{label: string, value: string}>, tasks: array<int, array{task: string, pic: string, due: string, status: string}>}
+     * @return array{project: array{id: int, name: string, slug: string, description: string|null, status: string, progress: int, startsAt: string|null, endsAt: string|null, templateType: string|null, organization: string, lead: string|null}, metrics: array<int, array{label: string, value: string}>, tasks: array<int, array{task: string, pic: string, due: string, status: string}>, nextStatuses: array<int, array{value: string, label: string}>, projectMembers: array<int, array{id: int, userId: int, name: string, email: string, role: string}>, availableMembers: array<int, array{id: int, name: string, email: string}>}
      */
+    public function __construct(
+        private readonly TransitionProjectStatusAction $transitionProjectStatus,
+    ) {}
+
     public function execute(int $userId, ?string $slug = null): array
     {
         $organizationIds = DB::table('organization_members')
@@ -25,6 +30,7 @@ final class GetProjectDetailPayloadAction
             ->whereIn('projects.organization_id', $organizationIds)
             ->select([
                 'projects.id',
+                'projects.organization_id',
                 'projects.name',
                 'projects.slug',
                 'projects.description',
@@ -98,6 +104,43 @@ final class GetProjectDetailPayloadAction
                     'pic' => is_string($task->pic_name) ? $task->pic_name : '-',
                     'due' => is_string($task->due_at) ? $task->due_at : '-',
                     'status' => (string) $task->status,
+                ])
+                ->all(),
+            'nextStatuses' => collect($this->transitionProjectStatus->nextStatuses(ProjectStatus::from((string) $project->status)))
+                ->map(static fn (ProjectStatus $status): array => [
+                    'value' => $status->value,
+                    'label' => $status->label(),
+                ])
+                ->all(),
+            'projectMembers' => DB::table('project_members')
+                ->join('users', 'users.id', '=', 'project_members.user_id')
+                ->where('project_members.project_id', $projectId)
+                ->orderByRaw("case project_members.role when 'project_lead' then 0 when 'division_coordinator' then 1 else 2 end")
+                ->orderBy('users.name')
+                ->get([
+                    'project_members.id',
+                    'project_members.user_id',
+                    'project_members.role',
+                    'users.name',
+                    'users.email',
+                ])
+                ->map(static fn (object $member): array => [
+                    'id' => (int) $member->id,
+                    'userId' => (int) $member->user_id,
+                    'name' => (string) $member->name,
+                    'email' => (string) $member->email,
+                    'role' => (string) $member->role,
+                ])
+                ->all(),
+            'availableMembers' => DB::table('organization_members')
+                ->join('users', 'users.id', '=', 'organization_members.user_id')
+                ->where('organization_members.organization_id', (int) $project->organization_id)
+                ->orderBy('users.name')
+                ->get(['users.id', 'users.name', 'users.email'])
+                ->map(static fn (object $member): array => [
+                    'id' => (int) $member->id,
+                    'name' => (string) $member->name,
+                    'email' => (string) $member->email,
                 ])
                 ->all(),
         ];

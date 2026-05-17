@@ -13,9 +13,18 @@ final class HttpWhatsAppProvider implements WhatsAppProvider
      */
     public function send(WhatsAppMessageData $message): array
     {
+        $url = (string) config('services.whatsapp.url');
+
+        if ($url === '') {
+            return [
+                'status' => 'skipped',
+                'reason' => 'WHATSAPP_API_URL is not configured',
+            ];
+        }
+
         $response = Http::withToken((string) config('services.whatsapp.token'))
             ->timeout((int) config('services.whatsapp.timeout', 10))
-            ->post((string) config('services.whatsapp.url'), $message->toArray());
+            ->post($url, $message->toArray());
 
         $response->throw();
 

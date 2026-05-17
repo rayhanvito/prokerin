@@ -1,65 +1,62 @@
 import { Building2, ImagePlus, Save, ShieldCheck } from 'lucide-react';
 import { FormEventHandler, useRef } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 
+import FormField from '@/Components/ui/FormField';
 import InputError from '@/Components/InputError';
 import VihoCard from '@/Components/Viho/VihoCard';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
 
 interface OrganizationSetupPayload {
     id: number;
     name: string;
+    description: string;
     type: string;
     periodName: string;
     periodStart: string;
     periodEnd: string;
     hasLogo: boolean;
     memberCount: number;
+    canManage: boolean;
 }
 
 interface OrganizationSetupProps {
     organization: OrganizationSetupPayload | null;
 }
 
-const periods = [
-    {
-        title: 'BEM Fakultas Teknologi',
-        meta: 'Periode 2026 · 238 anggota',
-        status: 'Active',
-    },
-    {
-        title: 'HIMA Informatika',
-        meta: 'Periode 2026 · 86 anggota',
-        status: 'Setup',
-    },
-    {
-        title: 'UKM Kreatif',
-        meta: 'Periode 2025/2026 · 64 anggota',
-        status: 'Active',
-    },
-];
-
 export default function OrganizationSetup({ organization }: OrganizationSetupProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { data, setData, post, processing, errors, reset } = useForm<{
+    const logoForm = useForm<{
         logo: File | null;
     }>({
         logo: null,
     });
+    const profileForm = useForm<{ name: string; description: string }>({
+        name: organization?.name ?? '',
+        description: organization?.description ?? '',
+    });
 
-    const submit: FormEventHandler = (event) => {
+    const submitLogo: FormEventHandler = (event) => {
         event.preventDefault();
 
-        post(route('organization.logo.store'), {
+        logoForm.post(route('organization.logo.store'), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                reset('logo');
+                logoForm.reset('logo');
 
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
             },
+        });
+    };
+
+    const submitProfile: FormEventHandler = (event) => {
+        event.preventDefault();
+
+        profileForm.patch(route('organization.update'), {
+            preserveScroll: true,
         });
     };
 
@@ -83,22 +80,28 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                     title="Profil Organisasi"
                     subtitle="Profil aktif, periode berjalan, dan upload logo private/S3-compatible."
                 >
-                    <form className="space-y-5" onSubmit={submit}>
+                    <form className="space-y-5" onSubmit={submitProfile}>
                         <div className="grid gap-5 md:grid-cols-2">
-                            <label className="block">
-                                <span className="text-sm font-semibold text-[#242934]">
-                                    Nama Organisasi
-                                </span>
+                            <FormField
+                                label="Nama Organisasi"
+                                htmlFor="organization-name"
+                                required
+                                error={profileForm.errors.name}
+                            >
                                 <input
+                                    id="organization-name"
                                     type="text"
-                                    value={
-                                        organization?.name ??
-                                        'Belum ada organisasi aktif'
+                                    value={profileForm.data.name}
+                                    readOnly={!organization?.canManage}
+                                    onChange={(event) =>
+                                        profileForm.setData(
+                                            'name',
+                                            event.target.value,
+                                        )
                                     }
-                                    readOnly
                                     className="mt-2 block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
                                 />
-                            </label>
+                            </FormField>
 
                             <label className="block">
                                 <span className="text-sm font-semibold text-[#242934]">
@@ -112,6 +115,41 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                 />
                             </label>
                         </div>
+                        <FormField
+                            label="Deskripsi Organisasi"
+                            htmlFor="organization-description"
+                            error={profileForm.errors.description}
+                            hint="Ringkasan singkat untuk dokumen resmi dan konteks workspace."
+                        >
+                            <textarea
+                                id="organization-description"
+                                value={profileForm.data.description}
+                                readOnly={!organization?.canManage}
+                                onChange={(event) =>
+                                    profileForm.setData(
+                                        'description',
+                                        event.target.value,
+                                    )
+                                }
+                                rows={4}
+                                className="block w-full rounded-[4px] border-[#e6edef] text-sm text-[#242934] shadow-none focus:border-[#24695c] focus:ring-[#24695c]"
+                            />
+                        </FormField>
+                        {organization?.canManage ? (
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={profileForm.processing}
+                                    className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1b4c43] disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
+                                >
+                                    <Save className="h-4 w-4" />
+                                    Simpan Profil
+                                </button>
+                            </div>
+                        ) : null}
+                    </form>
+
+                    <form className="mt-6 space-y-5" onSubmit={submitLogo}>
 
                         <div className="grid gap-5 md:grid-cols-2">
                             <label className="block">
@@ -149,8 +187,8 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                         Logo organisasi
                                     </p>
                                     <p className="mt-1 text-sm text-[#717171]">
-                                        {data.logo
-                                            ? data.logo.name
+                                        {logoForm.data.logo
+                                            ? logoForm.data.logo.name
                                             : organization?.hasLogo
                                               ? 'Logo sudah tersimpan di storage private.'
                                               : 'JPG, PNG, atau WEBP maksimal 2 MB.'}
@@ -162,7 +200,7 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                     accept="image/jpeg,image/png,image/webp"
                                     className="sr-only"
                                     onChange={(event) =>
-                                        setData(
+                                        logoForm.setData(
                                             'logo',
                                             event.target.files?.[0] ?? null,
                                         )
@@ -177,7 +215,7 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                 </button>
                             </div>
                             <InputError
-                                message={errors.logo}
+                                message={logoForm.errors.logo}
                                 className="mt-3"
                             />
                         </div>
@@ -185,7 +223,7 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                         <div className="flex justify-end">
                             <button
                                 type="submit"
-                                disabled={processing || !data.logo}
+                                disabled={logoForm.processing || !logoForm.data.logo}
                                 className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1b4c43] disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
                             >
                                 <Save className="h-4 w-4" />
@@ -205,7 +243,7 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
                                 <p className="font-semibold text-[#242934]">
                                     Multi-organization ready
                                 </p>
-                                    <p className="mt-2 text-sm leading-6 text-[#59667a]">
+                                <p className="mt-2 text-sm leading-6 text-[#59667a]">
                                     Logo ini dipakai untuk proposal, LPJ, dan
                                     dokumen resmi organisasi aktif.
                                 </p>
@@ -215,27 +253,24 @@ export default function OrganizationSetup({ organization }: OrganizationSetupPro
 
                     <VihoCard title="Periode Aktif">
                         <div className="-m-5 divide-y divide-[#e6edef]">
-                            {periods.map((period) => (
-                                <div
-                                    key={period.title}
-                                    className="flex items-center gap-4 p-5"
-                                >
-                                    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[4px] bg-[#f5f7fb] text-[#24695c]">
-                                        <Building2 className="h-5 w-5" />
-                                    </span>
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate font-semibold text-[#242934]">
-                                            {period.title}
-                                        </p>
-                                        <p className="mt-1 text-sm text-[#717171]">
-                                            {period.meta}
-                                        </p>
-                                    </div>
-                                    <span className="rounded-[4px] bg-[rgba(36,105,92,0.1)] px-3 py-1 text-xs font-semibold text-[#24695c]">
-                                        {period.status}
-                                    </span>
+                            <div className="flex items-center gap-4 p-5">
+                                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[4px] bg-[#f5f7fb] text-[#24695c]">
+                                    <Building2 className="h-5 w-5" />
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate font-semibold text-[#242934]">
+                                        {organization?.name ??
+                                            'Belum ada organisasi aktif'}
+                                    </p>
+                                    <p className="mt-1 text-sm text-[#717171]">
+                                        Periode {organization?.periodName ?? '-'} ·{' '}
+                                        {organization?.memberCount ?? 0} anggota
+                                    </p>
                                 </div>
-                            ))}
+                                <span className="rounded-[4px] bg-[rgba(36,105,92,0.1)] px-3 py-1 text-xs font-semibold text-[#24695c]">
+                                    Active
+                                </span>
+                            </div>
                         </div>
                     </VihoCard>
                 </div>

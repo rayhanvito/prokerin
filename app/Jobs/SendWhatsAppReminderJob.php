@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Models\User;
+use App\Notifications\QueueJobFailedNotification;
 use App\Support\WhatsApp\WhatsAppMessageData;
 use App\Support\WhatsApp\WhatsAppProvider;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -77,5 +79,24 @@ final class SendWhatsAppReminderJob implements ShouldQueue
 
             throw $exception;
         }
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        if ($this->userId === null) {
+            return;
+        }
+
+        $user = User::query()->find($this->userId);
+
+        if ($user === null) {
+            return;
+        }
+
+        $user->notify(new QueueJobFailedNotification(
+            jobLabel: sprintf('WhatsApp %s', $this->messageType),
+            reason: $exception->getMessage(),
+            resourceUrl: null,
+        ));
     }
 }

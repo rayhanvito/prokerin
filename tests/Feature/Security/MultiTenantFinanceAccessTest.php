@@ -43,6 +43,28 @@ final class MultiTenantFinanceAccessTest extends TestCase
                 ->has('approvals', 0));
     }
 
+    public function test_member_cannot_open_finance_pages_by_direct_url(): void
+    {
+        $member = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        foreach (['finance.index', 'finance.budget-draft', 'finance.realization', 'finance.approval'] as $routeName) {
+            $this->actingAs($member)
+                ->get(route($routeName))
+                ->assertForbidden();
+        }
+    }
+
+    public function test_treasurer_can_open_finance_pages(): void
+    {
+        $treasurer = User::query()->where('email', 'bendahara@prokerin.test')->firstOrFail();
+
+        foreach (['finance.index', 'finance.budget-draft', 'finance.realization', 'finance.approval'] as $routeName) {
+            $this->actingAs($treasurer)
+                ->get(route($routeName))
+                ->assertOk();
+        }
+    }
+
     public function test_posted_organization_id_is_ignored_for_cross_tenant_finance_mutation(): void
     {
         Storage::fake('s3');

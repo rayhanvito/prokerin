@@ -56,7 +56,11 @@ export type PermissionKey =
     | 'manage_documents'
     | 'view_reports';
 
-export type DocumentVisibility = 'private' | 'restricted' | 'committee';
+export type DocumentVisibility =
+    | 'private'
+    | 'restricted'
+    | 'committee'
+    | 'public';
 
 export type ExportDocumentType = 'proposal' | 'lpj';
 

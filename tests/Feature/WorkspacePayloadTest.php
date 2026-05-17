@@ -152,7 +152,7 @@ final class WorkspacePayloadTest extends TestCase
             ->where('exportQueue.0.plan.engine', 'browsershot'));
     }
 
-    public function test_upload_center_receives_upload_validation_payload(): void
+    public function test_upload_center_receives_database_backed_documents_and_projects(): void
     {
         $user = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
         $documentId = (int) DB::table('documents')->where('name', 'documentation-day-1.zip')->value('id');
@@ -165,7 +165,7 @@ final class WorkspacePayloadTest extends TestCase
             ->component('Documents/UploadCenter')
             ->has('documents', 3)
             ->where('documents.0.downloadHref', route('documents.download', ['document' => $documentId]))
-            ->where('uploadValidation.isValid', true)
-            ->where('uploadValidation.requiresSignedUrl', true));
+            ->has('projects', 1)
+            ->where('projects.0.name', 'Seminar Karier Digital'));
     }
 }

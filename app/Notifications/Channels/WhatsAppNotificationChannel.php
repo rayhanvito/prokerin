@@ -32,6 +32,19 @@ final class WhatsAppNotificationChannel
 
     private function recipientNumber(object $notifiable): ?string
     {
+        // Honor per-user opt-out flag.
+        $optIn = null;
+
+        if (method_exists($notifiable, 'getAttribute')) {
+            $optIn = $notifiable->getAttribute('whatsapp_opt_in');
+        } elseif (isset($notifiable->whatsapp_opt_in)) {
+            $optIn = $notifiable->whatsapp_opt_in;
+        }
+
+        if ($optIn === false || $optIn === 0 || $optIn === '0') {
+            return null;
+        }
+
         if (method_exists($notifiable, 'routeNotificationForWhatsApp')) {
             $number = $notifiable->routeNotificationForWhatsApp();
 

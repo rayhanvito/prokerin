@@ -1,6 +1,8 @@
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, ClipboardList, XCircle } from 'lucide-react';
 
 import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
+import Breadcrumb from '@/Components/ui/Breadcrumb';
+import EmptyState from '@/Components/ui/EmptyState';
 import VihoCard from '@/Components/Viho/VihoCard';
 import VihoStatusBadge from '@/Components/Viho/VihoStatusBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -217,14 +219,32 @@ export default function FinanceApproval({
         >
             <Head title="Finance Approval" />
 
+            <Breadcrumb
+                items={[
+                    { label: 'Dashboard', href: route('dashboard') },
+                    { label: 'Keuangan', href: route('finance.index') },
+                    { label: 'Approval' },
+                ]}
+            />
+
             <VihoCard
                 title="Approval Queue"
                 subtitle="Review RAB yang menunggu keputusan bendahara atau admin organisasi."
             >
                 <div className="-m-5 divide-y divide-[#e6edef]">
-                    {approvals.map((approval) => (
-                        <ApprovalRow key={approval.id} approval={approval} />
-                    ))}
+                    {approvals.length > 0 ? (
+                        approvals.map((approval) => (
+                            <ApprovalRow key={approval.id} approval={approval} />
+                        ))
+                    ) : (
+                        <div className="p-5">
+                            <EmptyState
+                                icon={ClipboardList}
+                                title="Tidak ada RAB menunggu approval"
+                                description="Queue akan terisi ketika ada draft RAB yang diajukan untuk review."
+                            />
+                        </div>
+                    )}
                 </div>
             </VihoCard>
 
@@ -243,8 +263,12 @@ export default function FinanceApproval({
                                 />
                             ))
                         ) : (
-                            <div className="p-5 text-sm text-[#59667a]">
-                                Tidak ada step workflow aktif untuk user ini.
+                            <div className="p-5">
+                                <EmptyState
+                                    icon={ClipboardList}
+                                    title="Tidak ada workflow aktif"
+                                    description="Step approval multi-level yang menjadi tanggung jawabmu akan muncul di sini."
+                                />
                             </div>
                         )}
                     </div>

@@ -30,6 +30,7 @@ use App\Actions\Workspace\GetProjectTemplatePayloadAction;
 use App\Actions\Workspace\GetProkerIndexPayloadAction;
 use App\Actions\Workspace\GetProposalDraftPayloadAction;
 use App\Actions\Workspace\GetQrAttendancePayloadAction;
+use App\Actions\Workspace\GetReportsOverviewPayloadAction;
 use App\Actions\Workspace\GetRolePermissionPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorDetailPayloadAction;
 use App\Actions\Workspace\GetSponsorVendorPayloadAction;
@@ -259,9 +260,14 @@ final class WorkspacePageController extends Controller
         return Inertia::render('Finance/Approval', $financeApproval->execute((int) $request->user()->id));
     }
 
-    public function reportsIndex(): Response
+    public function reportsIndex(Request $request, GetReportsOverviewPayloadAction $reportsOverview): Response
     {
-        return Inertia::render('Reports/Index');
+        return Inertia::render('Reports/Index', $reportsOverview->execute(
+            actorUserId: (int) $request->user()->id,
+            preferredOrganizationId: $request->session()->get('active_organization_id') === null
+                ? null
+                : (int) $request->session()->get('active_organization_id'),
+        ));
     }
 
     public function proposalEditor(Request $request, GetProposalDraftPayloadAction $proposalDraft): Response

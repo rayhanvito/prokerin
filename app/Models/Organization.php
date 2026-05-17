@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Domain\Organization\Enums\PlanTier;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Organization extends Model
@@ -34,5 +35,10 @@ final class Organization extends Model
         return [
             'plan_tier' => PlanTier::class,
         ];
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
     }
 }

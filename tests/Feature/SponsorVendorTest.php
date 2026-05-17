@@ -48,6 +48,38 @@ final class SponsorVendorTest extends TestCase
         ]);
     }
 
+    public function test_owner_creates_sponsor_vendor_contact_in_active_session_organization(): void
+    {
+        $owner = User::query()->where('email', 'owner@prokerin.test')->firstOrFail();
+        $secondaryOrganizationId = $this->organizationId('hima-informatika');
+
+        DB::table('organization_members')->insert([
+            'organization_id' => $secondaryOrganizationId,
+            'user_id' => $owner->id,
+            'role' => 'organization_owner',
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->withSession(['active_organization_id' => $secondaryOrganizationId])
+            ->post(route('organization.sponsors-vendors.store'), [
+                'type' => 'vendor',
+                'name' => 'Vendor Aktif HIMA',
+                'category' => 'Logistics',
+                'status' => 'active',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Sponsor/vendor berhasil ditambahkan.');
+
+        $this->assertDatabaseHas('sponsors_vendors', [
+            'organization_id' => $secondaryOrganizationId,
+            'type' => 'vendor',
+            'name' => 'Vendor Aktif HIMA',
+        ]);
+    }
+
     public function test_admin_can_update_sponsor_vendor_contact(): void
     {
         $admin = User::query()->where('email', 'admin@prokerin.test')->firstOrFail();

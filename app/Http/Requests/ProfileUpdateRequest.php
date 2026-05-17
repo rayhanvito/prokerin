@@ -26,6 +26,8 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'whatsapp_number' => ['nullable', 'string', 'max:20', 'regex:/^[+0-9 ()-]+$/'],
+            'whatsapp_opt_in' => ['nullable', 'boolean'],
         ];
     }
 }

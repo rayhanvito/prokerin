@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ProjectResource extends Resource
 {
@@ -23,6 +24,8 @@ class ProjectResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
     protected static ?string $navigationLabel = 'Projects';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Platform';
 
     protected static ?int $navigationSort = 30;
 
@@ -54,6 +57,11 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return ProjectsTable::configure($table);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug', 'organization.name'];
     }
 
     public static function getRelations(): array

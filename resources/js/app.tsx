@@ -5,7 +5,11 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
+import { initSentry } from './lib/sentry';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+initSentry();
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

@@ -18,7 +18,7 @@ final readonly class GetLpjChecklistPayloadAction
     ) {}
 
     /**
-     * @return array{project: array{id: int|null, status: string|null, canSubmit: bool, canApprove: bool}, checklistItems: array<int, array{title: string, isComplete: bool, isRequired: bool}>, readiness: array<string, mixed>, workflowTimeline: array<string, mixed>}
+     * @return array{project: array{id: int|null, status: string|null, canSubmit: bool, canApprove: bool, canExport: bool}, checklistItems: array<int, array{id: int, title: string, isComplete: bool, isRequired: bool}>, readiness: array<string, mixed>, executionSummary: array{completedTasks: int, totalTasks: int, realizedBudget: int, attendanceCount: int}, workflowTimeline: array<string, mixed>}
      */
     public function execute(int $actorUserId): array
     {
@@ -41,17 +41,26 @@ final readonly class GetLpjChecklistPayloadAction
                     'status' => null,
                     'canSubmit' => false,
                     'canApprove' => false,
+                    'canExport' => false,
                 ],
                 'checklistItems' => [],
                 'readiness' => $this->readiness->execute([])->toArray(),
+                'executionSummary' => [
+                    'completedTasks' => 0,
+                    'totalTasks' => 0,
+                    'realizedBudget' => 0,
+                    'attendanceCount' => 0,
+                ],
                 'workflowTimeline' => $this->emptyWorkflowTimeline(),
             ];
         }
 
-        $items = DB::table('lpj_checklist_items')
+        $checklistRows = DB::table('lpj_checklist_items')
             ->where('project_id', (int) $project->id)
             ->orderBy('id')
-            ->get()
+            ->get();
+
+        $items = $checklistRows
             ->map(static fn (object $item): LpjChecklistItemData => new LpjChecklistItemData(
                 title: (string) $item->title,
                 isComplete: (bool) $item->is_complete,
@@ -75,17 +84,48 @@ final readonly class GetLpjChecklistPayloadAction
                     ], true),
                 'canApprove' => (string) $project->status === 'lpj_review'
                     && in_array($role, [OrganizationRole::Owner->value, OrganizationRole::Admin->value], true),
+                'canExport' => (string) $project->status === 'completed'
+                    && in_array($role, [
+                        OrganizationRole::Owner->value,
+                        OrganizationRole::Admin->value,
+                        OrganizationRole::Secretary->value,
+                    ], true),
             ],
-            'checklistItems' => array_map(
-                static fn (LpjChecklistItemData $item): array => [
-                    'title' => $item->title,
-                    'isComplete' => $item->isComplete,
-                    'isRequired' => $item->isRequired,
-                ],
-                $items,
-            ),
+            'checklistItems' => $checklistRows
+                ->map(static fn (object $item): array => [
+                    'id' => (int) $item->id,
+                    'title' => (string) $item->title,
+                    'isComplete' => (bool) $item->is_complete,
+                    'isRequired' => (bool) $item->is_required,
+                ])
+                ->all(),
             'readiness' => $readiness->toArray(),
+            'executionSummary' => $this->executionSummary((int) $project->id),
             'workflowTimeline' => $this->workflowTimeline->execute($actorUserId, 'project', (int) $project->id),
+        ];
+    }
+
+    /**
+     * @return array{completedTasks: int, totalTasks: int, realizedBudget: int, attendanceCount: int}
+     */
+    private function executionSummary(int $projectId): array
+    {
+        return [
+            'completedTasks' => DB::table('project_tasks')
+                ->where('project_id', $projectId)
+                ->where('status', 'done')
+                ->count(),
+            'totalTasks' => DB::table('project_tasks')
+                ->where('project_id', $projectId)
+                ->count(),
+            'realizedBudget' => (int) DB::table('budget_lines')
+                ->where('project_id', $projectId)
+                ->sum('realized_amount'),
+            'attendanceCount' => DB::table('attendance_records')
+                ->join('attendance_sessions', 'attendance_sessions.id', '=', 'attendance_records.attendance_session_id')
+                ->where('attendance_sessions.project_id', $projectId)
+                ->where('attendance_records.status', 'present')
+                ->count(),
         ];
     }
 

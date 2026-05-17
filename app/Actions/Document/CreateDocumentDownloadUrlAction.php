@@ -33,6 +33,7 @@ final readonly class CreateDocumentDownloadUrlAction
                 'documents.storage_path',
                 'documents.visibility',
                 'documents.owner_user_id',
+                'documents.project_id',
                 'organization_members.role',
             ])
             ->first();
@@ -43,7 +44,13 @@ final readonly class CreateDocumentDownloadUrlAction
 
         $visibility = DocumentVisibility::from((string) $document->visibility);
 
-        if (! $this->canDownload($visibility, (string) $document->role, (int) $document->owner_user_id, $actorUserId)) {
+        if (! $this->canDownload(
+            visibility: $visibility,
+            role: (string) $document->role,
+            ownerUserId: (int) $document->owner_user_id,
+            actorUserId: $actorUserId,
+            projectId: $document->project_id === null ? null : (int) $document->project_id,
+        )) {
             throw new AuthorizationException('You are not allowed to download this document.');
         }
 
@@ -69,6 +76,7 @@ final readonly class CreateDocumentDownloadUrlAction
         string $role,
         int $ownerUserId,
         int $actorUserId,
+        ?int $projectId,
     ): bool {
         if ($ownerUserId === $actorUserId) {
             return true;
@@ -78,14 +86,30 @@ final readonly class CreateDocumentDownloadUrlAction
             DocumentVisibility::Private => in_array($role, [
                 OrganizationRole::Owner->value,
                 OrganizationRole::Admin->value,
-                OrganizationRole::Secretary->value,
             ], true),
             DocumentVisibility::Restricted => in_array($role, [
                 OrganizationRole::Owner->value,
                 OrganizationRole::Admin->value,
                 OrganizationRole::Treasurer->value,
             ], true),
-            DocumentVisibility::Committee => true,
+            DocumentVisibility::Committee => $this->isProjectMember($projectId, $actorUserId) || in_array($role, [
+                OrganizationRole::Owner->value,
+                OrganizationRole::Admin->value,
+                OrganizationRole::Secretary->value,
+            ], true),
+            DocumentVisibility::Public => true,
         };
+    }
+
+    private function isProjectMember(?int $projectId, int $actorUserId): bool
+    {
+        if ($projectId === null) {
+            return false;
+        }
+
+        return DB::table('project_members')
+            ->where('project_id', $projectId)
+            ->where('user_id', $actorUserId)
+            ->exists();
     }
 }

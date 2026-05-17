@@ -9,9 +9,10 @@ enum DocumentVisibility: string
     case Private = 'private';
     case Restricted = 'restricted';
     case Committee = 'committee';
+    case Public = 'public';
 
     public function requiresSignedUrl(): bool
     {
-        return $this !== self::Committee;
+        return ! in_array($this, [self::Committee, self::Public], true);
     }
 }

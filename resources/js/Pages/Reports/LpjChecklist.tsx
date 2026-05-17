@@ -1,4 +1,10 @@
-import { CheckCircle2, Circle, RotateCcw, Send, WandSparkles } from 'lucide-react';
+import {
+    CheckCircle2,
+    FileDown,
+    RotateCcw,
+    Send,
+    WandSparkles,
+} from 'lucide-react';
 
 import ApprovalWorkflowTimeline from '@/Components/Approval/ApprovalWorkflowTimeline';
 import VihoCard from '@/Components/Viho/VihoCard';
@@ -8,6 +14,7 @@ import type { ApprovalWorkflowTimeline as ApprovalWorkflowTimelineData } from '@
 import { Head, useForm, usePage } from '@inertiajs/react';
 
 interface LpjChecklistItem {
+    id: number;
     title: string;
     isComplete: boolean;
     isRequired: boolean;
@@ -27,9 +34,16 @@ interface LpjChecklistProps {
         status: string | null;
         canSubmit: boolean;
         canApprove: boolean;
+        canExport: boolean;
     };
     checklistItems: LpjChecklistItem[];
     readiness: LpjReadiness;
+    executionSummary: {
+        completedTasks: number;
+        totalTasks: number;
+        realizedBudget: number;
+        attendanceCount: number;
+    };
     workflowTimeline: ApprovalWorkflowTimelineData;
 }
 
@@ -45,12 +59,17 @@ export default function LpjChecklist({
     project,
     checklistItems,
     readiness,
+    executionSummary,
     workflowTimeline,
 }: LpjChecklistProps) {
     const { flash } = usePage<PageProps>().props;
     const aiSuggestion = resolveLpjAiSuggestion(flash.aiSuggestion, project.id);
     const aiForm = useForm();
     const reviewForm = useForm();
+    const exportForm = useForm();
+    const checklistForm = useForm<{ is_complete: boolean }>({
+        is_complete: false,
+    });
     const decisionForm = useForm<{ decision: 'approve' | 'request_changes' }>({
         decision: 'approve',
     });
@@ -71,6 +90,26 @@ export default function LpjChecklist({
         }
 
         aiForm.post(route('reports.lpj.ai-summary', project.id), {
+            preserveScroll: true,
+        });
+    };
+
+    const exportLpj = (): void => {
+        if (project.id === null) {
+            return;
+        }
+
+        exportForm.post(route('reports.lpj-checklist.export', project.id), {
+            preserveScroll: true,
+        });
+    };
+
+    const toggleChecklistItem = (
+        item: LpjChecklistItem,
+        isComplete: boolean,
+    ): void => {
+        checklistForm.transform(() => ({ is_complete: isComplete }));
+        checklistForm.patch(route('reports.lpj-checklist.items.update', item.id), {
             preserveScroll: true,
         });
     };
@@ -118,14 +157,21 @@ export default function LpjChecklist({
                             </button>
                             <button
                                 type="button"
-                                disabled={
-                                    !project.canSubmit || reviewForm.processing
-                                }
+                                disabled={!project.canSubmit || reviewForm.processing}
                                 onClick={submitReview}
                                 className="inline-flex items-center gap-2 rounded-[4px] bg-[#24695c] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#9fb8b3]"
                             >
                                 <Send className="h-4 w-4" />
                                 Kirim Review
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!project.canExport || exportForm.processing}
+                                onClick={exportLpj}
+                                className="inline-flex items-center gap-2 rounded-[4px] border border-[#e6edef] bg-white px-4 py-2 text-sm font-semibold text-[#59667a] transition hover:border-[#24695c] hover:text-[#24695c] disabled:cursor-not-allowed disabled:bg-[#f5f7fb]"
+                            >
+                                <FileDown className="h-4 w-4" />
+                                Export LPJ PDF
                             </button>
                             {project.canApprove && (
                                 <>
@@ -189,18 +235,29 @@ export default function LpjChecklist({
                         )}
                         {checklistItems.map((item) => (
                             <div
-                                key={item.title}
+                                key={item.id}
                                 className="flex items-center gap-4 p-5"
                             >
-                                {item.isComplete ? (
-                                    <CheckCircle2 className="h-5 w-5 text-[#24695c]" />
-                                ) : (
-                                    <Circle className="h-5 w-5 text-[#ba895d]" />
-                                )}
+                                <input
+                                    id={`lpj-item-${item.id}`}
+                                    type="checkbox"
+                                    checked={item.isComplete}
+                                    disabled={checklistForm.processing}
+                                    onChange={(event) =>
+                                        toggleChecklistItem(
+                                            item,
+                                            event.target.checked,
+                                        )
+                                    }
+                                    className="h-5 w-5 rounded-[4px] border-[#e6edef] text-[#24695c] focus:ring-[#24695c]"
+                                />
                                 <div className="flex-1">
-                                    <p className="font-semibold text-[#242934]">
+                                    <label
+                                        htmlFor={`lpj-item-${item.id}`}
+                                        className="font-semibold text-[#242934]"
+                                    >
                                         {item.title}
-                                    </p>
+                                    </label>
                                     <p className="mt-1 text-sm text-[#717171]">
                                         {item.isComplete
                                             ? 'Sudah tersedia untuk dokumen LPJ.'
@@ -212,11 +269,48 @@ export default function LpjChecklist({
                     </div>
                 </VihoCard>
 
-                <VihoCard title="Status Workflow">
-                    <ApprovalWorkflowTimeline timeline={workflowTimeline} />
-                </VihoCard>
+                <div className="space-y-6">
+                    <VihoCard title="Data Eksekusi LPJ">
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                            <SummaryMetric
+                                label="Task Selesai"
+                                value={`${executionSummary.completedTasks}/${executionSummary.totalTasks}`}
+                            />
+                            <SummaryMetric
+                                label="Realisasi Anggaran"
+                                value={new Intl.NumberFormat('id-ID', {
+                                    currency: 'IDR',
+                                    maximumFractionDigits: 0,
+                                    style: 'currency',
+                                }).format(executionSummary.realizedBudget)}
+                            />
+                            <SummaryMetric
+                                label="Kehadiran Tercatat"
+                                value={`${executionSummary.attendanceCount} orang`}
+                            />
+                        </div>
+                    </VihoCard>
+
+                    <VihoCard title="Status Workflow">
+                        <ApprovalWorkflowTimeline timeline={workflowTimeline} />
+                    </VihoCard>
+                </div>
             </div>
         </AuthenticatedLayout>
+    );
+}
+
+interface SummaryMetricProps {
+    label: string;
+    value: string;
+}
+
+function SummaryMetric({ label, value }: SummaryMetricProps) {
+    return (
+        <div className="rounded-[4px] border border-[#e6edef] bg-[#f5f7fb] p-4">
+            <p className="text-sm font-semibold text-[#59667a]">{label}</p>
+            <p className="mt-2 text-xl font-bold text-[#242934]">{value}</p>
+        </div>
     );
 }
 

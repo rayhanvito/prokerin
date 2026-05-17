@@ -8,17 +8,20 @@ use App\Actions\SuperAdmin\LogActivityAction;
 use App\Models\User;
 use Exception;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
@@ -59,6 +62,12 @@ class UsersTable
                     ->boolean()
                     ->sortable(),
 
+                TextColumn::make('last_login_at')
+                    ->label('Last Login')
+                    ->dateTime('Y-m-d H:i')
+                    ->placeholder('Never')
+                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->label('Registered At')
                     ->dateTime('Y-m-d H:i')
@@ -77,6 +86,18 @@ class UsersTable
                 Filter::make('email_not_verified')
                     ->label('Not Verified')
                     ->query(static fn (Builder $query): Builder => $query->whereNull('email_verified_at')),
+
+                Filter::make('logged_in_last_7_days')
+                    ->label('Logged in last 7 days')
+                    ->query(static fn (Builder $query): Builder => $query->where('last_login_at', '>=', now()->subDays(7))),
+
+                Filter::make('logged_in_last_30_days')
+                    ->label('Logged in last 30 days')
+                    ->query(static fn (Builder $query): Builder => $query->where('last_login_at', '>=', now()->subDays(30))),
+
+                Filter::make('never_logged_in')
+                    ->label('Never logged in')
+                    ->query(static fn (Builder $query): Builder => $query->whereNull('last_login_at')),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -140,7 +161,55 @@ class UsersTable
                         ]);
                     }),
             ])
-            ->toolbarActions([])
+            ->toolbarActions([
+                BulkAction::make('forceVerify')
+                    ->label('Force verify selected')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalWidth(Width::Medium)
+                    ->modalHeading('Force verify selected users')
+                    ->modalDescription('Type VERIFY to set email_verified_at for every selected user.')
+                    ->schema([
+                        TextInput::make('confirmation')
+                            ->label('Type VERIFY to confirm')
+                            ->required(),
+                    ])
+                    ->action(static function (Collection $records, array $data): void {
+                        if (($data['confirmation'] ?? null) !== 'VERIFY') {
+                            Notification::make()
+                                ->danger()
+                                ->title('Confirmation mismatch')
+                                ->body('Type VERIFY exactly to confirm this bulk action.')
+                                ->send();
+
+                            throw new Exception('Confirmation mismatch.');
+                        }
+
+                        $updatedIds = $records
+                            ->filter(static fn (User $user): bool => $user->email_verified_at === null)
+                            ->pluck('id')
+                            ->all();
+
+                        User::query()
+                            ->whereIn('id', $updatedIds)
+                            ->update([
+                                'email_verified_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                        app(LogActivityAction::class)->execute('user.email.force_verify_bulk', auth()->user(), [
+                            'user_ids' => $updatedIds,
+                            'count' => count($updatedIds),
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Users verified')
+                            ->body(sprintf('%d user(s) force verified.', count($updatedIds)))
+                            ->send();
+                    }),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 

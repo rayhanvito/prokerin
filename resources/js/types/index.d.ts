@@ -11,6 +11,35 @@ export interface ImpersonationContext {
     leaveUrl: string;
 }
 
+export interface OnboardingStep {
+    key: string;
+    label: string;
+    complete: boolean;
+    href: string | null;
+}
+
+export interface OnboardingContext {
+    show: boolean;
+    organizationId: number | null;
+    organizationName: string | null;
+    steps: OnboardingStep[];
+    completeUrl: string;
+}
+
+export interface NotificationDropdownItem {
+    id: string;
+    title: string;
+    body: string;
+    url: string | null;
+    readAt: string | null;
+    createdAt: string;
+}
+
+export interface NotificationsContext {
+    unreadCount: number;
+    recent: NotificationDropdownItem[];
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -38,4 +67,6 @@ export type PageProps<
         };
     };
     impersonating: ImpersonationContext | null;
+    onboarding: OnboardingContext | null;
+    notifications: NotificationsContext | null;
 };

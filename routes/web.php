@@ -17,6 +17,7 @@ use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentDownloadController;
 use App\Http\Controllers\DocumentExportDownloadController;
+use App\Http\Controllers\DocumentExportRetryController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventRegistrationExportController;
 use App\Http\Controllers\EventRegistrationPdfExportController;
@@ -39,6 +40,8 @@ use App\Http\Controllers\MeetingMinutesController;
 use App\Http\Controllers\MeetingMinutesExportController;
 use App\Http\Controllers\MeetingWhatsAppAlertController;
 use App\Http\Controllers\MidtransWebhookController;
+use App\Http\Controllers\NotificationReadController;
+use App\Http\Controllers\NotificationRecentController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationInvitationController;
@@ -209,6 +212,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{certificateNumber}/download', [CertificateDownloadController::class, 'show'])->name('download');
     });
     Route::get('/notifications', [WorkspacePageController::class, 'notificationsIndex'])->name('notifications.index');
+    Route::get('/notifications/recent', [NotificationRecentController::class, 'show'])->name('notifications.recent');
+    Route::patch('/notifications/read-all', [NotificationReadController::class, 'readAll'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationReadController::class, 'update'])->name('notifications.read');
     Route::post('/invitations/{token}/accept', [OrganizationInvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitations/{token}/decline', [OrganizationInvitationController::class, 'decline'])->name('invitations.decline');
     Route::post('/notifications/task-deadline-reminders', [TaskDeadlineReminderController::class, 'store'])
@@ -227,6 +233,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete'])->name('onboarding.complete');
+
+    Route::post('/document-exports/{documentExport}/retry', [DocumentExportRetryController::class, 'store'])
+        ->name('document-exports.retry');
 });
 
 Route::middleware('auth')->group(function () {

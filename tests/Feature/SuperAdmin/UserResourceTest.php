@@ -9,7 +9,9 @@ use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\ActivityLog;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -159,5 +161,43 @@ final class UserResourceTest extends TestCase
         Livewire::test(ListUsers::class)
             ->set('tableRecordsPerPage', 50)
             ->assertCanSeeTableRecords(User::query()->get());
+    }
+
+    public function test_login_event_updates_last_login_at(): void
+    {
+        $user = User::query()->where('email', 'member@prokerin.test')->firstOrFail();
+
+        $this->assertNull($user->last_login_at);
+
+        Event::dispatch(new Login('web', $user, false));
+
+        $user->refresh();
+
+        $this->assertNotNull($user->last_login_at);
+    }
+
+    public function test_super_admin_can_bulk_force_verify_users(): void
+    {
+        $superAdmin = User::query()->where('email', 'superadmin@prokerin.internal')->firstOrFail();
+        $target = User::factory()->create([
+            'email' => 'needs-verify@prokerin.test',
+            'email_verified_at' => null,
+        ]);
+
+        $this->actingAs($superAdmin);
+
+        Livewire::test(ListUsers::class)
+            ->callTableBulkAction('forceVerify', [$target], data: [
+                'confirmation' => 'VERIFY',
+            ]);
+
+        $target->refresh();
+
+        $this->assertNotNull($target->email_verified_at);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'user.email.force_verify_bulk',
+            'target_type' => User::class,
+            'target_id' => $superAdmin->id,
+        ]);
     }
 }
