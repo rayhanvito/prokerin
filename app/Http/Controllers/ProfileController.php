@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
@@ -7,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,9 +21,17 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $token = DB::table('users')
+            ->where('id', $request->user()->id)
+            ->value('calendar_sync_token');
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'calendarSync' => [
+                'enabled' => is_string($token) && $token !== '',
+                'feedUrl' => is_string($token) && $token !== '' ? route('calendar.feed', ['token' => $token], true) : null,
+            ],
         ]);
     }
 

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Head } from '@inertiajs/react';
+import CalendarSyncSection from './Partials/CalendarSyncSection';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -8,7 +9,15 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 export default function Edit({
     mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+    calendarSync,
+}: PageProps<{
+    mustVerifyEmail: boolean;
+    status?: string;
+    calendarSync: {
+        enabled: boolean;
+        feedUrl: string | null;
+    };
+}>) {
     return (
         <AuthenticatedLayout
             header={
@@ -54,6 +63,13 @@ export default function Edit({
 
                         <div className="rounded-[6px] border border-[#e6edef] bg-white p-5 shadow-[0_4px_22px_rgba(36,41,52,0.06)] sm:p-6">
                             <UpdatePasswordForm className="max-w-2xl" />
+                        </div>
+
+                        <div className="rounded-[6px] border border-[#e6edef] bg-white p-5 shadow-[0_4px_22px_rgba(36,41,52,0.06)] sm:p-6">
+                            <CalendarSyncSection
+                                enabled={calendarSync.enabled}
+                                feedUrl={calendarSync.feedUrl}
+                            />
                         </div>
                     </div>
 

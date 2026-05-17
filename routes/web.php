@@ -9,6 +9,8 @@ use App\Http\Controllers\AttendanceQrTokenController;
 use App\Http\Controllers\BudgetApprovalDecisionController;
 use App\Http\Controllers\BudgetLineController;
 use App\Http\Controllers\BudgetReceiptRealizationController;
+use App\Http\Controllers\Calendar\CalendarFeedController;
+use App\Http\Controllers\Calendar\CalendarSyncTokenController;
 use App\Http\Controllers\CampusDashboardController;
 use App\Http\Controllers\CertificateDownloadController;
 use App\Http\Controllers\CertificateIssueController;
@@ -84,6 +86,7 @@ Route::get('/verify/{token}', [CertificateVerificationController::class, 'show']
     ->middleware('throttle:certificate-verify')
     ->name('certificates.verify');
 Route::get('/e/{orgSlug}/{prokerSlug}', [MicrositeController::class, 'show'])->name('microsites.show');
+Route::get('/calendar/{token}.ics', [CalendarFeedController::class, 'show'])->name('calendar.feed');
 Route::get('/events/{project}/register', [EventRegistrationController::class, 'show'])->name('events.register.show');
 Route::post('/events/{project}/register', [EventRegistrationController::class, 'store'])->name('events.register.store');
 Route::post('/payments/midtrans/webhook', [MidtransWebhookController::class, 'store'])->name('payments.midtrans.webhook');
@@ -275,6 +278,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/calendar-sync', [CalendarSyncTokenController::class, 'store'])->name('profile.calendar-sync.store');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/onboarding/steps/{step}/complete', [OnboardingController::class, 'completeStep'])

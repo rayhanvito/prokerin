@@ -953,7 +953,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.5 M43 · Calendar Sync (.ics Feed)
 
-**Status:** Belum ada. **Cheap win** — 3-5 hari kerja, utility harian.
+**Status:** ✅ Implemented 2026-05-17. **Cheap win** — utility harian.
 
 #### Tujuan
 - User subscribe `.ics` feed Prokerin di Google Calendar / Apple Calendar / Outlook.
@@ -991,14 +991,18 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Cross-tenant: feed user A hanya berisi event org A.
 
 #### Checklist
-- [ ] Migration `users.calendar_sync_token`.
-- [ ] `RegenerateCalendarSyncTokenAction` + `BuildIcsFeedAction`.
-- [ ] Route public `/calendar/{token}.ics`.
-- [ ] UI di Profile/Edit.
-- [ ] Tests.
+- [x] Migration `users.calendar_sync_token`.
+- [x] `RegenerateCalendarSyncTokenAction` + `BuildIcsFeedAction`.
+- [x] Route public `/calendar/{token}.ics`.
+- [x] UI di Profile/Edit.
+- [x] Tests.
 
 #### Verification
 - Generate token → copy URL → subscribe di Google Calendar → events muncul → tambah meeting di Prokerin → sync 1 jam (Google fetch interval).
+- 2026-05-17 automated gates:
+  - `php artisan test tests/Feature/CalendarIcsFeedTest.php --stop-on-failure` → 5 passed / 35 assertions.
+  - `php artisan test` → 543 passed / 2943 assertions.
+  - `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass.
 
 ---
 
@@ -1145,7 +1149,7 @@ Modul yang baru dibangun harus integrate dengan yang lama:
 - [x] **M31** · Public Proker Microsite
 - [x] **M39** · Surat Menyurat Generator (killer feature)
 - [x] **M29** · Global Search (Cmd+K)
-- [ ] **M43** · Calendar Sync (.ics)
+- [x] **M43** · Calendar Sync (.ics)
 - [ ] **M40** · Inventory & Asset Management
 
 ### Frozen / Maintenance Mode (jangan tambah scope)

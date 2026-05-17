@@ -19,7 +19,7 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'email_verified_at', 'last_login_at', 'password', 'google_id', 'avatar_url', 'whatsapp_number', 'whatsapp_opt_in'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'calendar_sync_token'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
