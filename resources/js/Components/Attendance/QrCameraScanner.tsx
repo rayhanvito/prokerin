@@ -124,6 +124,14 @@ export default function QrCameraScanner({ open, onClose }: Props) {
             return;
         }
 
+        const inventoryToken = extractInventoryToken(token);
+
+        if (inventoryToken !== null) {
+            isSubmittingRef.current = true;
+            router.visit(route('inventory.qr.show', inventoryToken));
+            return;
+        }
+
         isSubmittingRef.current = true;
         setState({ status: 'submitting', message: 'Mengirim check-in...' });
 
@@ -215,4 +223,21 @@ export default function QrCameraScanner({ open, onClose }: Props) {
             </div>
         </div>
     );
+}
+
+function extractInventoryToken(decodedText: string): string | null {
+    const prefixedToken = decodedText.match(/^prokerin-inventory:([A-Za-z0-9]+)$/);
+
+    if (prefixedToken !== null) {
+        return prefixedToken[1];
+    }
+
+    try {
+        const url = new URL(decodedText, window.location.origin);
+        const match = url.pathname.match(/^\/inventory\/qr\/([^/]+)$/);
+
+        return match === null ? null : decodeURIComponent(match[1]);
+    } catch {
+        return null;
+    }
 }

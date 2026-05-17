@@ -59,7 +59,7 @@ final class HandoverPackageTest extends TestCase
             'from_period_id' => $this->periodId('bem-fakultas-teknologi', '2026'),
             'created_by' => $owner->id,
         ]);
-        $this->assertDatabaseCount('handover_items', 4);
+        $this->assertDatabaseCount('handover_items', 5);
 
         $snapshot = json_decode((string) $package->snapshot, true);
 
@@ -74,8 +74,8 @@ final class HandoverPackageTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Organization/Handover')
                 ->where('package.status', 'draft')
-                ->has('items', 4)
-                ->where('metrics.2.value', '4'));
+                ->has('items', 5)
+                ->where('metrics.2.value', '5'));
     }
 
     public function test_member_cannot_initiate_handover_package(): void

@@ -104,9 +104,32 @@ final class InitiateHandoverPackageAction
             'project_statuses' => $projectStatuses,
             'open_tasks' => (int) $openTaskCount,
             'documents' => (int) $documentCount,
+            'inventory' => $this->inventorySnapshot($organizationId),
             'planned_budget' => (int) ($budget->planned_total ?? 0),
             'realized_budget' => (int) ($budget->realized_total ?? 0),
             'outstanding_lpj_items' => (int) $outstandingLpjCount,
+        ];
+    }
+
+    /**
+     * @return array{total: int, available: int, loaned: int, broken: int, lost: int}
+     */
+    private function inventorySnapshot(int $organizationId): array
+    {
+        if (! DB::getSchemaBuilder()->hasTable('inventory_items')) {
+            return ['total' => 0, 'available' => 0, 'loaned' => 0, 'broken' => 0, 'lost' => 0];
+        }
+
+        $baseQuery = DB::table('inventory_items')
+            ->where('organization_id', $organizationId)
+            ->whereNull('deleted_at');
+
+        return [
+            'total' => (int) (clone $baseQuery)->count(),
+            'available' => (int) (clone $baseQuery)->where('status', 'available')->count(),
+            'loaned' => (int) (clone $baseQuery)->where('status', 'loaned')->count(),
+            'broken' => (int) (clone $baseQuery)->whereIn('condition', ['needs_repair', 'broken'])->count(),
+            'lost' => (int) (clone $baseQuery)->where('status', 'lost')->count(),
         ];
     }
 
@@ -152,6 +175,16 @@ final class InitiateHandoverPackageAction
                 'category' => 'asset',
                 'label' => 'Finalisasi paket arsip dan catatan LPJ',
                 'description' => sprintf('%d item LPJ wajib masih belum lengkap.', (int) $snapshot['outstanding_lpj_items']),
+                'status' => 'pending',
+                'assignee_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'package_id' => $packageId,
+                'category' => 'asset',
+                'label' => 'Verifikasi inventaris organisasi',
+                'description' => sprintf('Verifikasi inventaris sebanyak %d item; %d sedang dipinjam, %d rusak/perlu perbaikan, %d hilang.', (int) $snapshot['inventory']['total'], (int) $snapshot['inventory']['loaned'], (int) $snapshot['inventory']['broken'], (int) $snapshot['inventory']['lost']),
                 'status' => 'pending',
                 'assignee_id' => null,
                 'created_at' => $now,

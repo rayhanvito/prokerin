@@ -10,7 +10,7 @@
 
 - **Versi:** v0.1.0 (MVP + Post-MVP Wave 1 progress)
 - **Verifikasi terakhir:** 2026-05-17
-- **Test suite:** **543 passed, 2943 assertions** (`php artisan test`, durasi ~35 detik)
+- **Test suite:** **551 passed, 2981 assertions** (`php artisan test`, durasi ~37 detik)
 - **Build frontend:** `npm run build` ✅ pass
 - **PHP code style:** `./vendor/bin/pint --test` ✅ pass
 - **TypeScript:** `npm run lint` (`tsc --noEmit`) ✅ pass
@@ -19,9 +19,9 @@
 |---|---:|---:|---:|---:|
 | MVP (M01–M16) | 16 | 15 | 1 (M16) | 0 |
 | Post-MVP Wave 1 — Tier IMMEDIATE | 5 | 5 | 0 | 0 |
-| Post-MVP Tier GROWTH | 6 | 5 | 0 | 1 |
+| Post-MVP Tier GROWTH | 6 | 6 | 0 | 0 |
 | Modul existing FROZEN/Maintenance | 5 | 5 | 0 | 0 |
-| **Total tracked** | **32** | **30** | **1** | **1** |
+| **Total tracked** | **32** | **31** | **1** | **0** |
 
 > **Tier MOMENTUM dihapus dari roadmap aktif (2026-05-17).** Modul M45 My Day, M46 Sponsorship Pipeline, M47 Member Skill, M41 Activity Feed, dan M42 Generic Approval ditunda untuk prioritas deploy MVP. Akan di-re-evaluate pasca-deploy berdasarkan feedback user nyata.
 
@@ -31,13 +31,13 @@
 
 | Gate | Komando | Hasil |
 |---|---|---|
-| Test suite | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` | 543 passed / 2943 assertions / 35.45s |
+| Test suite | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` | 551 passed / 2981 assertions / 37.04s |
 | PHP style | `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` | ✅ pass |
 | Frontend build | `npm run build` | ✅ pass |
 | TypeScript | `npm run lint` (`tsc --noEmit`) | ✅ pass |
 | Vitest harness | `npx vitest --run` | ✅ harness ready (no test files yet) |
 
-Migration terakhir di-apply: `2026_05_17_000016_add_calendar_sync_token_to_users_table.php`.
+Migration terakhir di-apply: `2026_05_17_000018_create_inventory_loans_table.php`.
 
 ---
 
@@ -82,7 +82,7 @@ Source spec: `POST-MVP-ROADMAP.md` §2. Tier ini selesai dalam window 10–12 mi
 
 ## Post-MVP Tier GROWTH (bulan 4-6)
 
-M30, M31, M39, M29, dan M43 selesai; sisa modul belum dikerjakan. Source spec: `POST-MVP-ROADMAP.md` §3. Estimasi 8–10 minggu solo dev untuk seluruh tier.
+M30, M31, M39, M29, M43, dan M40 selesai. Source spec: `POST-MVP-ROADMAP.md` §3.
 
 | ID | Modul | Status | Catatan |
 |---|---|---|---|
@@ -91,7 +91,7 @@ M30, M31, M39, M29, dan M43 selesai; sisa modul belum dikerjakan. Source spec: `
 | M39 | Surat Menyurat Generator (template, sequencing nomor, sign, send, bulk) | ✅ | 2026-05-17 — migration `create_letter_generator_tables`, enum `LetterType` + `LetterStatus`, CRUD template, draft/submit/sign/send/bulk actions, DomPDF generation to `letters/{org_id}/{letter_id}.pdf`, Inertia pages `Letters/{Index,Templates,Create,Show}`, sidebar menu, and 6 default templates. Targeted: `LetterNumberPatternTest` + `LetterGeneratorTest` 7 passed / 41 assertions. Full suite: 533 passed / 2897 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. Visual PDF polish/download smoke remains launch-QA. |
 | M29 | Global Search (Cmd+K) — Laravel Scout | ✅ | 2026-05-17 — Laravel Scout installed with database driver config, searchable surfaces for Project/Task/Document/Meeting/User, tenant-scoped `GlobalSearchAction`, JSON route `/search`, Cmd+K/Ctrl+K modal in Viho header, grouped results, keyboard navigation, and recent searches. Targeted: `GlobalSearchTest` 5 passed / 11 assertions. Full suite: 538 passed / 2908 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. Manual browser keyboard smoke remains launch-QA. |
 | M43 | Calendar Sync (.ics Feed) | ✅ | 2026-05-17 — migration `add_calendar_sync_token_to_users`, `RegenerateCalendarSyncTokenAction`, `BuildIcsFeedAction`, public route `/calendar/{token}.ics`, profile generate/regenerate/copy UI, invalid token empty VCALENDAR behavior, and tenant-scoped meetings/projects/tasks feed. Targeted: `CalendarIcsFeedTest` 5 passed / 35 assertions. Full suite: 543 passed / 2943 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. Real Google/Apple/Outlook subscription interval remains launch-QA. |
-| M40 | Inventory & Asset Management (loan, return, integrasi M19 Handover) | 🔲 | 2 migrations + enum, integrasi M19 (snapshot) + M27 (QR scan redirect). |
+| M40 | Inventory & Asset Management (loan, return, integrasi M19 Handover) | ✅ | 2026-05-17 — migrations `inventory_items` + `inventory_loans`, enums condition/status/return condition, CRUD/loan/approve/return actions, QR lookup, overdue notification job, sidebar menu, Inertia pages, M19 handover inventory snapshot/checklist, and M27 scanner redirect for `/inventory/qr/{token}`. Targeted: `InventoryManagementTest` + `HandoverPackageTest` 21 passed / 131 assertions. Full suite: 551 passed / 2981 assertions. `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass. Physical QR print/mobile scan remains launch-QA. |
 
 ---
 
@@ -150,6 +150,8 @@ Spec di `SUPER-ADMIN-V2-PLAN.md` (root). Filament admin enhancement.
 
 | Tanggal | Migration | Modul terkait |
 |---|---|---|
+| 2026-05-17 | `create_inventory_loans_table` | M40 Inventory |
+| 2026-05-17 | `create_inventory_items_table` | M40 Inventory |
 | 2026-05-17 | `add_calendar_sync_token_to_users` | M43 Calendar Sync |
 | 2026-05-17 | `create_letter_generator_tables` | M39 Surat Menyurat Generator |
 | 2026-05-17 | `create_proker_microsite_tables` | M31 Public Proker Microsite |
@@ -186,9 +188,8 @@ Spec di `SUPER-ADMIN-V2-PLAN.md` (root). Filament admin enhancement.
 
 ## Next Action
 
-1. **Run launch-device QA for Tier IMMEDIATE** — native Chrome Android + Safari iOS camera scan, OS web push permission/notification, and two-browser Reverb smoke with `php artisan reverb:start`.
+1. **Run launch-device QA for Tier IMMEDIATE + M40 QR** — native Chrome Android + Safari iOS camera scan, printed inventory QR lookup, OS web push permission/notification, and two-browser Reverb smoke with `php artisan reverb:start`.
 2. **Resume `landing-polish` spec** — lanjut dari task 1.3 (`Update ProblemSection.tsx`). 60 leaf task tersisa, terorganisir dalam 18 wave DAG. Lihat `.kiro/specs/landing-polish/tasks.md`.
-3. **Continue Tier GROWTH** dengan M40 Inventory & Asset Management setelah launch-device QA / landing-polish checkpoint berikutnya.
 
 ---
 

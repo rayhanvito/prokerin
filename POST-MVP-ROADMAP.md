@@ -1008,7 +1008,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.6 M40 · Inventory & Asset Management
 
-**Status:** Belum ada. Pain point unik ormawa Indonesia (banner, sound system, kostum, kamera).
+**Status:** ✅ Implemented 2026-05-17. Pain point unik ormawa Indonesia (banner, sound system, kostum, kamera).
 
 #### Tujuan
 - Track inventaris organisasi: status, lokasi, kondisi, foto, QR per item.
@@ -1100,19 +1100,24 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Overdue job: notify pas overdue.
 
 #### Checklist
-- [ ] 2 migrations + enum.
-- [ ] CRUD Action + Loan Action + Return Action.
-- [ ] Form Request.
-- [ ] Controllers + Routes.
-- [ ] React pages + components.
-- [ ] Sidebar menu.
-- [ ] Integrasi M19 (snapshot) + M27 (QR scan redirect).
-- [ ] Tests.
+- [x] 2 migrations + enum.
+- [x] CRUD Action + Loan Action + Return Action.
+- [x] Form Request.
+- [x] Controllers + Routes.
+- [x] React pages + components.
+- [x] Sidebar menu.
+- [x] Integrasi M19 (snapshot) + M27 (QR scan redirect).
+- [x] Tests.
 
 #### Verification
 - Buat item Banner BEM, generate QR, print, tempel, scan via mobile → detail muncul.
 - Pinjam → return dengan kondisi damaged → kondisi item update.
 - Inisiasi handover → snapshot inventory ada di package.
+- 2026-05-17 automated gates:
+  - `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/phpunit --configuration=phpunit.xml tests/Feature/InventoryManagementTest.php tests/Feature/HandoverPackageTest.php --stop-on-failure` → 21 passed / 131 assertions.
+  - `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test` → 551 passed / 2981 assertions.
+  - `npm run lint`, `npm run build`, and `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test` pass.
+  - Physical printed QR/mobile camera lookup remains launch-QA.
 ---
 
 ## 5. Cross-Module Integration Map
@@ -1150,7 +1155,7 @@ Modul yang baru dibangun harus integrate dengan yang lama:
 - [x] **M39** · Surat Menyurat Generator (killer feature)
 - [x] **M29** · Global Search (Cmd+K)
 - [x] **M43** · Calendar Sync (.ics)
-- [ ] **M40** · Inventory & Asset Management
+- [x] **M40** · Inventory & Asset Management
 
 ### Frozen / Maintenance Mode (jangan tambah scope)
 - [ ] M16 Certificate — skip QA-OPEN-012, no further enhancement
