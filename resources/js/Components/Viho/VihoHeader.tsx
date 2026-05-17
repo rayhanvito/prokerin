@@ -1,17 +1,10 @@
 import Dropdown from '@/Components/Dropdown';
 import NotificationBell from '@/Components/Notifications/NotificationBell';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import GlobalSearchBar from '@/Components/Search/GlobalSearchBar';
 import { vihoMenu } from '@/Data/vihoMenu';
 import { Link, usePage } from '@inertiajs/react';
-import {
-    Bookmark,
-    Maximize,
-    Menu,
-    MessageCircle,
-    Moon,
-    Search,
-    X,
-} from 'lucide-react';
+import { Bookmark, Maximize, Menu, MessageCircle, Moon, X } from 'lucide-react';
 import { ReactNode } from 'react';
 
 interface VihoHeaderProps {
@@ -65,10 +58,7 @@ export default function VihoHeader({
 
                 <div className="min-w-0 flex-1">{header}</div>
 
-                <div className="hidden min-w-[320px] items-center rounded-[4px] bg-[#f5f7fb] px-4 py-3 text-sm text-[#717171] md:flex">
-                    <Search className="mr-3 h-4 w-4 text-[#24695c]" />
-                    <span>Search proker, proposal, RAB...</span>
-                </div>
+                <GlobalSearchBar />
 
                 <div className="flex items-center gap-1 text-[#2c323f]">
                     <button

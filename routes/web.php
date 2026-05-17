@@ -22,6 +22,7 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventRegistrationExportController;
 use App\Http\Controllers\EventRegistrationPdfExportController;
 use App\Http\Controllers\EventRegistrationSettingsController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\HandoverItemStatusController;
 use App\Http\Controllers\HandoverPackageController;
 use App\Http\Controllers\HandoverPackageExportController;
@@ -93,6 +94,8 @@ Route::get('/dashboard', [WorkspacePageController::class, 'dashboard'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/search', GlobalSearchController::class)->name('search');
+
     Route::prefix('proker')->name('proker.')->group(function () {
         Route::get('/', [WorkspacePageController::class, 'prokerIndex'])->name('index');
         Route::post('/', [ProjectController::class, 'store'])->name('store');

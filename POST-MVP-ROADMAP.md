@@ -880,7 +880,7 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
 
 ### 3.4 M29 · Global Search (Cmd+K)
 
-**Status:** Belum ada. **Pivot dari MeiliSearch (spec lama) ke Scout database driver dulu.**
+**Status:** ✅ Implemented 2026-05-17. **Pivot dari MeiliSearch (spec lama) ke Scout database driver dulu.**
 
 #### Tujuan
 - Cmd+K / Ctrl+K modal yang search lintas modul (Project, Task, Document, Meeting, Member).
@@ -933,17 +933,21 @@ Kalau ada bug critical di 5 modul ini, **fix saja**. Tapi **jangan tambah fitur 
   - Result limit 5 per kategori.
 
 #### Checklist
-- [ ] Install Laravel Scout.
-- [ ] Searchable trait + toSearchableArray di 5 model.
-- [ ] `GlobalSearchAction`.
-- [ ] Route `/search`.
-- [ ] `GlobalSearchBar`, `SearchResultGroup`, `useGlobalSearch` hook.
-- [ ] Mount di AuthenticatedLayout.
-- [ ] Tests tenant scope + visibility.
+- [x] Install Laravel Scout.
+- [x] Searchable trait + toSearchableArray di 5 model.
+- [x] `GlobalSearchAction`.
+- [x] Route `/search`.
+- [x] `GlobalSearchBar`, `SearchResultGroup`, `useGlobalSearch` hook.
+- [x] Mount di AuthenticatedLayout.
+- [x] Tests tenant scope + visibility.
 
 #### Verification
 - Press Cmd+K → modal muncul → ketik "ospek" → result grouped → arrow + Enter → navigate ke detail.
 - Login org2 → search keyword yang ada di org1 → 0 result.
+- 2026-05-17 automated gates:
+  - `php artisan test tests/Feature/GlobalSearchTest.php --stop-on-failure` → 5 passed / 11 assertions.
+  - `php artisan test` → 538 passed / 2908 assertions.
+  - `npm run lint`, `npm run build`, and `./vendor/bin/pint --test` pass.
 
 ---
 
@@ -1140,7 +1144,7 @@ Modul yang baru dibangun harus integrate dengan yang lama:
 - [x] **M30** · Kepanitiaan Mode
 - [x] **M31** · Public Proker Microsite
 - [x] **M39** · Surat Menyurat Generator (killer feature)
-- [ ] **M29** · Global Search (Cmd+K)
+- [x] **M29** · Global Search (Cmd+K)
 - [ ] **M43** · Calendar Sync (.ics)
 - [ ] **M40** · Inventory & Asset Management
 
