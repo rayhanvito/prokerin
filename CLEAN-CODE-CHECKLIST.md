@@ -20,10 +20,10 @@ Aturan pakai:
 
 Gate standar sebelum checklist item dianggap selesai:
 
-- [ ] `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
+- [x] `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH ./vendor/bin/pint --test`
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] `PATH=/opt/homebrew/bin:/opt/homebrew/sbin:$PATH php artisan test`
 
 ---
 
@@ -58,13 +58,14 @@ Gate standar sebelum checklist item dianggap selesai:
 
 ## 2. P0 Guardrail Before Any Cleanup
 
-- [ ] Baca `AGENTS.md` section `Clean Code Operating Prompt`.
-- [ ] Baca `README.md` status fitur dan flow pengguna.
-- [ ] Jalankan `git status --short --branch`.
-- [ ] Pastikan tidak ada dirty work yang tidak berhubungan.
-- [ ] Tentukan satu scope kecil.
-- [ ] Catat targeted test yang akan dijalankan sebelum edit.
-- [ ] Pastikan root markdown policy dipatuhi: file checklist ini adalah pengecualian eksplisit dari owner.
+- [x] Baca `AGENTS.md` section `Clean Code Operating Prompt`.
+- [x] Baca `README.md` status fitur dan flow pengguna.
+- [x] Jalankan `git status --short --branch`.
+- [x] Pastikan tidak ada dirty work yang tidak berhubungan.
+  - Catatan: `AGENTS 2.md` dan `vitest.config 2.ts` adalah untracked lama, tidak disentuh.
+- [x] Tentukan satu scope kecil.
+- [x] Catat targeted test yang akan dijalankan sebelum edit.
+- [x] Pastikan root markdown policy dipatuhi: file checklist ini adalah pengecualian eksplisit dari owner.
 
 ---
 
@@ -74,35 +75,35 @@ Prioritas backend adalah menjaga controller tipis, query tenant aman, validasi e
 
 ### 3.1 Controllers
 
-- [ ] `app/Http/Controllers/WorkspacePageController.php`
+- [x] `app/Http/Controllers/WorkspacePageController.php`
   - Alasan: file besar, banyak route/page orchestration dalam satu controller.
-  - Target cleanup: kelompokkan method by domain, pastikan tiap method hanya authorize/resolve payload/render, pertimbangkan private helper minimal atau split controller hanya jika disetujui owner.
-  - Test: targeted workspace/page feature tests + full suite.
+  - Refactor: ekstrak helper `numericActiveOrganizationId()` dan `storedActiveOrganizationId()` untuk menghapus duplikasi session lookup tanpa mengubah behavior lama.
+  - Verifikasi: Pint targeted pass; targeted workspace/page tests pass (`31 passed`, `194 assertions`).
 
-- [ ] `app/Http/Controllers/ProfileController.php`
+- [x] `app/Http/Controllers/ProfileController.php`
   - Alasan: masih ada direct `$request->validate()` untuk update password/delete profile pattern bawaan Breeze.
-  - Target cleanup: evaluasi apakah perlu FormRequest atau tetap dibiarkan karena auth/profile scaffold low risk.
-  - Test: profile tests.
+  - Refactor: delete-account validation dipindah ke `DeleteProfileRequest`; `ProfileUpdateRequest` dibuat strict/final.
+  - Verifikasi: profile/password targeted tests pass (`7 passed`, `29 assertions`).
 
-- [ ] `app/Http/Controllers/Auth/RegisteredUserController.php`
+- [x] `app/Http/Controllers/Auth/RegisteredUserController.php`
   - Alasan: direct validation bawaan auth.
-  - Target cleanup: hanya jika ingin konsistensi FormRequest; jangan ganggu auth flow.
-  - Test: auth registration tests.
+  - Refactor: registration validation dipindah ke `Auth\RegisterUserRequest`; controller dibuat strict/final.
+  - Verifikasi: registration/auth targeted tests pass (`12 passed`, `28 assertions`).
 
-- [ ] `app/Http/Controllers/Auth/PasswordController.php`
+- [x] `app/Http/Controllers/Auth/PasswordController.php`
   - Alasan: direct validation bawaan auth.
-  - Target cleanup: ekstrak request bila ada manfaat nyata.
-  - Test: password update tests.
+  - Refactor: password update validation dipindah ke `Auth\UpdatePasswordRequest`; controller dibuat strict/final.
+  - Verifikasi: password/profile targeted tests pass (`7 passed`, `29 assertions`).
 
-- [ ] `app/Http/Controllers/Auth/PasswordResetLinkController.php`
+- [x] `app/Http/Controllers/Auth/PasswordResetLinkController.php`
   - Alasan: direct validation bawaan auth.
-  - Target cleanup: ekstrak request bila tidak mengubah behavior.
-  - Test: password reset tests.
+  - Refactor: forgot-password email validation dipindah ke `Auth\SendPasswordResetLinkRequest`; controller dibuat strict/final.
+  - Verifikasi: password reset targeted tests pass (`5 passed`, `11 assertions`).
 
-- [ ] `app/Http/Controllers/Auth/NewPasswordController.php`
+- [x] `app/Http/Controllers/Auth/NewPasswordController.php`
   - Alasan: direct validation bawaan auth.
-  - Target cleanup: ekstrak request bila konsisten dengan auth module.
-  - Test: password reset tests.
+  - Refactor: reset-password validation dipindah ke `Auth\StoreNewPasswordRequest`; controller dibuat strict/final.
+  - Verifikasi: password reset targeted tests pass (`5 passed`, `11 assertions`).
 
 ### 3.2 Large Actions And Payload Builders
 
@@ -577,4 +578,5 @@ Gunakan daftar ini setelah P1/P2 selesai atau saat ada bug di domain terkait.
 
 ## 9. Checklist Update Log
 
+- [x] 2026-05-17: Clean-code batch 2 selesai: WorkspacePageController active org helper, Profile delete FormRequest, Auth registration/password/reset FormRequests. Verifikasi full gate pass: Pint, lint, build, `551 passed`, `2981 assertions`.
 - [x] 2026-05-17: Initial clean-code checklist dibuat berdasarkan audit file size, validation/controller patterns, payload/action density, dan frontend page complexity.
